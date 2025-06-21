@@ -1,0 +1,162 @@
+﻿<Window x:Class="TinyUnrealPackerExtended.DialogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:TinyUnrealPackerExtended.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TinyUnrealPackerExtended" xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks" xmlns:local1="clr-namespace:TinyUnrealPackerExtended.Convertes"
+        mc:Ignorable="d"
+        Title="{Binding Title}"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+    <Window.Resources>
+        <!-- Тень, аналогичная CardStyle -->
+        <DropShadowEffect x:Key="CardShadowEffect"
+                      BlurRadius="10"
+                      Opacity="0.15"
+                      ShadowDepth="2"/>
+
+        <!-- Конвертеры для иконки и цвета -->
+        <local1:DialogTypeToIconConverter x:Key="DialogTypeToIconConverter"/>
+        <local1:DialogTypeToColorConverter x:Key="DialogTypeToColorConverter"/>
+
+        <!-- Primary Button Style -->
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <SolidColorBrush Color="#0f80d6"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Margin" Value="6,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="MinHeight" Value="44"/>
+            <Setter Property="MinWidth" Value="100"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                    Background="{TemplateBinding Background}"
+                    CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="#0c6eb9"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="#004578"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Secondary Button Style -->
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background">
+                <Setter.Value>
+                    <SolidColorBrush Color="#E5E5E5"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Foreground" Value="#333"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Margin" Value="6,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="MinHeight" Value="44"/>
+            <Setter Property="MinWidth" Value="100"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                         Background="{TemplateBinding Background}"
+                         CornerRadius="4"
+                         Padding="{TemplateBinding Padding}">
+                            <TextBlock Text="{TemplateBinding Content}"
+                                TextWrapping="Wrap"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="14"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="#CCCCCC"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background">
+                                    <Setter.Value>
+                                        <SolidColorBrush Color="#AAAAAA"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="9" BorderBrush="#AAAAAA" BorderThickness="1">
+        
+    <Border CornerRadius="8"
+          Background="White"
+          Padding="24">
+        <StackPanel>
+            <!-- Иконка состояния -->
+            <iconPacks:PackIconMaterial
+        Kind="{Binding DialogType, Converter={StaticResource DialogTypeToIconConverter}}"
+        Width="40" Height="40"
+        Foreground="{Binding DialogType, Converter={StaticResource DialogTypeToColorConverter}}"
+        HorizontalAlignment="Center"/>
+
+            <TextBlock Text="{Binding Title}"
+                 FontSize="18"
+                 FontWeight="SemiBold"
+                 Margin="0,12,0,4"
+                 TextAlignment="Center"/>
+
+            <TextBlock Text="{Binding Message}"
+                 FontSize="14"
+                 TextWrapping="Wrap"
+                 Margin="0,0,0,16"
+                 TextAlignment="Center"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="{Binding SecondaryText}"
+                Command="{Binding SecondaryButtonCommand}"
+                Style="{StaticResource SecondaryButtonStyle}"
+                Margin="0,0,8,0" Cursor="Hand"/>
+                <Button Content="{Binding PrimaryText}"
+                Command="{Binding PrimaryButtonCommand}"
+                Style="{StaticResource PrimaryButtonStyle}"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+    </Border>
+</Window>
