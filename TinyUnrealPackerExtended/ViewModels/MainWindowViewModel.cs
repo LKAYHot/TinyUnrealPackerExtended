@@ -19,6 +19,9 @@ namespace TinyUnrealPackerExtended.ViewModels
     public partial class MainWindowViewModel : ObservableObject
     {
         private readonly GrowlService _growlService;
+        private readonly IFileDialogService _fileDialogService;
+        private readonly IProcessRunner _processRunner;
+        private readonly IFileSystemService _fileSystemService;
 
 
         private readonly LocresService _locresService = new();
@@ -93,35 +96,47 @@ namespace TinyUnrealPackerExtended.ViewModels
         public List<BreadcrumbItem> Overflow { get; private set; } = new();
 
 
-        public MainWindowViewModel(IDialogService dialogService, GrowlService growlService)
+        public MainWindowViewModel(IDialogService dialogService, GrowlService growlService, IFileDialogService fileDialogService,
+            IProcessRunner processRunner, IFileSystemService fileSystemService)
         {
             _growlService = growlService;
             _dialog = dialogService;
+            _fileDialogService = fileDialogService;
+            _processRunner = processRunner;
+            _fileSystemService = fileSystemService;
             LocresFiles.CollectionChanged += OnLocresCollectionsChanged;
             OriginalLocresFiles.CollectionChanged += OnLocresCollectionsChanged;
 
             InjectFiles.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasInjectFile));
             TextureFiles.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasTextureFiles));
+            _processRunner = processRunner;
+            _fileSystemService = fileSystemService;
         }
 
         private void OnLocresCollectionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            // Если обе коллекции пусты, сбрасываем флаг
             IsLocresFileDropped = LocresFiles.Count > 0 || OriginalLocresFiles.Count > 0;
         }
 
         [RelayCommand]
-        private void BrowseLocresInput()
+        private async Task BrowseLocresInputAsync()
         {
-            if (LocresFiles.Count >= 1) { LocresStatusMessage = "Можно добавить только один файл."; return; }
-            var dlg = new Microsoft.Win32.OpenFileDialog { Filter = "Locres or CSV|*.locres;*.csv" };
-            if (dlg.ShowDialog() == true)
+            if (LocresFiles.Count >= 1)
             {
-                var ext = Path.GetExtension(dlg.FileName).ToLowerInvariant();
-                LocresFiles.Add(new FileItem { FileName = Path.GetFileName(dlg.FileName), FilePath = dlg.FileName });
-                IsCsvFileDropped = ext == ".csv";
+                LocresStatusMessage = "Можно добавить только один файл.";
+                return;
             }
+
+            var path = await _fileDialogService.PickFileAsync(
+                filter: "Locres or CSV|*.locres;*.csv",
+                title: "Выберите .locres или .csv файл");
+            if (path is null) return;
+
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            LocresFiles.Add(new FileItem { FileName = Path.GetFileName(path), FilePath = path, IconKind = PackIconMaterialKind.FileDocumentOutline });
+            IsCsvFileDropped = ext == ".csv";
         }
+
 
         [RelayCommand]
         private void BrowseOriginalLocres()
@@ -131,21 +146,18 @@ namespace TinyUnrealPackerExtended.ViewModels
                 LocresStatusMessage = "Можно добавить только один оригинальный .locres.";
                 return;
             }
-            var dlg = new Microsoft.Win32.OpenFileDialog { Filter = "Original Locres|*.locres" };
-            if (dlg.ShowDialog() == true)
-            {
-                OriginalLocresFiles.Add(new FileItem
-                {
-                    FileName = Path.GetFileName(dlg.FileName),
-                    FilePath = dlg.FileName
-                });
-                // Скрыть зону после выбора
-                IsCsvFileDropped = false;
-            }
+
+            var path = _fileDialogService.PickFileAsync(
+                filter: "Original Locres|*.locres",
+                title: "Выберите оригинальный .locres файл").GetAwaiter().GetResult();
+            if (path == null) return;
+
+            OriginalLocresFiles.Add(new FileItem { FileName = Path.GetFileName(path), FilePath = path, IconKind = PackIconMaterialKind.FileDocumentOutline });
+            IsCsvFileDropped = false;
         }
 
         [RelayCommand]
-        private async Task ProcessLocresAsync()
+        private async Task ProcessLocresAsync(CancellationToken token)
         {
             if (LocresFiles.Count == 0)
             {
@@ -153,8 +165,10 @@ namespace TinyUnrealPackerExtended.ViewModels
                 _growlService.ShowWarning(LocresStatusMessage);
                 return;
             }
+
             var input = LocresFiles.First().FilePath;
             var ext = Path.GetExtension(input).ToLowerInvariant();
+
             if (ext == ".csv" && OriginalLocresFiles.Count == 0)
             {
                 LocresStatusMessage = "Укажите оригинальный .locres для импорта.";
@@ -165,23 +179,28 @@ namespace TinyUnrealPackerExtended.ViewModels
             try
             {
                 IsLocresBusy = true;
+
                 string output;
                 if (ext == ".locres")
                 {
                     output = Path.ChangeExtension(input, ".csv");
-                    await Task.Run(() => _locresService.Export(input, output));
+                    await Task.Run(() => _locresService.Export(input, output), token);
                     LocresStatusMessage = $"Экспорт завершён: {output}";
-                    _growlService.ShowSuccess(LocresStatusMessage);
                 }
-                else
+                else 
                 {
-                    var original = OriginalLocresFiles.First().FilePath;
-                    output = original;
-                    await Task.Run(() => _locresService.Import(input, output));
+                    output = OriginalLocresFiles.First().FilePath;
+                    await Task.Run(() => _locresService.Import(input, output), token);
                     LocresStatusMessage = $"Импорт в оригинальный .locres завершён: {output}";
-                    _growlService.ShowSuccess(LocresStatusMessage);
                 }
+
                 LocresOutputPath = output;
+                _growlService.ShowSuccess(LocresStatusMessage);
+            }
+            catch (OperationCanceledException)
+            {
+                LocresStatusMessage = "Операция отменена пользователем.";
+                _growlService.ShowWarning(LocresStatusMessage);
             }
             catch (Exception ex)
             {
@@ -195,7 +214,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private void BrowseExcelInput()
+        private async Task BrowseExcelInputAsync()
         {
             if (ExcelFiles.Count >= 1)
             {
@@ -203,22 +222,21 @@ namespace TinyUnrealPackerExtended.ViewModels
                 return;
             }
 
-            var dlg = new Microsoft.Win32.OpenFileDialog
+            var path = await _fileDialogService.PickFileAsync(
+                filter: "XLSX or CSV|*.xlsx;*.csv",
+                title: "Выберите .xlsx или .csv файл");
+            if (path is null) return;
+
+            ExcelFiles.Add(new FileItem
             {
-                Filter = "XLSX or CSV|*.xlsx;*.csv"
-            };
-            if (dlg.ShowDialog() == true)
-            {
-                ExcelFiles.Add(new FileItem
-                {
-                    FileName = Path.GetFileName(dlg.FileName),
-                    FilePath = dlg.FileName
-                });
-            }
+                FileName = Path.GetFileName(path),
+                FilePath = path,
+                IconKind = PackIconMaterialKind.FileDocumentOutline
+            });
         }
 
         [RelayCommand]
-        private async Task ProcessExcelAsync()
+        private async Task ProcessExcelAsync(CancellationToken token)
         {
             if (ExcelFiles.Count == 0)
             {
@@ -239,16 +257,14 @@ namespace TinyUnrealPackerExtended.ViewModels
                 {
                     case ".xlsx":
                         output = Path.ChangeExtension(input, ".csv");
-                        await Task.Run(() => _excelService.ImportFromExcel(input, output));
+                        await Task.Run(() => _excelService.ImportFromExcel(input, output), token);
                         ExcelStatusMessage = $"Импорт из Excel завершён: {output}";
-                        _growlService.ShowSuccess(ExcelStatusMessage);
                         break;
 
                     case ".csv":
                         output = Path.ChangeExtension(input, ".xlsx");
-                        await Task.Run(() => _excelService.ExportToExcel(input, output));
+                        await Task.Run(() => _excelService.ExportToExcel(input, output), token);
                         ExcelStatusMessage = $"Экспорт в Excel завершён: {output}";
-                        _growlService.ShowSuccess(ExcelStatusMessage);
                         break;
 
                     default:
@@ -258,6 +274,12 @@ namespace TinyUnrealPackerExtended.ViewModels
                 }
 
                 ExcelOutputPath = output;
+                _growlService.ShowSuccess(ExcelStatusMessage);
+            }
+            catch (OperationCanceledException)
+            {
+                ExcelStatusMessage = "Операция отменена пользователем.";
+                _growlService.ShowWarning(ExcelStatusMessage);
             }
             catch (Exception ex)
             {
@@ -270,28 +292,20 @@ namespace TinyUnrealPackerExtended.ViewModels
             }
         }
 
-        [RelayCommand]
-        private void BrowsePakFolder()
-        {
-            var dlg = new OpenFileDialog
-            {
-                Title = "Выберите папку для упаковки",
-                CheckFileExists = false,
-                CheckPathExists = true,
-                ValidateNames = false,
-                FileName = "Папка",
-                Filter = "Папки|*.*"
-            };
-            if (dlg.ShowDialog() != true) return;
 
-            var folder = Path.GetDirectoryName(dlg.FileName);
-            if (string.IsNullOrEmpty(folder)) return;
+        [RelayCommand]
+        private async Task BrowsePakFolderAsync()
+        {
+            // Выбираем папку через сервис диалогов
+            var folder = await _fileDialogService.PickFolderAsync(
+                description: "Выберите папку для упаковки");
+            if (string.IsNullOrEmpty(folder))
+                return;
 
             RootFolder = folder;
-
             FolderEditorRootPath = folder;
-
             PakFiles.Clear();
+
             PakFiles.Add(new FileItem
             {
                 FileName = Path.GetFileName(folder),
@@ -325,7 +339,6 @@ namespace TinyUnrealPackerExtended.ViewModels
                 var line = $"\"{folder}\\*.*\" \"..\\..\\..\\*.*\"";
                 File.WriteAllText(listFile, line);
 
-                // Запускаем UnrealPak
                 var pakName = Path.GetFileName(folder) + ".pak";
                 var pakPath = Path.Combine(Path.GetDirectoryName(folder)!, pakName);
                 var psi = new ProcessStartInfo
