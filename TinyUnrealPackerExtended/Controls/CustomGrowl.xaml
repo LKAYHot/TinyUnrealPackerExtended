@@ -1,0 +1,80 @@
+﻿<UserControl x:Class="TinyUnrealPackerExtended.Controls.CustomGrowl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:local="clr-namespace:TinyUnrealPackerExtended.Controls"
+             mc:Ignorable="d" Height="Auto" Width="300"
+             >
+    <UserControl.Resources>
+        <Style x:Key="FileBorderStyle" TargetType="Border">
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="10" Opacity="0.15" ShadowDepth="2"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+    <Border Background="White"
+         CornerRadius="5"
+         Padding="10"
+         Margin="5"
+         BorderThickness="1" Style="{StaticResource FileBorderStyle}">
+        <Grid Margin="-10,-10,-10,-10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="40" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="48" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Color Indicator -->
+            <Border HorizontalAlignment="Left"
+                 Grid.Column="0"
+                 Width="2"
+                 CornerRadius="5, 0, 0, 5"
+                 Background="{Binding IconColor}" />
+
+            <!-- Icon -->
+            <iconPacks:PackIconMaterial Kind="{Binding IconKind}" 
+                                     Width="20" 
+                                     Height="64" 
+                                     Foreground="{Binding IconColor}" 
+                                     VerticalAlignment="Center" 
+                                     HorizontalAlignment="Center" />
+
+            <!-- Message -->
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="{Binding Title}"
+                        FontWeight="Bold"
+                        Foreground="Black"
+                        FontSize="16"
+                        Margin="0, 15, 0, 0"
+                        FontFamily="Bahnschrift SemiBold" />
+                <TextBlock Text="{Binding Message}"
+                        Foreground="#FF8E8E8E"
+                        FontSize="14"
+                        TextWrapping="Wrap"
+                        FontFamily="Bahnschrift Light" Padding="0,0,0,10"/>
+            </StackPanel>
+
+            <!-- Close Button -->
+            <Button x:Name="CloseButton" Grid.Column="2"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Padding="0"
+                 Width="20"
+                 Height="20"
+                 ToolTip="Close"
+                 Click="CloseButton_Click">
+                <iconPacks:PackIconMaterial Kind="CloseCircleOutline" 
+                                         Width="20" 
+                                         Height="20" 
+                                         Margin="0" 
+                                         HorizontalAlignment="Center" 
+                                         VerticalAlignment="Center" 
+                                         Foreground="#FFABABAB"/>
+            </Button>
+        </Grid>
+    </Border>
+</UserControl>

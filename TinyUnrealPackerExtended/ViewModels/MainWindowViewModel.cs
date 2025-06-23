@@ -18,6 +18,9 @@ namespace TinyUnrealPackerExtended.ViewModels
 {
     public partial class MainWindowViewModel : ObservableObject
     {
+        private readonly GrowlService _growlService;
+
+
         private readonly LocresService _locresService = new();
         private readonly ExcelService _excelService = new();
 
@@ -90,8 +93,9 @@ namespace TinyUnrealPackerExtended.ViewModels
         public List<BreadcrumbItem> Overflow { get; private set; } = new();
 
 
-        public MainWindowViewModel(IDialogService dialogService)
+        public MainWindowViewModel(IDialogService dialogService, GrowlService growlService)
         {
+            _growlService = growlService;
             _dialog = dialogService;
             LocresFiles.CollectionChanged += OnLocresCollectionsChanged;
             OriginalLocresFiles.CollectionChanged += OnLocresCollectionsChanged;
@@ -143,10 +147,20 @@ namespace TinyUnrealPackerExtended.ViewModels
         [RelayCommand]
         private async Task ProcessLocresAsync()
         {
-            if (LocresFiles.Count == 0) { LocresStatusMessage = "Ошибка: укажите файл для обработки."; return; }
+            if (LocresFiles.Count == 0)
+            {
+                LocresStatusMessage = "Ошибка: укажите файл для обработки.";
+                _growlService.ShowWarning(LocresStatusMessage);
+                return;
+            }
             var input = LocresFiles.First().FilePath;
             var ext = Path.GetExtension(input).ToLowerInvariant();
-            if (ext == ".csv" && OriginalLocresFiles.Count == 0) { LocresStatusMessage = "Укажите оригинальный .locres для импорта."; return; }
+            if (ext == ".csv" && OriginalLocresFiles.Count == 0)
+            {
+                LocresStatusMessage = "Укажите оригинальный .locres для импорта.";
+                _growlService.ShowWarning(LocresStatusMessage);
+                return;
+            }
 
             try
             {
@@ -157,6 +171,7 @@ namespace TinyUnrealPackerExtended.ViewModels
                     output = Path.ChangeExtension(input, ".csv");
                     await Task.Run(() => _locresService.Export(input, output));
                     LocresStatusMessage = $"Экспорт завершён: {output}";
+                    _growlService.ShowSuccess(LocresStatusMessage);
                 }
                 else
                 {
@@ -164,14 +179,19 @@ namespace TinyUnrealPackerExtended.ViewModels
                     output = original;
                     await Task.Run(() => _locresService.Import(input, output));
                     LocresStatusMessage = $"Импорт в оригинальный .locres завершён: {output}";
+                    _growlService.ShowSuccess(LocresStatusMessage);
                 }
                 LocresOutputPath = output;
             }
             catch (Exception ex)
             {
                 LocresStatusMessage = $"Ошибка обработки: {ex.Message}";
+                _growlService.ShowError(LocresStatusMessage);
             }
-            finally { IsLocresBusy = false; }
+            finally
+            {
+                IsLocresBusy = false;
+            }
         }
 
         [RelayCommand]
@@ -203,6 +223,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             if (ExcelFiles.Count == 0)
             {
                 ExcelStatusMessage = "Ошибка: укажите файл для обработки.";
+                _growlService.ShowWarning(ExcelStatusMessage);
                 return;
             }
 
@@ -217,21 +238,22 @@ namespace TinyUnrealPackerExtended.ViewModels
                 switch (ext)
                 {
                     case ".xlsx":
-                        // импорт из Excel в CSV
                         output = Path.ChangeExtension(input, ".csv");
                         await Task.Run(() => _excelService.ImportFromExcel(input, output));
                         ExcelStatusMessage = $"Импорт из Excel завершён: {output}";
+                        _growlService.ShowSuccess(ExcelStatusMessage);
                         break;
 
                     case ".csv":
-                        // экспорт в Excel
                         output = Path.ChangeExtension(input, ".xlsx");
                         await Task.Run(() => _excelService.ExportToExcel(input, output));
                         ExcelStatusMessage = $"Экспорт в Excel завершён: {output}";
+                        _growlService.ShowSuccess(ExcelStatusMessage);
                         break;
 
                     default:
                         ExcelStatusMessage = "Неподдерживаемый формат. Поддерживаются .xlsx и .csv.";
+                        _growlService.ShowWarning(ExcelStatusMessage);
                         return;
                 }
 
@@ -240,6 +262,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             catch (Exception ex)
             {
                 ExcelStatusMessage = $"Ошибка обработки: {ex.Message}";
+                _growlService.ShowError(ExcelStatusMessage);
             }
             finally
             {
@@ -285,6 +308,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             if (!PakFiles.Any())
             {
                 PakStatusMessage = "Укажите папку для упаковки.";
+                _growlService.ShowWarning(PakStatusMessage);
                 return;
             }
 
@@ -317,10 +341,12 @@ namespace TinyUnrealPackerExtended.ViewModels
                 await proc.WaitForExitAsync();
 
                 PakStatusMessage = $"Упаковано: {pakPath}";
+                _growlService.ShowSuccess(PakStatusMessage);
             }
             catch (Exception ex)
             {
                 PakStatusMessage = $"Ошибка: {ex.Message}";
+                _growlService.ShowError(PakStatusMessage);
             }
             finally
             {
@@ -399,6 +425,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             if (!InjectFiles.Any() || !TextureFiles.Any() || string.IsNullOrEmpty(InjectOutputPath))
             {
                 InjectStatusMessage = "Укажите исходный .uasset, хотя бы одну текстуру и папку вывода.";
+                _growlService.ShowWarning(InjectStatusMessage);
                 return;
             }
 
@@ -406,14 +433,22 @@ namespace TinyUnrealPackerExtended.ViewModels
             {
                 IsInjectBusy = true;
 
-                // 1) записываем в _file_path_.txt
+                // 1) Подготовка путей
                 var assetPath = InjectFiles.First().FilePath;
                 var baseDir = AppDomain.CurrentDomain.BaseDirectory;
                 var ddsDir = Path.Combine(baseDir, "DDS");
+                var injectedDir = Path.Combine(ddsDir, "injected");
+
+                // 2) Очищаем ранее инжектированные файлы
+                if (Directory.Exists(injectedDir))
+                    Directory.Delete(injectedDir, recursive: true);
+                Directory.CreateDirectory(injectedDir);
+
+                // 3) Записываем в _file_path_.txt
                 var srcTxt = Path.Combine(ddsDir, "src", "_file_path_.txt");
                 File.WriteAllText(srcTxt, assetPath);
 
-                // 2) запускаем батч с аргументами путей текстур
+                // 4) Запускаем батч с аргументами путей текстур
                 var args = string.Join(" ", TextureFiles.Select(f => $"\"{f.FilePath}\""));
                 var psi = new ProcessStartInfo
                 {
@@ -426,25 +461,27 @@ namespace TinyUnrealPackerExtended.ViewModels
                 using var proc = Process.Start(psi)!;
                 await proc.WaitForExitAsync();
 
-                // 3) копируем результаты
-                var injectedDir = Path.Combine(ddsDir, "injected");
+                // 5) Копируем результаты из только что очищенной папки injected
                 foreach (var file in Directory.GetFiles(injectedDir))
                 {
-                    var dest = Path.Combine(InjectOutputPath, Path.GetFileName(file));
+                    var dest = Path.Combine(InjectOutputPath, Path.GetFileName(file)!);
                     File.Copy(file, dest, overwrite: true);
                 }
 
-                InjectStatusMessage = "Injection completed.";
+                InjectStatusMessage = "Инжект окончен.";
+                _growlService.ShowSuccess(InjectStatusMessage);
             }
             catch (Exception ex)
             {
                 InjectStatusMessage = $"Error: {ex.Message}";
+                _growlService.ShowError(InjectStatusMessage);
             }
             finally
             {
                 IsInjectBusy = false;
             }
         }
+
 
         public string InjectOutputButtonText
     => string.IsNullOrEmpty(InjectOutputPath)

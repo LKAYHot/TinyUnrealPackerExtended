@@ -26,7 +26,8 @@ namespace TinyUnrealPackerExtended
         public MainWindow()
         {
             InitializeComponent();
-            mainWindowViewModel = new MainWindowViewModel(new DialogService());
+            var growlService = new GrowlService(GrowlContainer);
+            mainWindowViewModel = new MainWindowViewModel(new DialogService(), growlService);
             DataContext = mainWindowViewModel;
             _tree = FolderTree;
         }

@@ -20,7 +20,7 @@
 
         <local:FileNameOnlyConverter x:Key="FileNameOnlyConverter"/>
         <local2:IsLastBreadcrumbConverter x:Key="IsLastBreadcrumbConverter"/>
-        
+
 
 
 
@@ -759,7 +759,7 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
                        DragOver="DropZone_DragOver"
                        Drop="UassetZone_Drop"
                        Style="{StaticResource AnimatedDashedDropZone}"
-                       Height="160" BorderBrush="#CCCCCC" BorderDashArray="3, 1" BorderThickness="2">
+                       Height="147" BorderBrush="#CCCCCC" BorderDashArray="3, 1" BorderThickness="2">
                             <Grid>
                                 <!-- 1) Панель «дроп/выбор», когда нет InjectFiles -->
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -792,10 +792,19 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
                                                 <DataTrigger Binding="{Binding HasInjectFile}" Value="True">
                                                     <Setter Property="Visibility" Value="Visible"/>
                                                 </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsInjectBusy}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </ItemsControl.Style>
                                 </ItemsControl>
+
+                                <ProgressBar IsIndeterminate="True"
+                       Height="16"
+                       VerticalAlignment="Center"
+                       Visibility="{Binding IsInjectBusy, Converter={StaticResource BoolToVis}}"
+                       Style="{StaticResource ProgressBarSuccess}"/>
                             </Grid>
                         </hc:DashedBorder>
 
@@ -804,7 +813,7 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
                        DragOver="DropZone_DragOver"
                        Drop="TextureZone_Drop"
                        Style="{StaticResource AnimatedDashedDropZone}"
-                       Height="230"
+                       Height="244"
                        Margin="0,12,0,0" BorderBrush="#CCCCCC" BorderDashArray="3, 1" BorderThickness="2">
                             <Grid>
                                 <!-- Дроп/выбор -->
@@ -838,10 +847,20 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
                                                 <DataTrigger Binding="{Binding HasTextureFiles}" Value="True">
                                                     <Setter Property="Visibility" Value="Visible"/>
                                                 </DataTrigger>
+
+                                                <DataTrigger Binding="{Binding IsInjectBusy}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </ItemsControl.Style>
                                 </ItemsControl>
+
+                                <ProgressBar IsIndeterminate="True"
+                       Height="16"
+                       VerticalAlignment="Center"
+                       Visibility="{Binding IsInjectBusy, Converter={StaticResource BoolToVis}}"
+                       Style="{StaticResource ProgressBarSuccess}"/>
                             </Grid>
                         </hc:DashedBorder>
 
@@ -983,30 +1002,30 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
                         <ScrollViewer Grid.Row="2"
                     VerticalScrollBarVisibility="Auto"
                     HorizontalScrollBarVisibility="Disabled">
-                            
-                        <!-- даём TreeView имя -->
-                    <TreeView x:Name="FolderTree"
+
+                            <!-- даём TreeView имя -->
+                            <TreeView x:Name="FolderTree"
               ItemsSource="{Binding FolderItems}" Background="#FFE8E8E8" SelectedItemChanged="FolderTree_SelectedItemChanged">
 
-                        <TreeView.Resources>
-                            <!-- Отключаем стандартные подсветки -->
-                            <SolidColorBrush 
+                                <TreeView.Resources>
+                                    <!-- Отключаем стандартные подсветки -->
+                                    <SolidColorBrush 
           x:Key="{x:Static SystemColors.HighlightBrushKey}"
           Color="Transparent"/>
-                            <SolidColorBrush 
+                                    <SolidColorBrush 
           x:Key="{x:Static SystemColors.ControlBrushKey}"
           Color="Transparent"/>
-                            <SolidColorBrush 
+                                    <SolidColorBrush 
           x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
           Color="White"/>
 
-                            <!-- Шаблон для каждого узла -->
-                            <HierarchicalDataTemplate
+                                    <!-- Шаблон для каждого узла -->
+                                    <HierarchicalDataTemplate
             DataType="{x:Type local1:FolderItem}"
             ItemsSource="{Binding Children}">
 
-                                <!-- Всегда-видимый скруглённый Border с тенью -->
-                                <Border x:Name="Bd"
+                                        <!-- Всегда-видимый скруглённый Border с тенью -->
+                                        <Border x:Name="Bd"
                   Background="White"
                   BorderBrush="#E5E5E5"
                   BorderThickness="1"
@@ -1016,70 +1035,70 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
                   MinHeight="36"
                   Effect="{StaticResource ItemShadowEffect}" PreviewMouseLeftButtonDown="FolderItem_PreviewMouseLeftButtonDown">
 
-                                    <!-- Контекстное меню с правильными биндингами -->
-                                    <Border.ContextMenu>
-                                        <ContextMenu>
-                                            <MenuItem
+                                            <!-- Контекстное меню с правильными биндингами -->
+                                            <Border.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem
       Header="Открыть расположение"
       Command="{Binding DataContext.OpenFolderCommand, Source={x:Reference RootWindow}}"
       CommandParameter="{Binding}" />
 
-                                            <Separator/>
+                                                    <Separator/>
 
-                                            <!-- Копировать / Вырезать / Вставить -->
-                                            <MenuItem
+                                                    <!-- Копировать / Вырезать / Вставить -->
+                                                    <MenuItem
       Header="Копировать"
       Command="{Binding DataContext.CopyFolderItemCommand, Source={x:Reference RootWindow}}"
       CommandParameter="{Binding}" />
-                                            <MenuItem
+                                                    <MenuItem
       Header="Вырезать"
       Command="{Binding DataContext.CutFolderItemCommand, Source={x:Reference RootWindow}}"
       CommandParameter="{Binding}" />
-                                            <MenuItem
+                                                    <MenuItem
       Header="Вставить"
       Command="{Binding DataContext.PasteIntoFolderCommand, Source={x:Reference RootWindow}}"
       CommandParameter="{Binding}"
       IsEnabled="{Binding DataContext.CanPaste, Source={x:Reference RootWindow}}"/>
 
-                                            <Separator/>
+                                                    <Separator/>
 
-                                            <!-- Переименовать / Удалить -->
-                                            <MenuItem
+                                                    <!-- Переименовать / Удалить -->
+                                                    <MenuItem
       Header="Переименовать"
       Command="{Binding DataContext.RenameFolderItemCommand, Source={x:Reference RootWindow}}"
       CommandParameter="{Binding}" />
-                                            <MenuItem
+                                                    <MenuItem
       Header="Удалить"
       Command="{Binding DataContext.RemoveFolderItemCommand, Source={x:Reference RootWindow}}"
       CommandParameter="{Binding}" />
 
-                                            <Separator/>
+                                                    <Separator/>
 
-                                            <!-- Свойства -->
-                                            <MenuItem
+                                                    <!-- Свойства -->
+                                                    <MenuItem
       Header="Свойства"
       Command="{Binding DataContext.ShowPropertiesCommand, Source={x:Reference RootWindow}}"
       CommandParameter="{Binding}" />
-                                        </ContextMenu>
-                                    </Border.ContextMenu>
+                                                </ContextMenu>
+                                            </Border.ContextMenu>
 
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
 
-                                        <!-- Иконка -->
-                                        <iconPacks:PackIconMaterial
+                                                <!-- Иконка -->
+                                                <iconPacks:PackIconMaterial
                 x:Name="ItemIcon"
                 Kind="{Binding IconKind}"
                 Width="20" Height="20"
                 VerticalAlignment="Center"
                 Margin="4,0"/>
 
-                                        <!-- Текст -->
-                                        <TextBlock
+                                                <!-- Текст -->
+                                                <TextBlock
                 x:Name="ItemName"
                 Grid.Column="1"
                 Text="{Binding Name}"
@@ -1087,64 +1106,64 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
                 VerticalAlignment="Center"
                 Margin="8,0"/>
 
-                                        <!-- Кнопка удаления -->
-                                        <Button Grid.Column="2"
+                                                <!-- Кнопка удаления -->
+                                                <Button Grid.Column="2"
                       Command="{Binding DataContext.RemoveFolderItemCommand, ElementName=FolderTree}"
                       CommandParameter="{Binding}"
                       Style="{StaticResource DeleteIconButtonStyle}"
                       ToolTip="Удалить">
-                                            <iconPacks:PackIconMaterial
+                                                    <iconPacks:PackIconMaterial
                   x:Name="DeleteIcon"
                   Kind="Close"
                   Width="16" Height="16"
                   Foreground="#888888"/>
-                                        </Button>
-                                    </Grid>
-                                </Border>
+                                                </Button>
+                                            </Grid>
+                                        </Border>
 
-                                <!-- Hover/Selected через триггеры на самом Border -->
-                                <HierarchicalDataTemplate.Triggers>
-                                    <Trigger SourceName="Bd"
+                                        <!-- Hover/Selected через триггеры на самом Border -->
+                                        <HierarchicalDataTemplate.Triggers>
+                                            <Trigger SourceName="Bd"
                      Property="IsMouseOver"
                      Value="True">
-                                        <Setter TargetName="Bd"
+                                                <Setter TargetName="Bd"
                       Property="Background"
                       Value="#e6f2ff"/>
-                                    </Trigger>
-                                    <DataTrigger Binding="{Binding IsSelected,
+                                            </Trigger>
+                                            <DataTrigger Binding="{Binding IsSelected,
                               RelativeSource={RelativeSource AncestorType=TreeViewItem}}"
                          Value="True">
-                                        <Setter TargetName="Bd"         Property="Background"  Value="#0f80d6"/>
-                                        <Setter TargetName="Bd"         Property="BorderBrush" Value="#0f80d6"/>
-                                        <Setter TargetName="ItemIcon"   Property="Foreground"  Value="White"/>
-                                        <Setter TargetName="ItemName"   Property="Foreground"  Value="White"/>
-                                        <Setter TargetName="DeleteIcon" Property="Foreground"  Value="White"/>
-                                    </DataTrigger>
-                                </HierarchicalDataTemplate.Triggers>
-                            </HierarchicalDataTemplate>
-                        </TreeView.Resources>
+                                                <Setter TargetName="Bd"         Property="Background"  Value="#0f80d6"/>
+                                                <Setter TargetName="Bd"         Property="BorderBrush" Value="#0f80d6"/>
+                                                <Setter TargetName="ItemIcon"   Property="Foreground"  Value="White"/>
+                                                <Setter TargetName="ItemName"   Property="Foreground"  Value="White"/>
+                                                <Setter TargetName="DeleteIcon" Property="Foreground"  Value="White"/>
+                                            </DataTrigger>
+                                        </HierarchicalDataTemplate.Triggers>
+                                    </HierarchicalDataTemplate>
+                                </TreeView.Resources>
 
-                        <TreeView.ItemContainerStyle>
-                            <Style TargetType="TreeViewItem">
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Setter Property="BorderThickness" Value="0"/>
-                                <Setter Property="Padding" Value="0"/>
-                                <Setter Property="Margin" Value="0"/>
-                                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                                <Setter Property="AllowDrop" Value="True"/>
-                                <EventSetter Event="DragOver" Handler="FolderItem_DragOver"/>
-                                <EventSetter Event="Drop"     Handler="FolderItem_Drop"/>
-                                <EventSetter Event="PreviewMouseLeftButtonDown" Handler="FolderItem_PreviewMouseLeftButtonDown"/>
-                                <EventSetter Event="MouseMove" Handler="FolderItem_MouseMove"/>
-
-                                <Style.Triggers>
-                                    <Trigger Property="IsSelected" Value="True">
+                                <TreeView.ItemContainerStyle>
+                                    <Style TargetType="TreeViewItem">
                                         <Setter Property="Background" Value="Transparent"/>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TreeView.ItemContainerStyle>
-                    </TreeView>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="Margin" Value="0"/>
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                                        <Setter Property="AllowDrop" Value="True"/>
+                                        <EventSetter Event="DragOver" Handler="FolderItem_DragOver"/>
+                                        <EventSetter Event="Drop"     Handler="FolderItem_Drop"/>
+                                        <EventSetter Event="PreviewMouseLeftButtonDown" Handler="FolderItem_PreviewMouseLeftButtonDown"/>
+                                        <EventSetter Event="MouseMove" Handler="FolderItem_MouseMove"/>
+
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="Transparent"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TreeView.ItemContainerStyle>
+                            </TreeView>
                         </ScrollViewer>
                     </Grid>
                 </Border>
@@ -1165,5 +1184,10 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
             Width="16" Height="16"
             Foreground="#333"/>
         </Button>
+
+        <Grid>
+            <!-- Ваш основной UI -->
+            <Canvas x:Name="GrowlContainer" IsHitTestVisible="True" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10, 75, 10, 10" />
+        </Grid>
     </Grid>
 </Window>
