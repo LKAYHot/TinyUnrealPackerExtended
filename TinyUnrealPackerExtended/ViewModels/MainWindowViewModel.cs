@@ -53,6 +53,12 @@ namespace TinyUnrealPackerExtended.ViewModels
         public bool HasInjectFile => InjectFiles.Count > 0;
         public bool HasTextureFiles => TextureFiles.Count > 0;
 
+        public ObservableCollection<AutoInjectItem> AutoInjectItems { get; } = new();
+
+        [ObservableProperty] private string autoInjectOutputPath;
+
+        public bool HasAutoInjectItems => AutoInjectItems.Count > 0;
+
 
         public ObservableCollection<FileItem> LocresFiles { get; } = new();
         public ObservableCollection<FileItem> OriginalLocresFiles { get; } = new();
@@ -109,6 +115,7 @@ namespace TinyUnrealPackerExtended.ViewModels
 
             InjectFiles.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasInjectFile));
             TextureFiles.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasTextureFiles));
+            AutoInjectItems.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasAutoInjectItems));
             _processRunner = processRunner;
             _fileSystemService = fileSystemService;
         }
@@ -127,19 +134,21 @@ namespace TinyUnrealPackerExtended.ViewModels
                 return;
             }
 
-            var path = await _fileDialogService.PickFileAsync(
-                filter: "Locres or CSV|*.locres;*.csv",
-                title: "Выберите .locres или .csv файл");
-            if (path is null) return;
-
-            var ext = Path.GetExtension(path).ToLowerInvariant();
-            LocresFiles.Add(new FileItem { FileName = Path.GetFileName(path), FilePath = path, IconKind = PackIconMaterialKind.FileDocumentOutline });
-            IsCsvFileDropped = ext == ".csv";
+            if (await TryPickSingleFileAsync(
+                    filter: "Locres or CSV|*.locres;*.csv",
+                    title: "Выберите .locres или .csv файл",
+                    target: LocresFiles))
+            {
+                var ext = Path.GetExtension(LocresFiles.First().FilePath)
+                               .ToLowerInvariant();
+                IsCsvFileDropped = ext == ".csv";
+            }
         }
 
 
+
         [RelayCommand]
-        private void BrowseOriginalLocres()
+        private async Task BrowseOriginalLocresAsync()
         {
             if (OriginalLocresFiles.Count >= 1)
             {
@@ -147,70 +156,48 @@ namespace TinyUnrealPackerExtended.ViewModels
                 return;
             }
 
-            var path = _fileDialogService.PickFileAsync(
-                filter: "Original Locres|*.locres",
-                title: "Выберите оригинальный .locres файл").GetAwaiter().GetResult();
-            if (path == null) return;
-
-            OriginalLocresFiles.Add(new FileItem { FileName = Path.GetFileName(path), FilePath = path, IconKind = PackIconMaterialKind.FileDocumentOutline });
-            IsCsvFileDropped = false;
+            if (await TryPickSingleFileAsync(
+                    filter: "Original Locres|*.locres",
+                    title: "Выберите оригинальный .locres файл",
+                    target: OriginalLocresFiles))
+            {
+                IsCsvFileDropped = false;
+            }
         }
 
         [RelayCommand]
-        private async Task ProcessLocresAsync(CancellationToken token)
+        private Task ProcessLocresAsync(CancellationToken token)
         {
             if (LocresFiles.Count == 0)
             {
                 LocresStatusMessage = "Ошибка: укажите файл для обработки.";
                 _growlService.ShowWarning(LocresStatusMessage);
-                return;
+                return Task.CompletedTask;
             }
 
-            var input = LocresFiles.First().FilePath;
-            var ext = Path.GetExtension(input).ToLowerInvariant();
-
-            if (ext == ".csv" && OriginalLocresFiles.Count == 0)
+            return ExecuteWithBusyFlagAsync(async ct =>
             {
-                LocresStatusMessage = "Укажите оригинальный .locres для импорта.";
-                _growlService.ShowWarning(LocresStatusMessage);
-                return;
-            }
-
-            try
-            {
-                IsLocresBusy = true;
-
+                var input = LocresFiles.First().FilePath;
+                var ext = Path.GetExtension(input).ToLowerInvariant();
                 string output;
+
                 if (ext == ".locres")
                 {
                     output = Path.ChangeExtension(input, ".csv");
-                    await Task.Run(() => _locresService.Export(input, output), token);
+                    await Task.Run(() => _locresService.Export(input, output), ct);
                     LocresStatusMessage = $"Экспорт завершён: {output}";
                 }
-                else 
+                else
                 {
                     output = OriginalLocresFiles.First().FilePath;
-                    await Task.Run(() => _locresService.Import(input, output), token);
+                    await Task.Run(() => _locresService.Import(input, output), ct);
                     LocresStatusMessage = $"Импорт в оригинальный .locres завершён: {output}";
                 }
 
                 LocresOutputPath = output;
                 _growlService.ShowSuccess(LocresStatusMessage);
-            }
-            catch (OperationCanceledException)
-            {
-                LocresStatusMessage = "Операция отменена пользователем.";
-                _growlService.ShowWarning(LocresStatusMessage);
-            }
-            catch (Exception ex)
-            {
-                LocresStatusMessage = $"Ошибка обработки: {ex.Message}";
-                _growlService.ShowError(LocresStatusMessage);
-            }
-            finally
-            {
-                IsLocresBusy = false;
-            }
+
+            }, b => IsLocresBusy = b, token);
         }
 
         [RelayCommand]
@@ -222,48 +209,39 @@ namespace TinyUnrealPackerExtended.ViewModels
                 return;
             }
 
-            var path = await _fileDialogService.PickFileAsync(
+            await TryPickSingleFileAsync(
                 filter: "XLSX or CSV|*.xlsx;*.csv",
-                title: "Выберите .xlsx или .csv файл");
-            if (path is null) return;
-
-            ExcelFiles.Add(new FileItem
-            {
-                FileName = Path.GetFileName(path),
-                FilePath = path,
-                IconKind = PackIconMaterialKind.FileDocumentOutline
-            });
+                title: "Выберите .xlsx или .csv файл",
+                target: ExcelFiles);
         }
 
         [RelayCommand]
-        private async Task ProcessExcelAsync(CancellationToken token)
+        private Task ProcessExcelAsync(CancellationToken token)
         {
             if (ExcelFiles.Count == 0)
             {
                 ExcelStatusMessage = "Ошибка: укажите файл для обработки.";
                 _growlService.ShowWarning(ExcelStatusMessage);
-                return;
+                return Task.CompletedTask;
             }
 
-            var input = ExcelFiles.First().FilePath;
-            var ext = Path.GetExtension(input).ToLowerInvariant();
-            string output;
-
-            try
+            return ExecuteWithBusyFlagAsync(async ct =>
             {
-                IsExcelBusy = true;
+                var input = ExcelFiles.First().FilePath;
+                var ext = Path.GetExtension(input).ToLowerInvariant();
+                string output;
 
                 switch (ext)
                 {
                     case ".xlsx":
                         output = Path.ChangeExtension(input, ".csv");
-                        await Task.Run(() => _excelService.ImportFromExcel(input, output), token);
+                        await Task.Run(() => _excelService.ImportFromExcel(input, output), ct);
                         ExcelStatusMessage = $"Импорт из Excel завершён: {output}";
                         break;
 
                     case ".csv":
                         output = Path.ChangeExtension(input, ".xlsx");
-                        await Task.Run(() => _excelService.ExportToExcel(input, output), token);
+                        await Task.Run(() => _excelService.ExportToExcel(input, output), ct);
                         ExcelStatusMessage = $"Экспорт в Excel завершён: {output}";
                         break;
 
@@ -275,21 +253,8 @@ namespace TinyUnrealPackerExtended.ViewModels
 
                 ExcelOutputPath = output;
                 _growlService.ShowSuccess(ExcelStatusMessage);
-            }
-            catch (OperationCanceledException)
-            {
-                ExcelStatusMessage = "Операция отменена пользователем.";
-                _growlService.ShowWarning(ExcelStatusMessage);
-            }
-            catch (Exception ex)
-            {
-                ExcelStatusMessage = $"Ошибка обработки: {ex.Message}";
-                _growlService.ShowError(ExcelStatusMessage);
-            }
-            finally
-            {
-                IsExcelBusy = false;
-            }
+
+            }, b => IsExcelBusy = b, token);
         }
 
 
@@ -317,182 +282,139 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private async Task ProcessPakAsync()
+        private Task ProcessPakAsync(CancellationToken token)
         {
             if (!PakFiles.Any())
             {
                 PakStatusMessage = "Укажите папку для упаковки.";
                 _growlService.ShowWarning(PakStatusMessage);
-                return;
+                return Task.CompletedTask;
             }
 
-            var folder = PakFiles.First().FilePath;
-            try
+            return ExecuteWithBusyFlagAsync(async ct =>
             {
-                IsPakBusy = true;
-
+                var folder = PakFiles.First().FilePath;
                 var baseDir = AppDomain.CurrentDomain.BaseDirectory;
                 var exeDir = Path.Combine(baseDir, "UnrealPak");
                 var exePath = Path.Combine(exeDir, "UnrealPak.exe");
                 var listFile = Path.Combine(exeDir, "filelist.txt");
 
-                var line = $"\"{folder}\\*.*\" \"..\\..\\..\\*.*\"";
-                File.WriteAllText(listFile, line);
+                await File.WriteAllTextAsync(listFile, $"\"{folder}\\*.*\" \"..\\..\\..\\*.*\"", ct);
 
                 var pakName = Path.GetFileName(folder) + ".pak";
                 var pakPath = Path.Combine(Path.GetDirectoryName(folder)!, pakName);
-                var psi = new ProcessStartInfo
+                var args = $"\"{pakPath}\" -create=\"{listFile}\"";
+
+                var exitCode = await _processRunner.RunAsync(
+                    exePath,
+                    arguments: args,
+                    workingDirectory: exeDir,
+                    cancellationToken: ct
+                );
+
+                if (exitCode == 0)
                 {
-                    FileName = exePath,
-                    Arguments = $"\"{pakPath}\" -create=\"{listFile}\"",
-                    WorkingDirectory = exeDir,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
+                    PakStatusMessage = $"Упаковано: {pakPath}";
+                    _growlService.ShowSuccess(PakStatusMessage);
+                }
+                else
+                {
+                    PakStatusMessage = $"Ошибка упаковки (код {exitCode})";
+                    _growlService.ShowError(PakStatusMessage);
+                }
 
-                var proc = Process.Start(psi)!;
-                await proc.WaitForExitAsync();
-
-                PakStatusMessage = $"Упаковано: {pakPath}";
-                _growlService.ShowSuccess(PakStatusMessage);
-            }
-            catch (Exception ex)
-            {
-                PakStatusMessage = $"Ошибка: {ex.Message}";
-                _growlService.ShowError(PakStatusMessage);
-            }
-            finally
-            {
-                IsPakBusy = false;
-            }
+            }, b => IsPakBusy = b, token);
         }
 
         [RelayCommand]
-        private void BrowseOriginalUasset()
+        private async Task BrowseOriginalUassetAsync()
         {
-            var dlg = new Microsoft.Win32.OpenFileDialog
-            {
-                Filter = "UAsset|*.uasset"
-            };
-            if (dlg.ShowDialog() == true)
-            {
-                // Очищаем старую привязку
-                InjectFiles.Clear();
+            await TryPickSingleFileAsync(
+                filter: "UAsset|*.uasset",
+                title: "Выберите .uasset файл",
+                target: InjectFiles);
+        }
 
-                var path = dlg.FileName;
-                InjectFiles.Add(new FileItem
+        [RelayCommand]
+        private async Task BrowseTextureAsync()
+        {
+            var paths = await _fileDialogService.PickFilesAsync(
+                filter: "Image|*.png;*.jpg;*.tga;*.dds",
+                title: "Выберите одну или несколько текстур");
+            if (paths is null || paths.Length == 0)
+                return;
+
+            TextureFiles.Clear();
+            foreach (var p in paths)
+            {
+                TextureFiles.Add(new FileItem
                 {
-                    FileName = Path.GetFileName(path),
-                    FilePath = path,
-                    IconKind = PackIconMaterialKind.FileDocumentOutline
+                    FileName = Path.GetFileName(p),
+                    FilePath = p,
+                    IconKind = PackIconMaterialKind.ImageOutline
                 });
             }
         }
 
         [RelayCommand]
-        private void BrowseTexture()
+        private async Task BrowseInjectOutputAsync()
         {
-            var dlg = new Microsoft.Win32.OpenFileDialog
-            {
-                Filter = "Image|*.png;*.jpg;*.tga;*.dds",
-                Multiselect = true
-            };
-            if (dlg.ShowDialog() == true)
-            {
-                TextureFiles.Clear();
-                foreach (var path in dlg.FileNames)
-                {
-                    TextureFiles.Add(new FileItem
-                    {
-                        FileName = Path.GetFileName(path),
-                        FilePath = path,
-                        IconKind = PackIconMaterialKind.ImageOutline
-                    });
-                }
-            }
+            var folder = await _fileDialogService.PickFolderAsync(
+                description: "Выберите папку для вывода");
+            if (string.IsNullOrEmpty(folder))
+                return;
+
+            InjectOutputPath = folder;
         }
 
         [RelayCommand]
-        private void BrowseInjectOutput()
+        private Task ProcessInjectAsync(CancellationToken token)
         {
-            var dlg = new OpenFileDialog
-            {
-                Title = "Select output folder",
-                CheckFileExists = false,
-                CheckPathExists = true,
-                ValidateNames = false,
-                FileName = "Folder",
-                Filter = "Folders|*.*"
-            };
-
-            if (dlg.ShowDialog() == true)
-            {
-                InjectOutputPath = Path.GetDirectoryName(dlg.FileName) ?? string.Empty;
-            }
-        }
-
-        [RelayCommand]
-        private async Task ProcessInjectAsync()
-        {
-            // Проверяем, что есть загруженный .uasset и хотя бы одна текстура и папка
             if (!InjectFiles.Any() || !TextureFiles.Any() || string.IsNullOrEmpty(InjectOutputPath))
             {
                 InjectStatusMessage = "Укажите исходный .uasset, хотя бы одну текстуру и папку вывода.";
                 _growlService.ShowWarning(InjectStatusMessage);
-                return;
+                return Task.CompletedTask;
             }
 
-            try
+            return ExecuteWithBusyFlagAsync(async ct =>
             {
-                IsInjectBusy = true;
-
-                // 1) Подготовка путей
                 var assetPath = InjectFiles.First().FilePath;
                 var baseDir = AppDomain.CurrentDomain.BaseDirectory;
                 var ddsDir = Path.Combine(baseDir, "DDS");
-                var injectedDir = Path.Combine(ddsDir, "injected");
+                var injected = Path.Combine(ddsDir, "injected");
 
-                // 2) Очищаем ранее инжектированные файлы
-                if (Directory.Exists(injectedDir))
-                    Directory.Delete(injectedDir, recursive: true);
-                Directory.CreateDirectory(injectedDir);
+                if (Directory.Exists(injected))
+                    Directory.Delete(injected, true);
+                Directory.CreateDirectory(injected);
 
-                // 3) Записываем в _file_path_.txt
-                var srcTxt = Path.Combine(ddsDir, "src", "_file_path_.txt");
-                File.WriteAllText(srcTxt, assetPath);
+                await File.WriteAllTextAsync(
+                    Path.Combine(ddsDir, "src", "_file_path_.txt"),
+                    assetPath,
+                    ct
+                );
 
-                // 4) Запускаем батч с аргументами путей текстур
                 var args = string.Join(" ", TextureFiles.Select(f => $"\"{f.FilePath}\""));
-                var psi = new ProcessStartInfo
-                {
-                    FileName = Path.Combine(ddsDir, "_3_inject.bat"),
-                    Arguments = args,
-                    WorkingDirectory = ddsDir,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-                using var proc = Process.Start(psi)!;
-                await proc.WaitForExitAsync();
 
-                // 5) Копируем результаты из только что очищенной папки injected
-                foreach (var file in Directory.GetFiles(injectedDir))
+                var exitCode = await _processRunner.RunAsync(
+                    exePath: Path.Combine(ddsDir, "_3_inject.bat"),
+                    arguments: args,
+                    workingDirectory: ddsDir,
+                    cancellationToken: ct
+                );
+
+                if (exitCode != 0)
+                    throw new InvalidOperationException($"Batch вернулся с кодом {exitCode}");
+
+                foreach (var file in Directory.GetFiles(injected))
                 {
-                    var dest = Path.Combine(InjectOutputPath, Path.GetFileName(file)!);
-                    File.Copy(file, dest, overwrite: true);
+                    File.Copy(file, Path.Combine(InjectOutputPath, Path.GetFileName(file)!), true);
                 }
 
                 InjectStatusMessage = "Инжект окончен.";
                 _growlService.ShowSuccess(InjectStatusMessage);
-            }
-            catch (Exception ex)
-            {
-                InjectStatusMessage = $"Error: {ex.Message}";
-                _growlService.ShowError(InjectStatusMessage);
-            }
-            finally
-            {
-                IsInjectBusy = false;
-            }
+
+            }, b => IsInjectBusy = b, token);
         }
 
 
@@ -503,6 +425,137 @@ namespace TinyUnrealPackerExtended.ViewModels
 
         partial void OnInjectOutputPathChanged(string oldValue, string newValue)
             => OnPropertyChanged(nameof(InjectOutputButtonText));
+
+        public void LoadAutoFiles(string[] paths)
+        {
+            var newFiles = paths.Select(p => new
+            {
+                Path = p,
+                Base = System.IO.Path.GetFileNameWithoutExtension(p),
+                Ext = System.IO.Path.GetExtension(p).ToLowerInvariant()
+            });
+
+            var groups = newFiles.GroupBy(f => f.Base);
+
+            foreach (var g in groups)
+            {
+                if (AutoInjectItems.Any(item => item.Name == g.Key))
+                    continue;
+
+                var asset = g.FirstOrDefault(x => x.Ext == ".uasset");
+                var tex = g.FirstOrDefault(x => x.Ext == ".png");
+                if (asset != null && tex != null)
+                {
+                    AutoInjectItems.Add(new AutoInjectItem
+                    {
+                        Name = g.Key,
+                        AssetFile = new FileItem
+                        {
+                            FileName = System.IO.Path.GetFileName(asset.Path),
+                            FilePath = asset.Path
+                        },
+                        TextureFile = new FileItem
+                        {
+                            FileName = System.IO.Path.GetFileName(tex.Path),
+                            FilePath = tex.Path
+                        },
+                        Status = "Ready"
+                    });
+                }
+            }
+        }
+
+
+        [RelayCommand]
+        private async Task BrowseAutoFilesAsync()
+        {
+            var paths = await _fileDialogService.PickFilesAsync(
+                filter: "UAsset & PNG|*.uasset;*.png",
+                title: "Выберите .uasset и соответствующие .png");
+            if (paths is null || paths.Length == 0)
+                return;
+
+            LoadAutoFiles(paths);
+        }
+
+        [RelayCommand]
+        private async Task BrowseAutoOutputAsync()
+        {
+            var folder = await _fileDialogService.PickFolderAsync(
+                description: "Выберите папку вывода");
+            if (string.IsNullOrEmpty(folder))
+                return;
+
+            AutoInjectOutputPath = folder;
+        }
+
+
+        [RelayCommand]
+        private async Task ProcessAutoInjectAsync()
+        {
+            if (!AutoInjectItems.Any())
+            {
+                _growlService.ShowWarning("Нет подготовленных пар для инжекта.");
+                return;
+            }
+
+            var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            var ddsDir = Path.Combine(baseDir, "DDS");
+            var injectedDir = Path.Combine(ddsDir, "injected");
+
+            if (Directory.Exists(injectedDir))
+                Directory.Delete(injectedDir, true);
+            Directory.CreateDirectory(injectedDir);
+
+            foreach (var item in AutoInjectItems)
+            {
+                item.Status = "In Progress";
+                try
+                {
+                    File.WriteAllText(
+                        Path.Combine(ddsDir, "src", "_file_path_.txt"),
+                        item.AssetFile.FilePath
+                    );
+
+                    var args = $"\"{item.TextureFile.FilePath}\"";
+
+                    var exitCode = await _processRunner.RunAsync(
+                        exePath: Path.Combine(ddsDir, "_3_inject.bat"),
+                        arguments: args,
+                        workingDirectory: ddsDir
+                    );
+
+                    if (exitCode != 0)
+                        throw new InvalidOperationException($"Batch вернулся с кодом {exitCode}");
+
+                    if (!string.IsNullOrEmpty(AutoInjectOutputPath))
+                    {
+                        foreach (var file in Directory.GetFiles(injectedDir))
+                            File.Copy(file, Path.Combine(AutoInjectOutputPath, Path.GetFileName(file)!), true);
+                    }
+
+                    item.Status = "Done";
+                }
+                catch (Exception ex)
+                {
+                    item.Status = "Error";
+                    _growlService.ShowError($"{item.Name}: {ex.Message}");
+                }
+            }
+
+            _growlService.ShowSuccess("Auto inject completed.");
+        }
+
+
+        public string AutoInjectOutputButtonText => string.IsNullOrEmpty(AutoInjectOutputPath)
+    ? "Выберите конечный путь"
+    : AutoInjectOutputPath;
+
+        partial void OnAutoInjectOutputPathChanged(string oldValue, string newValue)
+        {
+            OnPropertyChanged(nameof(AutoInjectOutputButtonText));
+        }
+
 
         [ObservableProperty]
         private FolderItem selectedFolderItem;
@@ -745,6 +798,13 @@ namespace TinyUnrealPackerExtended.ViewModels
             }
         }
 
+        [RelayCommand]
+        private void RemoveAutoInjectItem(AutoInjectItem item)
+        {
+            if (item != null && AutoInjectItems.Contains(item))
+                AutoInjectItems.Remove(item);
+        }
+
         private FolderItem BuildTreeItem(DirectoryInfo dir)
         {
             // Заменили на использование нового конструктора и установки иконки
@@ -928,6 +988,44 @@ namespace TinyUnrealPackerExtended.ViewModels
             InjectOutputPath = string.Empty;
             IsInjectBusy = false;
         }
+
+        private async Task<bool> TryPickSingleFileAsync(string filter, string title, ObservableCollection<FileItem> target)
+        {
+            var path = await _fileDialogService.PickFileAsync(filter: filter, title: title);
+            if (path is null) return false;
+            target.Clear();
+            target.Add(new FileItem
+            {
+                FileName = Path.GetFileName(path),
+                FilePath = path,
+                IconKind = PackIconMaterialKind.FileDocumentOutline
+            });
+            return true;
+        }
+
+        private async Task ExecuteWithBusyFlagAsync(
+    Func<CancellationToken, Task> operation,
+    Action<bool> setBusy,
+    CancellationToken cancellationToken)
+        {
+            try
+            {
+                setBusy(true);
+                await operation(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _growlService.ShowWarning("Операция отменена пользователем.");
+            }
+            catch (Exception ex)
+            {
+                _growlService.ShowError($"Ошибка: {ex.Message}");
+            }
+            finally
+            {
+                setBusy(false);
+            }
+        }
     }
 
     public class FileItem
@@ -961,6 +1059,16 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
 
+    }
+
+    public partial class AutoInjectItem : ObservableObject
+    {
+        public string Name { get; set; }
+        public FileItem AssetFile { get; set; }
+        public FileItem TextureFile { get; set; }
+
+        [ObservableProperty]
+        private string status;
     }
 
     public class BreadcrumbItem

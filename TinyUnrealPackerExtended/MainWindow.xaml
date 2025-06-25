@@ -389,6 +389,53 @@ BasedOn="{StaticResource SecondaryButtonStyle}">
                 </Grid>
             </Border>
         </DataTemplate>
+
+        <DataTemplate x:Key="AutoInjectItemTemplate">
+            <Border x:Name="Bd"
+          Background="White"
+          CornerRadius="6"
+          Padding="12"
+          Margin="0,8,0,0" Style="{StaticResource FileBorderStyle}">
+                <Border.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Удалить"
+                  Command="{Binding DataContext.RemoveAutoInjectItemCommand, Source={x:Reference RootWindow}}"
+                  CommandParameter="{Binding}"/>
+                    </ContextMenu>
+                </Border.ContextMenu>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <iconPacks:PackIconMaterial
+          Kind="FileDocumentOutline"
+          Width="24" Height="24"
+          VerticalAlignment="Center"
+          Grid.Column="0"/>
+                    <TextBlock
+          Text="{Binding Name}"
+          VerticalAlignment="Center"
+          Margin="12,0,0,0"
+          Grid.Column="1"
+          FontSize="14"
+          TextTrimming="CharacterEllipsis"/>
+                    <TextBlock
+          Text="{Binding Status}"
+          VerticalAlignment="Center"
+          Margin="12,0,0,0"
+          Grid.Column="2"
+          FontSize="14"/>
+                </Grid>
+            </Border>
+
+            <DataTemplate.Triggers>
+                <Trigger SourceName="Bd" Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Bd" Property="Background" Value="#e6f2ff"/>
+                </Trigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -894,6 +941,90 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
                 </Border>
             </TabItem>
 
+            <TabItem Header="Auto Injector">
+                <Border Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <!-- Обёртка для единственного дочернего элемента Border -->
+
+                        <!-- зону перетаскивания -->
+                        <hc:DashedBorder x:Name="AutoZone"
+                       AllowDrop="True"
+                       DragOver="AutoZone_DragOver"
+                       Drop="AutoZone_Drop"
+                       Style="{StaticResource AnimatedDashedDropZone}"
+                       Height="200"
+                       BorderBrush="#CCCCCC"
+                       BorderDashArray="3,1"
+                       BorderThickness="2">
+                            <Grid>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <!-- Экранирование амперсанда -->
+                                    <TextBlock Text="Drag &amp; Drop .uasset + .png файлы, чтобы загрузить"
+                       FontSize="16"
+                       Foreground="#888888"
+                       TextAlignment="Center"/>
+                                    <TextBlock Text="(файлы будут сгруппированы по имени)"
+                       FontSize="12"
+                       Foreground="#aaaaaa"
+                       TextAlignment="Center"/>
+                                    <Button Content="Выбрать файлы"
+                    Command="{Binding BrowseAutoFilesCommand}"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Margin="0,12,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </hc:DashedBorder>
+
+
+                            <Button Content="{Binding AutoInjectOutputButtonText}"
+              Command="{Binding BrowseAutoOutputCommand}"
+              Style="{StaticResource TrimmedSecondaryButtonStyle}" MinWidth="100" Width="Auto" Margin="0, 20, 0, 20"/>
+
+                        <!-- Кнопка запуска автоматического инжекта -->
+
+                        <Border Height="184" Margin="0, 0, 0, 0" Style="{StaticResource CardStyle}">
+                            <Grid Margin="-12,-14,-12,-14">
+
+                                <ScrollViewer
+            VerticalScrollBarVisibility="Auto"
+            HorizontalScrollBarVisibility="Disabled"
+            Margin="0,0,0,0">
+                                    <ItemsControl
+                ItemsSource="{Binding AutoInjectItems}"
+                ItemTemplate="{StaticResource AutoInjectItemTemplate}"
+                Margin="10"/>
+                                </ScrollViewer>
+                                <TextBlock
+Text="Пусто"
+HorizontalAlignment="Center"
+VerticalAlignment="Center"
+FontSize="20">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasAutoInjectItems}" Value="True">
+                                                    <!-- показываем, когда нет элементов -->
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+                        <StackPanel Orientation="Horizontal"
+                  HorizontalAlignment="Right"
+                  Margin="0,15,0,0">
+                            <Button Content="Start Auto Inject"
+                Command="{Binding ProcessAutoInjectCommand}"
+                Style="{StaticResource PrimaryButtonStyle}"/>
+                        </StackPanel>
+
+                    </StackPanel>
+                </Border>
+            </TabItem>
+
             <TabItem Header="Folder Editor">
                 <Border Style="{StaticResource CardStyle}" Padding="12">
                     <Grid>
@@ -1185,8 +1316,7 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
             Foreground="#333"/>
         </Button>
 
-        <Grid>
-            <!-- Ваш основной UI -->
+        <Grid Visibility="Visible"> <!--ПоменятЬ!-->
             <Canvas x:Name="GrowlContainer" IsHitTestVisible="True" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10, 75, 10, 10" />
         </Grid>
     </Grid>

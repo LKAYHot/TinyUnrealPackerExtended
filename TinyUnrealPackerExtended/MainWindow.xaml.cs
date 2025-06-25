@@ -153,6 +153,14 @@ namespace TinyUnrealPackerExtended
             });
         }
 
+        private void AutoZone_Drop(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
+            var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
+            mainWindowViewModel.LoadAutoFiles(paths);
+        }
+
+
         private void TextureZone_Drop(object sender, DragEventArgs e)
         {
             if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
@@ -165,6 +173,14 @@ namespace TinyUnrealPackerExtended
                     FilePath = p,
                     IconKind = PackIconMaterialKind.ImageOutline
                 });
+        }
+
+        private void AutoZone_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
+                        ? DragDropEffects.Copy
+                        : DragDropEffects.None;
+            e.Handled = true;
         }
 
         private void FolderItem_DragOver(object sender, DragEventArgs e)
