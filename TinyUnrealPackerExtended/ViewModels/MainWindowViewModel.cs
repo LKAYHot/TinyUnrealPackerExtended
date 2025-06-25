@@ -852,20 +852,16 @@ namespace TinyUnrealPackerExtended.ViewModels
     ObservableCollection<FolderItem> destCollection,
     int insertIndex)
         {
-            // удаляем из всех веток
             RemoveFromParent(FolderItems, source);
 
-            // корректируем insertIndex
             if (insertIndex < 0) insertIndex = 0;
             if (insertIndex > destCollection.Count) insertIndex = destCollection.Count;
 
-            // вставляем именно туда
             destCollection.Insert(insertIndex, source);
         }
 
         public void ReparentVisual(FolderItem source, FolderItem newParent)
         {
-            // удаляет source из любой ветки FolderItems
             RemoveFromParent(FolderItems, source);
             // сразу добавляет в конец newParent.Children
             newParent.Children.Add(source);
@@ -873,12 +869,10 @@ namespace TinyUnrealPackerExtended.ViewModels
 
         public void UpdateBreadcrumbs()
         {
-            // 1) Собираем полный путь в локальный список
             var all = new List<BreadcrumbItem>();
 
             if (string.IsNullOrWhiteSpace(RootFolder))
             {
-                // нет корня — очищаем
                 Breadcrumbs.Clear();
                 Overflow.Clear();
                 OnPropertyChanged(nameof(DisplayBreadcrumbs));
@@ -886,14 +880,12 @@ namespace TinyUnrealPackerExtended.ViewModels
                 return;
             }
 
-            // первая крошка — базовая папка
             all.Add(new BreadcrumbItem
             {
                 Name = Path.GetFileName(RootFolder.TrimEnd(Path.DirectorySeparatorChar)),
                 FullPath = RootFolder
             });
 
-            // если мы «зашли» глубже — добавляем вложенные сегменты
             if (!FolderEditorRootPath.Equals(RootFolder, StringComparison.OrdinalIgnoreCase))
             {
                 var rel = FolderEditorRootPath
@@ -913,12 +905,10 @@ namespace TinyUnrealPackerExtended.ViewModels
                 }
             }
 
-            // 2) Кладём всё в вашу ObservableCollection<BreadcrumbItem>
             Breadcrumbs.Clear();
             foreach (var b in all)
                 Breadcrumbs.Add(b);
 
-            // 3) Считаем Overflow (для «…»-меню) и оповещаем дисплей
             const int MAX_VISIBLE = 5;
             if (all.Count <= MAX_VISIBLE)
             {
@@ -926,14 +916,12 @@ namespace TinyUnrealPackerExtended.ViewModels
             }
             else
             {
-                // пропускаем первый и последние (MAX_VISIBLE-1)
                 Overflow = all
                     .Skip(1)
                     .Take(all.Count - MAX_VISIBLE + 1)
                     .ToList();
             }
 
-            // 4) Уведомляем об изменении DisplayBreadcrumbs и Overflow
             OnPropertyChanged(nameof(DisplayBreadcrumbs));
             OnPropertyChanged(nameof(Overflow));
         }
@@ -1041,7 +1029,6 @@ namespace TinyUnrealPackerExtended.ViewModels
         public string FullPath { get; set; }
         public bool IsDirectory { get; set; }
 
-        // <<< Добавляем здесь >>>
         public PackIconMaterialKind IconKind { get; set; }
 
         public FolderItem() { }
@@ -1049,7 +1036,6 @@ namespace TinyUnrealPackerExtended.ViewModels
         public ObservableCollection<FolderItem> Children { get; }
             = new ObservableCollection<FolderItem>();
 
-        // Можно добавить конструктор для удобства:
         public FolderItem(string name, string fullPath, bool isDirectory, PackIconMaterialKind icon)
         {
             Name = name;
