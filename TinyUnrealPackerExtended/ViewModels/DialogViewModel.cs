@@ -18,14 +18,25 @@ namespace TinyUnrealPackerExtended.ViewModels
         [ObservableProperty] private string primaryText;
         [ObservableProperty] private string secondaryText;
 
-        public DialogViewModel(string title, string message, DialogType type,
-                               string primary = "OK", string secondary = "Cancel")
+        [ObservableProperty] private bool isInputDialog;
+
+        [ObservableProperty] private string responseText = "";
+        public DialogViewModel(string title,
+                                   string message,
+                                   DialogType type,
+                                   string primary = "OK",
+                                   string secondary = "Cancel",
+                                   bool isInput = false,
+                                   string initialResponse = "")
         {
             Title = title;
             Message = message;
             DialogType = type;
             PrimaryText = primary;
             SecondaryText = secondary;
+
+            IsInputDialog = isInput;
+            ResponseText = initialResponse;
         }
 
         [RelayCommand] public void SecondaryButton()

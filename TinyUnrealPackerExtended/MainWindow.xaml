@@ -1274,6 +1274,28 @@ FontSize="20">
                                     </HierarchicalDataTemplate>
                                 </TreeView.Resources>
 
+                                <TreeView.InputBindings>
+                                    <KeyBinding Gesture="Delete"
+              Command="{Binding RemoveFolderItemCommand}"
+              CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
+
+                                    <KeyBinding Gesture="F2"
+              Command="{Binding RenameFolderItemCommand}"
+              CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
+
+                                    <KeyBinding Gesture="Ctrl+C"
+              Command="{Binding CopyFolderItemCommand}"
+              CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
+
+                                    <KeyBinding Gesture="Ctrl+X"
+              Command="{Binding CutFolderItemCommand}"
+              CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
+
+                                    <KeyBinding Gesture="Ctrl+V"
+              Command="{Binding PasteIntoFolderCommand}"
+              CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" Key="V" />
+                                </TreeView.InputBindings>
+
                                 <TreeView.ItemContainerStyle>
                                     <Style TargetType="TreeViewItem">
                                         <Setter Property="Background" Value="Transparent"/>

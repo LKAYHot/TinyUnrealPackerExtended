@@ -14,6 +14,7 @@
         AllowsTransparency="True"
         Background="Transparent">
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
         <!-- Тень, аналогичная CardStyle -->
         <DropShadowEffect x:Key="CardShadowEffect"
                       BlurRadius="10"
@@ -147,7 +148,12 @@
                  Margin="0,0,0,16"
                  TextAlignment="Center"/>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBox Text="{Binding ResponseText, UpdateSourceTrigger=PropertyChanged}"
+           Visibility="{Binding IsInputDialog, Converter={StaticResource BoolToVis}}"
+           Margin="0,8"
+           MinWidth="200"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <Button Content="{Binding SecondaryText}"
                 Command="{Binding SecondaryButtonCommand}"
                 Style="{StaticResource SecondaryButtonStyle}"

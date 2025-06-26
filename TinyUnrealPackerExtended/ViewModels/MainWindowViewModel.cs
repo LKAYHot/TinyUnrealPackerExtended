@@ -459,7 +459,7 @@ namespace TinyUnrealPackerExtended.ViewModels
                             FileName = System.IO.Path.GetFileName(tex.Path),
                             FilePath = tex.Path
                         },
-                        Status = "Ready"
+                        Status = "Загружено"
                     });
                 }
             }
@@ -509,7 +509,7 @@ namespace TinyUnrealPackerExtended.ViewModels
 
             foreach (var item in AutoInjectItems)
             {
-                item.Status = "In Progress";
+                item.Status = "В процессе...";
                 try
                 {
                     File.WriteAllText(
@@ -534,16 +534,16 @@ namespace TinyUnrealPackerExtended.ViewModels
                             File.Copy(file, Path.Combine(AutoInjectOutputPath, Path.GetFileName(file)!), true);
                     }
 
-                    item.Status = "Done";
+                    item.Status = "Готово";
                 }
                 catch (Exception ex)
                 {
-                    item.Status = "Error";
+                    item.Status = "Ошибка";
                     _growlService.ShowError($"{item.Name}: {ex.Message}");
                 }
             }
 
-            _growlService.ShowSuccess("Auto inject completed.");
+            _growlService.ShowSuccess("Автоинжект закончен.");
         }
 
 
@@ -647,12 +647,19 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             if (item == null) return;
 
-            // Запрашиваем новое имя через стандартное InputBox
-            string prompt = "Введите новое имя для '" + item.Name + "'";
             string title = "Переименовать";
-            // Используем Microsoft.VisualBasic для InputBox
-            string newName = Microsoft.VisualBasic.Interaction.InputBox(prompt, title, item.Name);
-            if (string.IsNullOrWhiteSpace(newName) || newName == item.Name) return;
+            string message = $"Введите новое имя для «{item.Name}»";
+
+            string? newName = _dialog.ShowInputDialog(
+                title: title,
+                message: message,
+                initialText: item.Name,
+                primaryText: "Переименовать",
+                secondaryText: "Отмена"
+            );
+
+            if (string.IsNullOrWhiteSpace(newName) || newName == item.Name)
+                return;
 
             var newPath = Path.Combine(Path.GetDirectoryName(item.FullPath)!, newName);
             try
