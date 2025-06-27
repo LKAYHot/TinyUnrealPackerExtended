@@ -73,33 +73,51 @@ namespace TinyUnrealPackerExtended.ViewModels
         [ObservableProperty] public ObservableCollection<BreadcrumbItem> breadcrumbs = new();
         [ObservableProperty] private string rootFolder;
 
-        const int MAX_VISIBLE = 5;
+        private int _maxVisible = int.MaxValue;
+        public int MaxVisible
+        {
+            get => _maxVisible;
+            set
+            {
+                if (_maxVisible != value)
+                {
+                    _maxVisible = value;
+                    OnPropertyChanged();
+                    UpdateBreadcrumbs();
+                }
+            }
+        }
 
         public IEnumerable<BreadcrumbItem> DisplayBreadcrumbs
         {
             get
             {
                 var all = Breadcrumbs.ToList();
-                if (all.Count <= MAX_VISIBLE)
+                int visible = Math.Min(all.Count, Math.Max(4, MaxVisible));
+                if (all.Count <= visible)
                     return all;
 
-                var first = all.First();
-                var lastItems = all.Skip(all.Count - (MAX_VISIBLE - 1)).ToList();
+                // формируем список скрытых (overflow)
+                Overflow = all
+                    .Skip(1)
+                    .Take(all.Count - visible + 1)
+                    .ToList();
 
-                // сохраняем скрытые внутрь «…» списка
-                Overflow = all.Skip(1)
-                              .Take(all.Count - MAX_VISIBLE + 1)
-                              .ToList();
-
-                var result = new List<BreadcrumbItem> { first };
-                // «…»
+                var result = new List<BreadcrumbItem>();
+                // всегда первый
+                result.Add(all.First());
+                // кнопка «…»
                 result.Add(new BreadcrumbItem { Name = "…", IsOverflow = true });
+                // последние visible-1 элементов
+                var lastItems = all.Skip(all.Count - (visible - 1)).ToList();
                 result.AddRange(lastItems);
                 return result;
             }
         }
 
         public List<BreadcrumbItem> Overflow { get; private set; } = new();
+
+        public bool CanEditFolderEditor => PakFiles.Any();
 
 
         public MainWindowViewModel(IDialogService dialogService, GrowlService growlService, IFileDialogService fileDialogService,
@@ -116,6 +134,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             InjectFiles.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasInjectFile));
             TextureFiles.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasTextureFiles));
             AutoInjectItems.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasAutoInjectItems));
+            PakFiles.CollectionChanged += (_, __) => OnPropertyChanged(nameof(CanEditFolderEditor));
             _processRunner = processRunner;
             _fileSystemService = fileSystemService;
         }
@@ -325,6 +344,62 @@ namespace TinyUnrealPackerExtended.ViewModels
 
             }, b => IsPakBusy = b, token);
         }
+
+        [RelayCommand]
+        private Task ProcessPakCompressedAsync(CancellationToken token)
+        {
+            if (!PakFiles.Any())
+            {
+                PakStatusMessage = "Укажите папку для упаковки.";
+                _growlService.ShowWarning(PakStatusMessage);
+                return Task.CompletedTask;
+            }
+
+            return ExecuteWithBusyFlagAsync(async ct =>
+            {
+                var folder = PakFiles.First().FilePath;
+                var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                var exeDir = Path.Combine(baseDir, "UnrealPak");
+                var exePath = Path.Combine(exeDir, "UnrealPak.exe");
+                var listFile = Path.Combine(exeDir, "filelist.txt");
+
+                // Генерируем список
+                await File.WriteAllTextAsync(
+                    listFile,
+                    $"\"{folder}\\*.*\" \"..\\..\\..\\*.*\"",
+                    ct
+                );
+
+                // Формируем путь пак-файла
+                var pakName = Path.GetFileName(folder) + ".pak";
+                var pakPath = Path.Combine(Path.GetDirectoryName(folder)!, pakName);
+
+                // Здесь добавляем -compress
+                var args = $"\"{pakPath}\" -create=\"{listFile}\" -compress";
+
+                // Запускаем UnrealPak
+                var exitCode = await _processRunner.RunAsync(
+                    exePath,
+                    arguments: args,
+                    workingDirectory: exeDir,
+                    cancellationToken: ct
+                );
+
+                if (exitCode == 0)
+                {
+                    PakStatusMessage = $"Упаковано с компрессором: {pakPath}";
+                    _growlService.ShowSuccess(PakStatusMessage);
+                }
+                else
+                {
+                    PakStatusMessage = $"Ошибка упаковки (compress) — код {exitCode}";
+                    _growlService.ShowError(PakStatusMessage);
+                }
+            },
+            b => IsPakBusy = b,
+            token);
+        }
+
 
         [RelayCommand]
         private async Task BrowseOriginalUassetAsync()
@@ -629,11 +704,32 @@ namespace TinyUnrealPackerExtended.ViewModels
             }
         }
 
+        private FolderItem? FindFolderItem(string path, IEnumerable<FolderItem> source)
+        {
+            foreach (var node in source)
+            {
+                if (node.FullPath.Equals(path, StringComparison.OrdinalIgnoreCase))
+                    return node;
+                if (node.Children != null)
+                {
+                    var child = FindFolderItem(path, node.Children);
+                    if (child != null)
+                        return child;
+                }
+            }
+            return null;
+        }
+
         [RelayCommand]
         private void NavigateToBreadcrumb(string path)
         {
             FolderEditorRootPath = path;
-            LoadFolderEditor();
+
+            var found = FindFolderItem(path, FolderItems);
+            if (found != null)
+                SelectedFolderItem = found;
+
+            UpdateBreadcrumbs();
         }
 
         [RelayCommand]
@@ -645,11 +741,15 @@ namespace TinyUnrealPackerExtended.ViewModels
         [RelayCommand]
         private void RenameFolderItem(FolderItem item)
         {
-            if (item == null) return;
+            if (item == null)
+                return;
 
+            // Сохраняем старый путь для рекурсивного обновления потомков
+            var oldPath = item.FullPath;
+
+            // Спрашиваем новое имя у пользователя
             string title = "Переименовать";
             string message = $"Введите новое имя для «{item.Name}»";
-
             string? newName = _dialog.ShowInputDialog(
                 title: title,
                 message: message,
@@ -657,20 +757,27 @@ namespace TinyUnrealPackerExtended.ViewModels
                 primaryText: "Переименовать",
                 secondaryText: "Отмена"
             );
-
             if (string.IsNullOrWhiteSpace(newName) || newName == item.Name)
                 return;
 
-            var newPath = Path.Combine(Path.GetDirectoryName(item.FullPath)!, newName);
+            // Формируем новый путь на диске
+            var newPath = Path.Combine(Path.GetDirectoryName(oldPath)!, newName);
+
             try
             {
+                // Физически переименовываем файл или папку
                 if (item.IsDirectory)
-                    Directory.Move(item.FullPath, newPath);
+                    Directory.Move(oldPath, newPath);
                 else
-                    File.Move(item.FullPath, newPath);
+                    File.Move(oldPath, newPath);
 
+                // 1) Обновляем свойства самого узла — теперь они вызовут PropertyChanged
                 item.Name = newName;
                 item.FullPath = newPath;
+
+                // 2) Рекурсивно обновляем FullPath у всех вложенных элементов
+                if (item.IsDirectory)
+                    UpdateChildrenPaths(item, oldPath, newPath);
             }
             catch (Exception ex)
             {
@@ -681,6 +788,22 @@ namespace TinyUnrealPackerExtended.ViewModels
                     primaryText: "ОК",
                     secondaryText: null
                 );
+            }
+        }
+
+        // Вспомогательный метод — должен находиться в том же классе MainWindowViewModel
+        private void UpdateChildrenPaths(FolderItem parent, string oldParentPath, string newParentPath)
+        {
+            foreach (var child in parent.Children)
+            {
+                // Новый путь строим на основе неизменившегося child.Name
+                var newChildPath = Path.Combine(newParentPath, child.Name);
+                child.FullPath = newChildPath;
+
+                if (child.IsDirectory)
+                    UpdateChildrenPaths(child,
+                                        oldParentPath: Path.Combine(oldParentPath, child.Name),
+                                        newParentPath: newChildPath);
             }
         }
 
@@ -916,8 +1039,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             foreach (var b in all)
                 Breadcrumbs.Add(b);
 
-            const int MAX_VISIBLE = 5;
-            if (all.Count <= MAX_VISIBLE)
+            if (all.Count <= MaxVisible)
             {
                 Overflow.Clear();
             }
@@ -925,7 +1047,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             {
                 Overflow = all
                     .Skip(1)
-                    .Take(all.Count - MAX_VISIBLE + 1)
+                    .Take(all.Count - MaxVisible + 1)
                     .ToList();
             }
 
@@ -1030,18 +1152,17 @@ namespace TinyUnrealPackerExtended.ViewModels
         public PackIconMaterialKind IconKind { get; set; } = PackIconMaterialKind.FileDocumentOutline;
     }
 
-    public class FolderItem : ObservableObject
+    public partial class FolderItem : ObservableObject
     {
-        public string Name { get; set; }
-        public string FullPath { get; set; }
+        [ObservableProperty] private string name;
+        [ObservableProperty] private string fullPath;
         public bool IsDirectory { get; set; }
-
         public PackIconMaterialKind IconKind { get; set; }
-
-        public FolderItem() { }
 
         public ObservableCollection<FolderItem> Children { get; }
             = new ObservableCollection<FolderItem>();
+
+        public FolderItem() { }
 
         public FolderItem(string name, string fullPath, bool isDirectory, PackIconMaterialKind icon)
         {
@@ -1051,7 +1172,14 @@ namespace TinyUnrealPackerExtended.ViewModels
             IconKind = icon;
         }
 
+        // ← Добавляем эти два свойства ↓
+        public string DateModified
+            => File.GetLastWriteTime(FullPath).ToString("g");
 
+        public string Size
+            => !IsDirectory
+               ? $"{new FileInfo(FullPath).Length / 1024:n0} KB"
+               : string.Empty;
     }
 
     public partial class AutoInjectItem : ObservableObject

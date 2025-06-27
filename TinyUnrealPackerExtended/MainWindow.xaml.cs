@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using HandyControl.Controls;
 using MahApps.Metro.IconPacks;
 using TinyUnrealPackerExtended.Services;
@@ -22,6 +23,9 @@ namespace TinyUnrealPackerExtended
         private FolderItem _lastTargetFolderItem;
         private Point _dragStartPoint;
         private TreeView _tree;
+
+        private List<string> _expandedPaths = new();
+        private double _savedScrollOffset;
 
         public MainWindow()
         {
@@ -194,7 +198,6 @@ namespace TinyUnrealPackerExtended
                 e.Effects = DragDropEffects.None;
             e.Handled = true;
 
-            // 2) Только если тянем наш FolderItem
             if (_draggedFolderItem == null) return;
 
             // 3) Находим узел под курсором
@@ -319,11 +322,171 @@ namespace TinyUnrealPackerExtended
         {
             if (e.NewValue is FolderItem fi && fi.IsDirectory)
             {
-                // обновляем текущий путь для хлебных крошек
+                // Обновляем VM
+                mainWindowViewModel.SelectedFolderItem = fi;
                 mainWindowViewModel.FolderEditorRootPath = fi.FullPath;
                 mainWindowViewModel.UpdateBreadcrumbs();
             }
         }
+
+        private void ExpandAndSelectPath(string fullPath)
+        {
+            // 1) Получаем корневой FolderItem (он у вас добавлен один раз в BrowsePakFolderAsync)
+            var rootItem = mainWindowViewModel.FolderItems.FirstOrDefault();
+            if (rootItem == null) return;
+
+            // 2) Разбиваем путь на сегменты относительно корня
+            var segments = fullPath
+                .Substring(rootItem.FullPath.Length)
+                .Trim(Path.DirectorySeparatorChar)
+                .Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+
+            // 3) Начинаем с корневого контейнера
+            ItemsControl container = FolderTree;
+            FolderItem currentItem = rootItem;
+
+            // 4) Раскрываем корень
+            var currentContainer = (TreeViewItem)FolderTree.ItemContainerGenerator
+                .ContainerFromItem(rootItem);
+            if (currentContainer == null) return;
+            currentContainer.IsExpanded = true;
+
+            // 5) Идём по сегментам, раскрывая каждый уровень
+            foreach (var seg in segments)
+            {
+                // находим следующий FolderItem в модели
+                var nextItem = currentItem.Children
+                    .FirstOrDefault(f => f.Name.Equals(seg, StringComparison.OrdinalIgnoreCase));
+                if (nextItem == null) break;
+
+                // даём время WPF сгенерировать контейнер
+                currentContainer.UpdateLayout();
+
+                // получаем TreeViewItem для этого элемента
+                var nextContainer = (TreeViewItem)currentContainer
+                    .ItemContainerGenerator
+                    .ContainerFromItem(nextItem);
+                if (nextContainer == null) break;
+
+                // раскрываем и спускаемся дальше
+                nextContainer.IsExpanded = true;
+                currentItem = nextItem;
+                currentContainer = nextContainer;
+            }
+
+            // 6) В конце — выделяем текущий элемент
+            currentContainer.IsSelected = true;
+            currentContainer.BringIntoView();
+            currentContainer.Focus();
+        }
+
+        /// <summary>
+        /// Обработчик двойного клика по элементу в Details (ListView).
+        /// Теперь он просто вызывает ExpandAndSelectPath.
+        /// </summary>
+        private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ListViewItem lvi && lvi.DataContext is FolderItem item)
+            {
+                if (item.IsDirectory)
+                {
+                    // Обновляем VM (хлебные крошки, прочее)
+                    mainWindowViewModel.NavigateToBreadcrumbCommand.Execute(item.FullPath);
+
+                    // Раскрываем и выделяем в дереве
+                    ExpandAndSelectPath(item.FullPath);
+                }
+                else
+                {
+                    mainWindowViewModel.OpenFolderCommand.Execute(item);
+                }
+            }
+        }
+
+
+        private void RefreshFolder_Click(object sender, RoutedEventArgs e)
+        {
+            SaveTreeState();
+            mainWindowViewModel.RefreshFolderCommand.Execute(null);
+            // после перерисовки восстановим
+            Dispatcher.BeginInvoke(new Action(RestoreTreeState), DispatcherPriority.Loaded);
+        }
+
+        private void SaveTreeState()
+        {
+            _expandedPaths.Clear();
+            CollectExpanded(FolderTree.Items, "");
+            _savedScrollOffset = FolderTreeScrollViewer.VerticalOffset;
+        }
+
+        private void CollectExpanded(ItemCollection items, string parentPath)
+        {
+            foreach (var obj in items)
+            {
+                if (obj is FolderItem fi)
+                {
+                    var tvi = (TreeViewItem)FolderTree.ItemContainerGenerator.ContainerFromItem(fi)
+                              ?? FindContainerRecursive(FolderTree, fi);
+                    var full = fi.FullPath;
+                    if (tvi != null && tvi.IsExpanded)
+                    {
+                        _expandedPaths.Add(full);
+                        // обходим детей, передавая текущий
+                        CollectExpanded(tvi.Items, full);
+                    }
+                }
+            }
+        }
+
+        private TreeViewItem FindContainerRecursive(ItemsControl parent, object item)
+        {
+            foreach (var obj in parent.Items)
+            {
+                var tvi = (TreeViewItem)parent.ItemContainerGenerator.ContainerFromItem(obj);
+                if (tvi == null) continue;
+                if (obj == item) return tvi;
+                var child = FindContainerRecursive(tvi, item);
+                if (child != null) return child;
+            }
+            return null;
+        }
+
+        private void RestoreTreeState()
+        {
+            foreach (var path in _expandedPaths)
+                ExpandToPath(FolderTree.Items, path);
+            FolderTreeScrollViewer.ScrollToVerticalOffset(_savedScrollOffset);
+        }
+
+        private bool ExpandToPath(ItemCollection items, string targetPath)
+        {
+            foreach (var obj in items)
+            {
+                if (obj is FolderItem fi)
+                {
+                    var tvi = (TreeViewItem)FolderTree.ItemContainerGenerator.ContainerFromItem(fi)
+                              ?? FindContainerRecursive(FolderTree, fi);
+                    if (fi.FullPath == targetPath)
+                    {
+                        if (tvi != null)
+                            tvi.IsExpanded = true;
+                        return true;
+                    }
+                    // рекурсивно ищем в детях
+                    if (tvi != null && ExpandToPath(tvi.Items, targetPath))
+                    {
+                        tvi.IsExpanded = true;
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+
+
+
+
 
         private void OnAnimatedDropZoneLoaded(object sender, RoutedEventArgs e)
         {
