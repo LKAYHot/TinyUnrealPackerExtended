@@ -944,9 +944,7 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
             <TabItem Header="Auto Injector">
                 <Border Style="{StaticResource CardStyle}">
                     <StackPanel>
-                        <!-- Обёртка для единственного дочернего элемента Border -->
 
-                        <!-- зону перетаскивания -->
                         <hc:DashedBorder x:Name="AutoZone"
                        AllowDrop="True"
                        DragOver="AutoZone_DragOver"
