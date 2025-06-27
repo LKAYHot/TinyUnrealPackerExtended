@@ -322,7 +322,6 @@ namespace TinyUnrealPackerExtended
         {
             if (e.NewValue is FolderItem fi && fi.IsDirectory)
             {
-                // Обновляем VM
                 mainWindowViewModel.SelectedFolderItem = fi;
                 mainWindowViewModel.FolderEditorRootPath = fi.FullPath;
                 mainWindowViewModel.UpdateBreadcrumbs();

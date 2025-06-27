@@ -23,6 +23,7 @@
 
         <local:FileNameOnlyConverter x:Key="FileNameOnlyConverter"/>
         <local2:IsLastBreadcrumbConverter x:Key="IsLastBreadcrumbConverter"/>
+        <local2:NullToVisibilityConverter x:Key="NullToVis"/>
 
 
         <Style x:Key="ListViewItemWithMenu"
@@ -48,6 +49,12 @@
         Command="{Binding OpenFolderCommand}"
         CommandParameter="{Binding PlacementTarget.DataContext,
                                   RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+
+                        <MenuItem
+    Header="Открыть картинку"
+    Command="{Binding PreviewTextureCommand}"
+    CommandParameter="{Binding PlacementTarget.DataContext,
+                      RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
 
                         <Separator/>
 
@@ -1218,6 +1225,7 @@ FontSize="20">
                             <!-- Breadcrumbs -->
                             <RowDefinition Height="*"/>
                             <!-- Content: TreeView + Details -->
+                            <!-- Preview -->
                         </Grid.RowDefinitions>
 
                         <!-- Toolbar -->
@@ -1448,8 +1456,12 @@ FontSize="20">
                                 </TreeView.ItemContainerStyle>
                             </TreeView>
                         </ScrollViewer>
+                        
+                        
 
+                        
                         <!-- Правый столбец: Details ListView -->
+                        <Grid Grid.Row="2" Grid.Column="1">
                         <ListView Grid.Row="2" Grid.Column="1"
           ItemsSource="{Binding SelectedFolderItem.Children}" ItemContainerStyle="{StaticResource ListViewItemWithMenu}">
                             <!-- Существующий GridView -->
@@ -1482,6 +1494,23 @@ FontSize="20">
                                 </GridView>
                             </ListView.View>
                         </ListView>
+
+                            <Border
+          VerticalAlignment="Stretch"
+          HorizontalAlignment="Stretch"
+          Margin="0"
+          Background="White"
+          CornerRadius="4"
+          Padding="4"
+          Visibility="{Binding SelectedTexturePreview, Converter={StaticResource NullToVis}}"
+          Panel.ZIndex="1">
+                                <Image Source="{Binding SelectedTexturePreview}"
+           Stretch="UniformToFill"
+           HorizontalAlignment="Stretch"
+           VerticalAlignment="Stretch"/>
+                            </Border>
+
+                        </Grid>
                     </Grid>
                 </Border>
             </TabItem>

@@ -6,13 +6,22 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HandyControl.Controls;
 using MahApps.Metro.IconPacks;
 using Microsoft.Win32;
+using CUE4Parse.FileProvider;       
+using CUE4Parse.UE4.Versions;     
+using CUE4Parse.UE4.Assets.Exports; 
 using TinyUnrealPackerExtended.Interfaces;
 using TinyUnrealPackerExtended.Services;
+using CUE4Parse.UE4.Assets.Exports.Texture;
+using CUE4Parse_Conversion;
+using CUE4Parse_Conversion.Textures;
+using System.Windows.Media.Imaging;
+using SkiaSharp;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
@@ -72,6 +81,8 @@ namespace TinyUnrealPackerExtended.ViewModels
 
         [ObservableProperty] public ObservableCollection<BreadcrumbItem> breadcrumbs = new();
         [ObservableProperty] private string rootFolder;
+
+        [ObservableProperty] private ImageSource _selectedTexturePreview;
 
         private int _maxVisible = int.MaxValue;
         public int MaxVisible
@@ -659,6 +670,8 @@ namespace TinyUnrealPackerExtended.ViewModels
             });
         }
 
+
+
         [RelayCommand]
         private void AddFolderToFolder()
         {
@@ -737,6 +750,176 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             LoadFolderEditor();
         }
+
+        partial void OnSelectedFolderItemChanged(FolderItem newItem)
+        {
+            if (SelectedTexturePreview != null)
+            {
+                SelectedTexturePreview = null;
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+            }
+        }
+
+        private async Task LoadTexturePreviewAsync(string uassetPath)
+        {
+            try
+            {
+                var imageSource = await Task.Run(() =>
+                {
+                    // 1) Папка, где лежит ваш .uasset
+                    var fullPath = Path.GetFullPath(uassetPath);
+                    var assetDir = Path.GetDirectoryName(fullPath)!;
+                    var fileName = Path.GetFileName(fullPath);
+
+                    // 2) Создаём провайдер только для этой папки (без рекурсии!)
+                    var provider = new DefaultFileProvider(
+                        assetDir,
+                        SearchOption.TopDirectoryOnly,                   // только одна папка
+                        new VersionContainer(EGame.GAME_UE4_LATEST)
+                    );
+                    provider.Initialize();  // будет индексировать только файлы рядом с uasset
+
+                    // 3) Находим единственный ключ, оканчивающийся нашим именем
+                    var key = provider.Files.Keys
+                                  .FirstOrDefault(k => k.EndsWith(fileName, StringComparison.OrdinalIgnoreCase));
+                    if (key == null)
+                        throw new FileNotFoundException($"Asset не найден: {fileName}");
+
+                    // 4) Загружаем пакет и вытаскиваем первую текстуру
+                    var package = provider.LoadPackage(key);
+                    var texture = package.ExportsLazy
+                                          .Select(l => l.Value)
+                                          .OfType<UTexture2D>()
+                                          .FirstOrDefault();
+                    if (texture == null)
+                        return null;
+
+                    // 5) Декодируем в SKBitmap и сразу его освобождаем по окончании блока
+                    using var skBitmap = texture.Decode(ETexturePlatform.DesktopMobile);
+                    if (skBitmap == null)
+                        return null;
+
+                    // 6) Конвертируем SKBitmap → WPF BitmapImage без лишних временных буферов
+                    using var skData = skBitmap.Encode(SKEncodedImageFormat.Png, 100);
+                    using var ms = new MemoryStream(skData.ToArray());
+
+                    var bmp = new BitmapImage();
+                    bmp.BeginInit();
+                    bmp.StreamSource = ms;
+                    bmp.CacheOption = BitmapCacheOption.OnLoad;
+                    bmp.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                    bmp.EndInit();
+                    bmp.Freeze();
+
+                    return (ImageSource)bmp;
+                });
+
+                SelectedTexturePreview = imageSource;
+            }
+            catch
+            {
+                SelectedTexturePreview = null;
+            }
+        }
+
+
+
+        public async Task<BitmapImage> ExtractTextureAsync(string uassetPath)
+        {
+            return await Task.Run(() =>
+            {
+                // 1) normalize paths
+                var fullPath = Path.GetFullPath(uassetPath);
+                var assetDir = Path.GetDirectoryName(fullPath)!;
+                var fileName = Path.GetFileName(fullPath);
+
+                // 2) provider scoping
+                using var provider = new DefaultFileProvider(
+                    assetDir,
+                    SearchOption.TopDirectoryOnly,
+                    new VersionContainer(EGame.GAME_UE4_LATEST)
+                );
+                provider.Initialize();
+
+                // 3) find our package key
+                var key = provider.Files.Keys
+                             .FirstOrDefault(k => k.EndsWith(fileName, StringComparison.OrdinalIgnoreCase))
+                          ?? throw new FileNotFoundException($"Asset not found: {fileName}");
+
+                // 4) load package & grab first Texture2D
+                var pkg = provider.LoadPackage(key);
+                var texture = pkg.ExportsLazy
+                                 .Select(e => e.Value)
+                                 .OfType<UTexture2D>()
+                                 .FirstOrDefault();
+                if (texture == null) return null;
+
+                // 5) decode to SKBitmap
+                using var skBmp = texture.Decode(ETexturePlatform.DesktopMobile);
+                if (skBmp == null) return null;
+
+                // 5.1) down-sample if larger than 512×512
+                const int MAX = 512;
+                SKBitmap toEncode = skBmp;
+                if (skBmp.Width > MAX || skBmp.Height > MAX)
+                {
+                    float scale = Math.Min((float)MAX / skBmp.Width, (float)MAX / skBmp.Height);
+                    int w = (int)(skBmp.Width * scale), h = (int)(skBmp.Height * scale);
+                    var resized = skBmp.Resize(new SKImageInfo(w, h), SKFilterQuality.Medium)
+                                  ?? skBmp; // fallback
+                    toEncode = resized;
+                }
+
+                // 6) encode to PNG bytes
+                using var imgData = toEncode.Encode(SKEncodedImageFormat.Png, 100);
+                if (toEncode != skBmp) toEncode.Dispose();
+
+                // 7) stream into WPF BitmapImage
+                using var ms = new MemoryStream(imgData.ToArray());
+                var bmp = new BitmapImage();
+                bmp.BeginInit();
+                bmp.StreamSource = ms;
+                bmp.CacheOption = BitmapCacheOption.OnLoad;
+                bmp.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+                bmp.EndInit();
+                bmp.Freeze();
+
+                return bmp;
+            });
+        }
+
+
+        [RelayCommand]
+        private async Task PreviewTextureAsync(FolderItem item)
+        {
+            // guard: must be a .uasset file
+            if (item == null || item.IsDirectory ||
+                !Path.GetExtension(item.FullPath).Equals(".uasset", StringComparison.OrdinalIgnoreCase))
+            {
+                _growlService.ShowWarning("Выберите .uasset с текстурой");
+                return;
+            }
+
+            BitmapImage bmp;
+            try
+            {
+                // reuse your extractor
+                bmp = await ExtractTextureAsync(item.FullPath);
+                if (bmp == null) throw new InvalidOperationException();
+            }
+            catch
+            {
+                _growlService.ShowError("Не удалось извлечь изображение из .uasset");
+                return;
+            }
+
+            // set the placeholder-bound property
+            SelectedTexturePreview = bmp;
+        }
+
+
 
         [RelayCommand]
         private void RenameFolderItem(FolderItem item)
