@@ -8,16 +8,14 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MahApps.Metro.IconPacks;
-using TinyUnrealPackerExtended.Services;
 using TinyUnrealPackerExtended.Interfaces;
+using TinyUnrealPackerExtended.Services;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
-    public partial class LocresViewModel : ObservableObject
+    public partial class LocresViewModel : ViewModelBase
     {
         private readonly LocresService _locresService;
-        private readonly GrowlService _growlService;
-        private readonly IFileDialogService _fileDialogService;
 
         public ObservableCollection<FileItem> LocresFiles { get; } = new();
         public ObservableCollection<FileItem> OriginalLocresFiles { get; } = new();
@@ -32,17 +30,19 @@ namespace TinyUnrealPackerExtended.ViewModels
             LocresService locresService,
             GrowlService growlService,
             IFileDialogService fileDialogService)
+            : base(fileDialogService, growlService)
         {
             _locresService = locresService;
-            _growlService = growlService;
-            _fileDialogService = fileDialogService;
 
             LocresFiles.CollectionChanged += OnLocresCollectionsChanged;
             OriginalLocresFiles.CollectionChanged += OnLocresCollectionsChanged;
         }
 
         private void OnLocresCollectionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-            => IsLocresFileDropped = LocresFiles.Count > 0 || OriginalLocresFiles.Count > 0;
+        {
+            IsLocresFileDropped = LocresFiles.Count > 0
+                               || OriginalLocresFiles.Count > 0;
+        }
 
         [RelayCommand]
         private async Task BrowseLocresInputAsync()
@@ -59,8 +59,8 @@ namespace TinyUnrealPackerExtended.ViewModels
                     target: LocresFiles))
             {
                 var ext = Path.GetExtension(LocresFiles.First().FilePath)
-                               .ToLowerInvariant();
-                IsCsvFileDropped = ext == ".csv";
+                              .ToLowerInvariant();
+                IsCsvFileDropped = (ext == ".csv");
             }
         }
 
@@ -88,7 +88,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             if (LocresFiles.Count == 0)
             {
                 LocresStatusMessage = "Ошибка: укажите файл для обработки.";
-                _growlService.ShowWarning(LocresStatusMessage);
+                ShowWarning(LocresStatusMessage);
                 return Task.CompletedTask;
             }
 
@@ -112,9 +112,9 @@ namespace TinyUnrealPackerExtended.ViewModels
                 }
 
                 LocresOutputPath = output;
-                _growlService.ShowSuccess(LocresStatusMessage);
+                ShowSuccess(LocresStatusMessage);
             },
-            b => IsLocresBusy = b,
+            setBusy: b => IsLocresBusy = b,
             cancellationToken: token);
         }
 
@@ -128,49 +128,6 @@ namespace TinyUnrealPackerExtended.ViewModels
             IsLocresBusy = false;
             LocresStatusMessage = string.Empty;
             LocresOutputPath = string.Empty;
-        }
-
-        private async Task<bool> TryPickSingleFileAsync(
-            string filter,
-            string title,
-            ObservableCollection<FileItem> target)
-        {
-            var path = await _fileDialogService.PickFileAsync(filter, title);
-            if (path is null)
-                return false;
-
-            target.Clear();
-            target.Add(new FileItem
-            {
-                FileName = Path.GetFileName(path),
-                FilePath = path,
-                IconKind = PackIconMaterialKind.FileDocumentOutline
-            });
-            return true;
-        }
-
-        private async Task ExecuteWithBusyFlagAsync(
-            Func<CancellationToken, Task> operation,
-            Action<bool> setBusy,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                setBusy(true);
-                await operation(cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _growlService.ShowWarning("Операция отменена пользователем.");
-            }
-            catch (Exception ex)
-            {
-                _growlService.ShowError($"Ошибка: {ex.Message}");
-            }
-            finally
-            {
-                setBusy(false);
-            }
         }
 
         [RelayCommand]

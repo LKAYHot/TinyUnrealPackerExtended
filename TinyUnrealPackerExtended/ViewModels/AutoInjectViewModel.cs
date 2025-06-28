@@ -6,15 +6,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Win32;
 using TinyUnrealPackerExtended.Interfaces;
 using TinyUnrealPackerExtended.Services;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
-    public partial class AutoInjectViewModel : ObservableObject
+    public partial class AutoInjectViewModel : ViewModelBase
     {
-        private readonly IFileDialogService _fileDialogService;
-        private readonly GrowlService _growlService;
         private readonly IProcessRunner _processRunner;
 
         public ObservableCollection<AutoInjectItem> AutoInjectItems { get; } = new();
@@ -33,40 +32,31 @@ namespace TinyUnrealPackerExtended.ViewModels
             IFileDialogService fileDialogService,
             GrowlService growlService,
             IProcessRunner processRunner)
+            : base(fileDialogService, growlService)
         {
-            _fileDialogService = fileDialogService;
-            _growlService = growlService;
             _processRunner = processRunner;
 
-            // Обновляем отображение кнопки при смене пути
             PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(AutoInjectOutputPath))
                     OnPropertyChanged(nameof(AutoInjectOutputButtonText));
             };
 
-            // Подписка для обновления HasAutoInjectItems
-            AutoInjectItems.CollectionChanged += (_, __) =>
-                OnPropertyChanged(nameof(HasAutoInjectItems));
+            AutoInjectItems.CollectionChanged += (_, __)
+                => OnPropertyChanged(nameof(HasAutoInjectItems));
         }
 
-        /// <summary>
-        /// Загрузка пар файлов для AutoInject (поддерживает Drag&Drop и кнопку)
-        /// </summary>
         public void LoadAutoFiles(string[] paths)
         {
-            if (paths == null || paths.Length == 0)
-                return;
+            if (paths == null || paths.Length == 0) return;
 
             var groups = paths
-                .Select(p => new { Path = p, Base = System.IO.Path.GetFileNameWithoutExtension(p), Ext = System.IO.Path.GetExtension(p).ToLowerInvariant() })
+                .Select(p => new { Path = p, Base = Path.GetFileNameWithoutExtension(p), Ext = Path.GetExtension(p).ToLowerInvariant() })
                 .GroupBy(x => x.Base);
 
             foreach (var g in groups)
             {
-                if (AutoInjectItems.Any(item => item.Name == g.Key))
-                    continue;
-
+                if (AutoInjectItems.Any(item => item.Name == g.Key)) continue;
                 var asset = g.FirstOrDefault(x => x.Ext == ".uasset");
                 var tex = g.FirstOrDefault(x => x.Ext == ".png");
                 if (asset != null && tex != null)
@@ -74,16 +64,8 @@ namespace TinyUnrealPackerExtended.ViewModels
                     AutoInjectItems.Add(new AutoInjectItem
                     {
                         Name = g.Key,
-                        AssetFile = new FileItem
-                        {
-                            FileName = System.IO.Path.GetFileName(asset.Path),
-                            FilePath = asset.Path
-                        },
-                        TextureFile = new FileItem
-                        {
-                            FileName = System.IO.Path.GetFileName(tex.Path),
-                            FilePath = tex.Path
-                        },
+                        AssetFile = new FileItem { FileName = Path.GetFileName(asset.Path), FilePath = asset.Path },
+                        TextureFile = new FileItem { FileName = Path.GetFileName(tex.Path), FilePath = tex.Path },
                         Status = "Загружено"
                     });
                 }
@@ -95,8 +77,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             var paths = await _fileDialogService.PickFilesAsync(
                 filter: "UAsset & PNG|*.uasset;*.png",
-                title: "Выберите .uasset и соответствующие .png"
-            );
+                title: "Выберите .uasset и соответствующие .png");
             LoadAutoFiles(paths);
         }
 
@@ -104,10 +85,8 @@ namespace TinyUnrealPackerExtended.ViewModels
         private async Task BrowseAutoOutputAsync()
         {
             var folder = await _fileDialogService.PickFolderAsync(
-                description: "Выберите папку вывода"
-            );
+                description: "Выберите папку вывода");
             if (string.IsNullOrEmpty(folder)) return;
-
             AutoInjectOutputPath = folder;
         }
 
@@ -116,7 +95,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             if (!HasAutoInjectItems)
             {
-                _growlService.ShowWarning("Нет подготовленных пар для инжекта.");
+                ShowWarning("Нет подготовленных пар для инжекта.");
                 return;
             }
 
@@ -137,16 +116,15 @@ namespace TinyUnrealPackerExtended.ViewModels
                     {
                         File.WriteAllText(
                             Path.Combine(ddsDir, "src", "_file_path_.txt"),
-                            item.AssetFile.FilePath
-                        );
+                            item.AssetFile.FilePath);
 
                         var args = $"\"{item.TextureFile.FilePath}\"";
                         var exitCode = await _processRunner.RunAsync(
                             exePath: Path.Combine(ddsDir, "_3_inject.bat"),
                             arguments: args,
                             workingDirectory: ddsDir,
-                            cancellationToken: ct
-                        );
+                            cancellationToken: ct);
+
                         if (exitCode != 0)
                             throw new InvalidOperationException($"Batch вернулся с кодом {exitCode}");
 
@@ -161,11 +139,11 @@ namespace TinyUnrealPackerExtended.ViewModels
                     catch (Exception ex)
                     {
                         item.Status = "Ошибка";
-                        _growlService.ShowError($"{item.Name}: {ex.Message}");
+                        ShowError($"{item.Name}: {ex.Message}");
                     }
                 }
 
-                _growlService.ShowSuccess("Автоинжект закончен.");
+                ShowSuccess("Автоинжект закончен.");
             },
             setBusy: b => IsAutoInjectBusy = b,
             cancellationToken: CancellationToken.None);
@@ -184,30 +162,6 @@ namespace TinyUnrealPackerExtended.ViewModels
             AutoInjectItems.Clear();
             AutoInjectOutputPath = string.Empty;
             IsAutoInjectBusy = false;
-        }
-
-        private async Task ExecuteWithBusyFlagAsync(
-            Func<CancellationToken, Task> operation,
-            Action<bool> setBusy,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                setBusy(true);
-                await operation(cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _growlService.ShowWarning("Операция отменена пользователем.");
-            }
-            catch (Exception ex)
-            {
-                _growlService.ShowError($"Ошибка: {ex.Message}");
-            }
-            finally
-            {
-                setBusy(false);
-            }
         }
     }
 }

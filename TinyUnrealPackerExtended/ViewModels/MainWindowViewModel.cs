@@ -22,6 +22,8 @@ using CUE4Parse_Conversion;
 using CUE4Parse_Conversion.Textures;
 using System.Windows.Media.Imaging;
 using SkiaSharp;
+using TinyUnrealPackerExtended.Helpers;
+using SevenZip.Compression.LZ;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
@@ -31,6 +33,9 @@ namespace TinyUnrealPackerExtended.ViewModels
         private readonly IFileDialogService _fileDialogService;
         private readonly IProcessRunner _processRunner;
         private readonly IFileSystemService _fileSystemService;
+
+        private readonly FullscreenHelper _fullscreenHelper;
+
 
         public LocresViewModel LocresVM { get; }
         public ExcelViewModel ExcelVM { get; }
@@ -111,7 +116,7 @@ namespace TinyUnrealPackerExtended.ViewModels
 
 
         public MainWindowViewModel(IDialogService dialogService, GrowlService growlService, IFileDialogService fileDialogService,
-            IProcessRunner processRunner, IFileSystemService fileSystemService)
+            IProcessRunner processRunner, IFileSystemService fileSystemService, System.Windows.Window window)
         {
             _growlService = growlService;
             _dialog = dialogService;
@@ -138,6 +143,21 @@ namespace TinyUnrealPackerExtended.ViewModels
                 }
             };
 
+            _fullscreenHelper = new FullscreenHelper(window);
+
+
+        }
+
+        [RelayCommand] 
+        private void MaximizeWindow()
+        {
+            _fullscreenHelper.ToggleFullscreen();
+        }
+
+        [RelayCommand] 
+        private void MinimizeWindow()
+        {
+            _fullscreenHelper.ToggleMinimizeScreen();
         }
 
 

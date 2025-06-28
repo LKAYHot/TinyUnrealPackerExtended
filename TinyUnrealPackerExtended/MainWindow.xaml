@@ -12,8 +12,9 @@
         Height="750" Width="800"
         MinHeight="750" MinWidth="800"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="CanResizeWithGrip"
+        ResizeMode="CanResize"
         Background="#F5F5F5"
+        AllowsTransparency="True"
         FontFamily="Bahnschrift"
         FontSize="14"
         WindowStyle="None">
@@ -1642,20 +1643,53 @@ ToolTip="Перезагрузить">
             </TabItem>
         </TabControl>
 
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+            
         <Button
         Width="37" Height="32"
         HorizontalAlignment="Right"
         VerticalAlignment="Top"
-        Margin="0,12,12,0"
+        Margin="0,12,0,0"
+        Command="{Binding MinimizeWindowCommand}"
         Background="Transparent"
         BorderThickness="0"
-        Cursor="Hand"
-        Click="Button_Click">
+        Cursor="Hand" >
             <iconPacks:PackIconMaterial
-            Kind="Close"
+            Kind="WindowMinimize"
             Width="16" Height="16"
             Foreground="#333"/>
         </Button>
+
+            <Button
+        Width="37" Height="32"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Top"
+        Margin="0,12,0,0"
+        Command="{Binding MaximizeWindowCommand}"
+        Background="Transparent"
+        BorderThickness="0"
+        Cursor="Hand" >
+                <iconPacks:PackIconMaterial
+            Kind="Fullscreen"
+            Width="16" Height="16"
+            Foreground="#333"/>
+            </Button>
+
+            <Button
+Width="37" Height="32"
+HorizontalAlignment="Right"
+VerticalAlignment="Top"
+Margin="0,12,12,0"
+Background="Transparent"
+BorderThickness="0"
+Cursor="Hand"
+Click="Button_Click">
+                <iconPacks:PackIconMaterial
+    Kind="Close"
+    Width="16" Height="16"
+    Foreground="#333"/>
+            </Button>
+        </StackPanel>
 
         <Grid Visibility="Visible">
             <!--ПоменятЬ!-->

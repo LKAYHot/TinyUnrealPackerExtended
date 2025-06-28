@@ -7,18 +7,14 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MahApps.Metro.IconPacks;
-using TinyUnrealPackerExtended.Services;
 using TinyUnrealPackerExtended.Interfaces;
-using TinyUnrealPackerExtended.ViewModels;
-using LocresLib;
+using TinyUnrealPackerExtended.Services;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
-    public partial class ExcelViewModel : ObservableObject
+    public partial class ExcelViewModel : ViewModelBase
     {
         private readonly ExcelService _excelService;
-        private readonly GrowlService _growlService;
-        private readonly IFileDialogService _fileDialogService;
 
         public ObservableCollection<FileItem> ExcelFiles { get; } = new();
 
@@ -30,10 +26,9 @@ namespace TinyUnrealPackerExtended.ViewModels
             ExcelService excelService,
             GrowlService growlService,
             IFileDialogService fileDialogService)
+            : base(fileDialogService, growlService)
         {
             _excelService = excelService;
-            _growlService = growlService;
-            _fileDialogService = fileDialogService;
         }
 
         [RelayCommand]
@@ -57,7 +52,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             if (ExcelFiles.Count == 0)
             {
                 ExcelStatusMessage = "Ошибка: укажите файл для обработки.";
-                _growlService.ShowWarning(ExcelStatusMessage);
+                ShowWarning(ExcelStatusMessage);
                 return Task.CompletedTask;
             }
 
@@ -67,29 +62,27 @@ namespace TinyUnrealPackerExtended.ViewModels
                 var ext = Path.GetExtension(input).ToLowerInvariant();
                 string output;
 
-                switch (ext)
+                if (ext == ".xlsx")
                 {
-                    case ".xlsx":
-                        output = Path.ChangeExtension(input, ".csv");
-                        await Task.Run(() => _excelService.ImportFromExcel(input, output), ct);
-                        ExcelStatusMessage = $"Импорт из Excel завершён: {output}";
-                        break;
-
-                    case ".csv":
-                        output = Path.ChangeExtension(input, ".xlsx");
-                        await Task.Run(() => _excelService.ExportToExcel(input, output), ct);
-                        ExcelStatusMessage = $"Экспорт в Excel завершён: {output}";
-                        break;
-
-                    default:
-                        ExcelStatusMessage = "Неподдерживаемый формат. Поддерживаются .xlsx и .csv.";
-                        _growlService.ShowWarning(ExcelStatusMessage);
-                        return;
+                    output = Path.ChangeExtension(input, ".csv");
+                    await Task.Run(() => _excelService.ImportFromExcel(input, output), ct);
+                    ExcelStatusMessage = $"Импорт из Excel завершён: {output}";
+                }
+                else if (ext == ".csv")
+                {
+                    output = Path.ChangeExtension(input, ".xlsx");
+                    await Task.Run(() => _excelService.ExportToExcel(input, output), ct);
+                    ExcelStatusMessage = $"Экспорт в Excel завершён: {output}";
+                }
+                else
+                {
+                    ExcelStatusMessage = "Неподдерживаемый формат. Поддерживаются .xlsx и .csv.";
+                    ShowWarning(ExcelStatusMessage);
+                    return;
                 }
 
                 ExcelOutputPath = output;
-                _growlService.ShowSuccess(ExcelStatusMessage);
-
+                ShowSuccess(ExcelStatusMessage);
             },
             setBusy: b => IsExcelBusy = b,
             cancellationToken: token);
@@ -102,49 +95,6 @@ namespace TinyUnrealPackerExtended.ViewModels
             IsExcelBusy = false;
             ExcelStatusMessage = string.Empty;
             ExcelOutputPath = string.Empty;
-        }
-
-        private async Task<bool> TryPickSingleFileAsync(
-            string filter,
-            string title,
-            ObservableCollection<FileItem> target)
-        {
-            var path = await _fileDialogService.PickFileAsync(filter, title);
-            if (string.IsNullOrEmpty(path))
-                return false;
-
-            target.Clear();
-            target.Add(new FileItem
-            {
-                FileName = Path.GetFileName(path),
-                FilePath = path,
-                IconKind = PackIconMaterialKind.FileDocumentOutline
-            });
-            return true;
-        }
-
-        private async Task ExecuteWithBusyFlagAsync(
-            Func<CancellationToken, Task> operation,
-            Action<bool> setBusy,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                setBusy(true);
-                await operation(cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _growlService.ShowWarning("Операция отменена пользователем.");
-            }
-            catch (Exception ex)
-            {
-                _growlService.ShowError($"Ошибка: {ex.Message}");
-            }
-            finally
-            {
-                setBusy(false);
-            }
         }
 
         [RelayCommand]

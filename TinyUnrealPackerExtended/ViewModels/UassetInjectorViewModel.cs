@@ -7,15 +7,14 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MahApps.Metro.IconPacks;
+using Microsoft.Win32;
 using TinyUnrealPackerExtended.Interfaces;
 using TinyUnrealPackerExtended.Services;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
-    public partial class UassetInjectorViewModel : ObservableObject
+    public partial class UassetInjectorViewModel : ViewModelBase
     {
-        private readonly IFileDialogService _fileDialogService;
-        private readonly GrowlService _growlService;
         private readonly IProcessRunner _processRunner;
 
         public ObservableCollection<FileItem> InjectFiles { get; } = new();
@@ -40,22 +39,19 @@ namespace TinyUnrealPackerExtended.ViewModels
             IFileDialogService fileDialogService,
             GrowlService growlService,
             IProcessRunner processRunner)
+            : base(fileDialogService, growlService)
         {
-            _fileDialogService = fileDialogService;
-            _growlService = growlService;
             _processRunner = processRunner;
 
-            // Авто-уведомление об изменении текста кнопки при смене пути
-            this.PropertyChanged += (_, e) =>
+            // обновление текста кнопки при смене пути
+            PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(InjectOutputPath))
                     OnPropertyChanged(nameof(InjectOutputButtonText));
             };
 
-            InjectFiles.CollectionChanged += (_, __)
-            => OnPropertyChanged(nameof(HasInjectFile));
-            TextureFiles.CollectionChanged += (_, __)
-                => OnPropertyChanged(nameof(HasTextureFiles));
+            InjectFiles.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasInjectFile));
+            TextureFiles.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasTextureFiles));
         }
 
         [RelayCommand]
@@ -63,9 +59,9 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             var path = await _fileDialogService.PickFileAsync(
                 filter: "UAsset|*.uasset",
-                title: "Выберите .uasset файл"
-            );
-            if (string.IsNullOrEmpty(path)) return;
+                title: "Выберите .uasset файл");
+            if (string.IsNullOrEmpty(path))
+                return;
 
             InjectFiles.Clear();
             InjectFiles.Add(new FileItem
@@ -81,27 +77,29 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             var paths = await _fileDialogService.PickFilesAsync(
                 filter: "Image|*.png;*.jpg;*.tga;*.dds",
-                title: "Выберите одну или несколько текстур"
-            );
-            if (paths == null || paths.Length == 0) return;
+                title: "Выберите одну или несколько текстур");
+            if (paths == null || paths.Length == 0)
+                return;
 
             TextureFiles.Clear();
             foreach (var p in paths)
+            {
                 TextureFiles.Add(new FileItem
                 {
                     FileName = Path.GetFileName(p),
                     FilePath = p,
                     IconKind = PackIconMaterialKind.ImageOutline
                 });
+            }
         }
 
         [RelayCommand]
         private async Task BrowseInjectOutputAsync()
         {
             var folder = await _fileDialogService.PickFolderAsync(
-                description: "Выберите папку для вывода"
-            );
-            if (string.IsNullOrEmpty(folder)) return;
+                description: "Выберите папку для вывода");
+            if (string.IsNullOrEmpty(folder))
+                return;
 
             InjectOutputPath = folder;
         }
@@ -112,7 +110,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             if (!HasInjectFile || !HasTextureFiles || string.IsNullOrEmpty(InjectOutputPath))
             {
                 InjectStatusMessage = "Укажите .uasset, текстуры и папку вывода.";
-                _growlService.ShowWarning(InjectStatusMessage);
+                ShowWarning(InjectStatusMessage);
                 return Task.CompletedTask;
             }
 
@@ -131,8 +129,7 @@ namespace TinyUnrealPackerExtended.ViewModels
                 await File.WriteAllTextAsync(
                     Path.Combine(ddsDir, "src", "_file_path_.txt"),
                     assetPath,
-                    ct
-                );
+                    ct);
 
                 // запускаем батч с передачей путей текстур
                 var args = string.Join(" ", TextureFiles.Select(f => $"\"{f.FilePath}\""));
@@ -140,8 +137,7 @@ namespace TinyUnrealPackerExtended.ViewModels
                     exePath: Path.Combine(ddsDir, "_3_inject.bat"),
                     arguments: args,
                     workingDirectory: ddsDir,
-                    cancellationToken: ct
-                );
+                    cancellationToken: ct);
 
                 if (exitCode != 0)
                     throw new InvalidOperationException($"Batch вернулся с кодом {exitCode}");
@@ -149,11 +145,13 @@ namespace TinyUnrealPackerExtended.ViewModels
                 // копируем результаты
                 foreach (var file in Directory.GetFiles(injected))
                 {
-                    File.Copy(file, Path.Combine(InjectOutputPath, Path.GetFileName(file)!), true);
+                    File.Copy(file,
+                              Path.Combine(InjectOutputPath, Path.GetFileName(file)!),
+                              overwrite: true);
                 }
 
                 InjectStatusMessage = "Инжект окончен.";
-                _growlService.ShowSuccess(InjectStatusMessage);
+                ShowSuccess(InjectStatusMessage);
 
             },
             setBusy: b => IsInjectBusy = b,
@@ -168,30 +166,6 @@ namespace TinyUnrealPackerExtended.ViewModels
             InjectOutputPath = string.Empty;
             IsInjectBusy = false;
             InjectStatusMessage = string.Empty;
-        }
-
-        private async Task ExecuteWithBusyFlagAsync(
-            Func<CancellationToken, Task> operation,
-            Action<bool> setBusy,
-            CancellationToken cancellationToken)
-        {
-            try
-            {
-                setBusy(true);
-                await operation(cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                _growlService.ShowWarning("Операция отменена пользователем.");
-            }
-            catch (Exception ex)
-            {
-                _growlService.ShowError($"Ошибка: {ex.Message}");
-            }
-            finally
-            {
-                setBusy(false);
-            }
         }
 
         [RelayCommand]
