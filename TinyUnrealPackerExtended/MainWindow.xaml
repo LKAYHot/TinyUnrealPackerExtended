@@ -25,6 +25,24 @@
         <local2:IsLastBreadcrumbConverter x:Key="IsLastBreadcrumbConverter"/>
         <local2:NullToVisibilityConverter x:Key="NullToVis"/>
 
+        <Style x:Key="SmoothGridSplitterStyle" TargetType="GridSplitter">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GridSplitter">
+                        <Border x:Name="Bd"
+                  Background="{TemplateBinding Background}"
+                  CornerRadius="2"
+                  Height="5"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Stretch"
+                  Cursor="SizeNS">
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <Style x:Key="ListViewItemWithMenu"
            TargetType="ListViewItem">
@@ -182,6 +200,49 @@
                       BlurRadius="10"
                       Opacity="0.15"
                       ShadowDepth="2"/>
+
+        <Style x:Key="NavigationButtonStyle" TargetType="Button">
+            <!-- fixed square -->
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+            x:Name="Bd"
+            Width="{TemplateBinding Width}"
+            Height="{TemplateBinding Height}"
+            Background="{TemplateBinding Background}"
+            CornerRadius="4">
+                            <ContentPresenter
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- hover: light blue -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#E5E5E5"/>
+                            </Trigger>
+                            <!-- pressed: deeper blue -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#FFB3B2B2"/>
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Background" Value="Transparent"/>
+                                <Setter Property="Foreground" Value="#AAAAAA"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <!-- Стиль для кнопки удаления: только иконка, без бордера -->
         <Style x:Key="DeleteIconButtonStyle" TargetType="Button">
@@ -509,7 +570,7 @@ BasedOn="{StaticResource SecondaryButtonStyle}">
                 VerticalAlignment="Center"
                 Width="28" Height="28"
                 Command="{Binding DataContext.RemoveFileCommand,
-                          RelativeSource={RelativeSource AncestorType=Window}}"
+                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                 CommandParameter="{Binding}"
                 Style="{StaticResource SecondaryButtonStyle}"
                 Grid.Column="2"/>
@@ -526,8 +587,9 @@ BasedOn="{StaticResource SecondaryButtonStyle}">
                 <Border.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Удалить"
-                  Command="{Binding DataContext.RemoveAutoInjectItemCommand, Source={x:Reference RootWindow}}"
-                  CommandParameter="{Binding}"/>
+                            Command="{Binding DataContext.RemoveAutoInjectItemCommand,
+                                    Source={x:Reference AutoInjectItemsControl}}"
+                            CommandParameter="{Binding}" />
                     </ContextMenu>
                 </Border.ContextMenu>
                 <Grid>
@@ -563,8 +625,8 @@ BasedOn="{StaticResource SecondaryButtonStyle}">
                 </Trigger>
             </DataTemplate.Triggers>
         </DataTemplate>
-        
-        
+
+
     </Window.Resources>
 
     <Grid>
@@ -577,7 +639,7 @@ BasedOn="{StaticResource SecondaryButtonStyle}">
         <TabControl Background="Transparent" BorderThickness="0" Margin="24"     VerticalContentAlignment="Stretch"
     HorizontalContentAlignment="Stretch">
             <!-- ===== LOCRES TOOLKIT ===== -->
-            <TabItem Header="Locres Toolkit">
+            <TabItem Header="Locres Toolkit" DataContext="{Binding LocresVM}">
                 <Border Style="{StaticResource CardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -730,7 +792,7 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
             </TabItem>
 
             <!-- ===== EXCEL TOOLKIT ===== -->
-            <TabItem Header="Excel Toolkit">
+            <TabItem Header="Excel Toolkit" DataContext="{Binding ExcelVM}">
                 <Border Style="{StaticResource CardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -826,7 +888,7 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
             </TabItem>
 
             <!-- ===== PAK TOOLKIT ===== -->
-            <TabItem Header="Pak Toolkit">
+            <TabItem Header="Pak Toolkit" DataContext="{Binding PakVM}">
                 <Border Style="{StaticResource CardStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -962,13 +1024,13 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
             </TabItem>
 
             <TabItem Header="UAsset Injector">
-                <Border Style="{StaticResource CardStyle}">
+                <Border Style="{StaticResource CardStyle}" DataContext="{Binding UassetInjectorVM}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition MinHeight="130"/>
 
                             <RowDefinition MinHeight="130"/>
-                            
+
                             <RowDefinition Height="20"/>
 
                             <RowDefinition Height="50"/>
@@ -1088,8 +1150,8 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
 
                         <!-- OUTPUT FOLDER -->
 
-                        
-                            <Button
+
+                        <Button
     Command="{Binding BrowseInjectOutputCommand}"
     Style="{StaticResource TrimmedSecondaryButtonStyle}"
     Padding="12,8"
@@ -1112,14 +1174,14 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
             </TabItem>
 
             <TabItem Header="Auto Injector">
-                <Border Style="{StaticResource CardStyle}">
+                <Border Style="{StaticResource CardStyle}" DataContext="{Binding AutoInjectVM}">
 
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition MinHeight="130"/>
-                            
+
                             <RowDefinition Height="15"/>
-                            
+
                             <RowDefinition Height="50"/>
 
                             <RowDefinition Height="15"/>
@@ -1162,7 +1224,7 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
                         </hc:DashedBorder>
 
 
-                            <Button Content="{Binding AutoInjectOutputButtonText}"
+                        <Button Content="{Binding AutoInjectOutputButtonText}"
               Command="{Binding BrowseAutoOutputCommand}"
               Style="{StaticResource TrimmedSecondaryButtonStyle}" MinWidth="640" Width="Auto" Grid.Row="2" VerticalAlignment="Stretch"/>
 
@@ -1175,7 +1237,7 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
             VerticalScrollBarVisibility="Auto"
             HorizontalScrollBarVisibility="Disabled"
             Margin="0,0,0,0">
-                                    <ItemsControl
+                                    <ItemsControl x:Name="AutoInjectItemsControl"
                 ItemsSource="{Binding AutoInjectItems}"
                 ItemTemplate="{StaticResource AutoInjectItemTemplate}"
                 Margin="10"/>
@@ -1230,9 +1292,25 @@ FontSize="20">
 
                         <!-- Toolbar -->
                         <ToolBar Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,8">
-                            <Button Content="Refresh"
-                Click="RefreshFolder_Click"
-                Style="{StaticResource SecondaryButtonStyle}"/>
+                            <Button
+                                Click="Back_Click"
+        Command="{Binding GoBackCommand}"
+        IsEnabled="{Binding CanGoBack}"
+        Style="{StaticResource NavigationButtonStyle}"
+        Margin="0,0,6,0"
+        ToolTip="Назад">
+                                <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="16" Height="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            </Button>
+
+                            <Separator/>
+
+                            <Button
+Style="{StaticResource NavigationButtonStyle}"
+Command="{Binding RefreshFolderCommand}"
+Margin="0,0,6,0"
+ToolTip="Перезагрузить">
+                                <iconPacks:PackIconMaterial Kind="Refresh" Width="16" Height="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            </Button>
                         </ToolBar>
 
                         <!-- Breadcrumbs -->
@@ -1257,7 +1335,7 @@ FontSize="20">
                                             <Button x:Name="BtnNormal"
                         Style="{StaticResource BreadcrumbButtonStyle}"
                         Content="{Binding Name}"
-                        Command="{Binding DataContext.NavigateToBreadcrumbCommand, ElementName=RootWindow}"
+                        Command="{Binding DataContext.NavigateToCommand, ElementName=RootWindow}"
                         CommandParameter="{Binding FullPath}"/>
                                             <Button x:Name="BtnOverflow"
                         Style="{StaticResource BreadcrumbButtonStyle}"
@@ -1271,7 +1349,7 @@ FontSize="20">
                                                             <Style TargetType="MenuItem">
                                                                 <Setter Property="Header" Value="{Binding Name}"/>
                                                                 <Setter Property="Command"
-                                  Value="{Binding DataContext.NavigateToBreadcrumbCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                  Value="{Binding DataContext.NavigateToCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                                 <Setter Property="CommandParameter" Value="{Binding FullPath}"/>
                                                             </Style>
                                                         </ContextMenu.ItemContainerStyle>
@@ -1310,7 +1388,10 @@ FontSize="20">
                             <TreeView x:Name="FolderTree"
                   ItemsSource="{Binding FolderItems}"
                   SelectedItemChanged="FolderTree_SelectedItemChanged"
-                  Background="#FFE8E8E8">
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                  Background="#FFE8E8E8" PreviewMouseWheel="FolderTree_PreviewMouseWheel">
 
                                 <TreeView.Resources>
                                     <!-- Отключаем стандартные подсветки -->
@@ -1456,58 +1537,103 @@ FontSize="20">
                                 </TreeView.ItemContainerStyle>
                             </TreeView>
                         </ScrollViewer>
-                        
-                        
 
-                        
+
+
+
                         <!-- Правый столбец: Details ListView -->
                         <Grid Grid.Row="2" Grid.Column="1">
-                        <ListView Grid.Row="2" Grid.Column="1"
-          ItemsSource="{Binding SelectedFolderItem.Children}" ItemContainerStyle="{StaticResource ListViewItemWithMenu}">
-                            <!-- Существующий GridView -->
-                            <ListView.View>
-                                <GridView>
-                                    <!-- Имя + иконка -->
-                                    <GridViewColumn Header="Name" Width="200">
-                                        <GridViewColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <iconPacks:PackIconMaterial
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <!-- 2) Тонкий сплиттер для перетаскивания -->
+                                <RowDefinition Height="5"/>
+                                <!-- 3) Область превью по умолчанию -->
+                                <RowDefinition MaxHeight="600" MinHeight="200"/>
+                            </Grid.RowDefinitions>
+                            <ListView Grid.Row="0" Grid.RowSpan="3" Grid.Column="1"
+          ItemsSource="{Binding SelectedFolderItem.Children}"
+                                                VirtualizingPanel.IsVirtualizing="True"
+          VirtualizingPanel.VirtualizationMode="Recycling"
+          VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+          SnapsToDevicePixels="True"
+                                      ItemContainerStyle="{StaticResource ListViewItemWithMenu}">
+                                <!-- Существующий GridView -->
+                                <ListView.View>
+                                    <GridView>
+                                        <!-- Имя + иконка -->
+                                        <GridViewColumn Header="Name" Width="270">
+                                            <GridViewColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <iconPacks:PackIconMaterial
                 Kind="{Binding IconKind}"
                 Width="16" Height="16"
                 Margin="0,0,8,0"/>
-                                                    <TextBlock Text="{Binding Name}"/>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </GridViewColumn.CellTemplate>
-                                    </GridViewColumn>
+                                                        <TextBlock Text="{Binding Name}"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </GridViewColumn.CellTemplate>
+                                        </GridViewColumn>
 
-                                    <!-- Дата изменения -->
-                                    <GridViewColumn Header="Date Modified"
+                                        <!-- Дата изменения -->
+                                        <GridViewColumn Header="Date Modified"
                       Width="150"
                       DisplayMemberBinding="{Binding DateModified}"/>
 
-                                    <!-- Размер -->
-                                    <GridViewColumn Header="Size"
+                                        <!-- Размер -->
+                                        <GridViewColumn Header="Size"
                       Width="100"
                       DisplayMemberBinding="{Binding Size}"/>
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+
+                            <GridSplitter
+    Grid.Row="1"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Center"
+    Height="5"
+    Background="Transparent"
+    Cursor="SizeNS"
+    Style="{StaticResource SmoothGridSplitterStyle}"
+    Visibility="{Binding SelectedTexturePreview, Converter={StaticResource NullToVis}}"
+    ShowsPreview="False"/>
 
                             <Border
-          VerticalAlignment="Stretch"
-          HorizontalAlignment="Stretch"
-          Margin="0"
-          Background="White"
-          CornerRadius="4"
-          Padding="4"
-          Visibility="{Binding SelectedTexturePreview, Converter={StaticResource NullToVis}}"
-          Panel.ZIndex="1">
-                                <Image Source="{Binding SelectedTexturePreview}"
-           Stretch="UniformToFill"
-           HorizontalAlignment="Stretch"
-           VerticalAlignment="Stretch"/>
+    VerticalAlignment="Stretch"
+    HorizontalAlignment="Stretch"
+    Margin="5, 0, 5, 5"
+    Style="{StaticResource CardStyle}"
+    CornerRadius="4"
+    MinHeight="200"
+    Padding="4"
+    Grid.Row="2"
+    Visibility="{Binding SelectedTexturePreview, Converter={StaticResource NullToVis}}"
+    Panel.ZIndex="1">
+                                <Grid>
+                                    <!-- Само изображение -->
+                                    <Image
+            Source="{Binding SelectedTexturePreview}"
+            Stretch="Uniform"
+            StretchDirection="DownOnly"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            SnapsToDevicePixels="True"/>
+
+                                    <Button
+            Command="{Binding ClearTexturePreviewCommand}"
+            Style="{StaticResource DeleteIconButtonStyle}"
+            Width="20" Height="20"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Margin="0,0,0,0"
+            ToolTip="Закрыть превью">
+                                        <iconPacks:PackIconMaterial
+                Kind="Close"
+                Width="17" Height="17"
+                Foreground="#333" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Button>
+                                </Grid>
                             </Border>
 
                         </Grid>
@@ -1531,7 +1657,8 @@ FontSize="20">
             Foreground="#333"/>
         </Button>
 
-        <Grid Visibility="Visible"> <!--ПоменятЬ!-->
+        <Grid Visibility="Visible">
+            <!--ПоменятЬ!-->
             <Canvas x:Name="GrowlContainer" IsHitTestVisible="True" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10, 75, 10, 10" />
         </Grid>
     </Grid>

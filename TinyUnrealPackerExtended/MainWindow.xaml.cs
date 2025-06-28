@@ -52,7 +52,7 @@ namespace TinyUnrealPackerExtended
             if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
             var files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files.Length == 0) return;
-            if (mainWindowViewModel.LocresFiles.Count > 0) return;
+            if (mainWindowViewModel.LocresVM.LocresFiles.Count > 0) return;
 
             foreach (var path in files)
             {
@@ -61,15 +61,15 @@ namespace TinyUnrealPackerExtended
                 {
                     if (ext == ".csv")
                     {
-                        mainWindowViewModel.IsCsvFileDropped = true;
-                        mainWindowViewModel.OriginalLocresFiles.Clear();
+                        mainWindowViewModel.LocresVM.IsCsvFileDropped = true;
+                        mainWindowViewModel.LocresVM.OriginalLocresFiles.Clear();
                     }
                     else
                     {
-                        mainWindowViewModel.IsCsvFileDropped = false;
+                        mainWindowViewModel.LocresVM.IsCsvFileDropped = false;
                     }
 
-                    mainWindowViewModel.LocresFiles.Add(new FileItem
+                    mainWindowViewModel.LocresVM.LocresFiles.Add(new FileItem
                     {
                         FileName = Path.GetFileName(path),
                         FilePath = path
@@ -83,36 +83,37 @@ namespace TinyUnrealPackerExtended
             if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
             var files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files.Length == 0) return;
-            if (mainWindowViewModel.OriginalLocresFiles.Count > 0) return;
+            if (mainWindowViewModel.LocresVM.OriginalLocresFiles.Count > 0) return;
 
             foreach (var path in files)
             {
                 if (Path.GetExtension(path).ToLowerInvariant() == ".locres")
                 {
-                    mainWindowViewModel.OriginalLocresFiles.Add(new FileItem
+                    mainWindowViewModel.LocresVM.OriginalLocresFiles.Add(new FileItem
                     {
                         FileName = Path.GetFileName(path),
                         FilePath = path
                     });
                     // Скрываем зону сразу после дропа
-                    mainWindowViewModel.IsCsvFileDropped = false;
+                    mainWindowViewModel.LocresVM.IsCsvFileDropped = false;
                 }
             }
         }
+
 
         private void ExcelZone_Drop(object sender, DragEventArgs e)
         {
             if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
             var files = (string[])e.Data.GetData(DataFormats.FileDrop);
             if (files.Length == 0) return;
-            if (mainWindowViewModel.ExcelFiles.Count > 0) return;
+            if (mainWindowViewModel.ExcelVM.ExcelFiles.Count > 0) return;
 
             foreach (var path in files)
             {
                 var fileName = Path.GetFileName(path);
-                if (!mainWindowViewModel.ExcelFiles.Any(f => f.FileName == fileName))
+                if (!mainWindowViewModel.ExcelVM.ExcelFiles.Any(f => f.FileName == fileName))
                 {
-                    mainWindowViewModel.ExcelFiles.Add(new FileItem
+                    mainWindowViewModel.ExcelVM.ExcelFiles.Add(new FileItem
                     {
                         FileName = fileName,
                         FilePath = path
@@ -132,8 +133,8 @@ namespace TinyUnrealPackerExtended
             if (folder == null) return;
 
             // очищаем старый выбор и добавляем новое
-            mainWindowViewModel.PakFiles.Clear();
-            mainWindowViewModel.PakFiles.Add(new FileItem
+            mainWindowViewModel.PakVM.PakFiles.Clear();
+            mainWindowViewModel.PakVM.PakFiles.Add(new FileItem
             {
                 FileName = Path.GetFileName(folder), // только имя конечной папки
                 FilePath = folder,
@@ -149,8 +150,8 @@ namespace TinyUnrealPackerExtended
                 Path.GetExtension(f).Equals(".uasset", StringComparison.OrdinalIgnoreCase));
             if (asset == null) return;
 
-            mainWindowViewModel.InjectFiles.Clear();
-            mainWindowViewModel.InjectFiles.Add(new FileItem
+            mainWindowViewModel.UassetInjectorVM.InjectFiles.Clear();
+            mainWindowViewModel.UassetInjectorVM.InjectFiles.Add(new FileItem
             {
                 FileName = Path.GetFileName(asset),
                 FilePath = asset
@@ -161,7 +162,7 @@ namespace TinyUnrealPackerExtended
         {
             if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
             var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
-            mainWindowViewModel.LoadAutoFiles(paths);
+            mainWindowViewModel.AutoInjectVM.LoadAutoFiles(paths);
         }
 
 
@@ -169,9 +170,9 @@ namespace TinyUnrealPackerExtended
         {
             if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
             var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
-            mainWindowViewModel.TextureFiles.Clear();
+            mainWindowViewModel.UassetInjectorVM.TextureFiles.Clear();
             foreach (var p in paths)
-                mainWindowViewModel.TextureFiles.Add(new FileItem
+                mainWindowViewModel.UassetInjectorVM.TextureFiles.Add(new FileItem
                 {
                     FileName = Path.GetFileName(p),
                     FilePath = p,
@@ -299,6 +300,15 @@ namespace TinyUnrealPackerExtended
                 _draggedFolderItem = fi;
         }
 
+        private void FolderTree_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            // прокручиваем ScrollViewer на величину дельты
+            FolderTreeScrollViewer.ScrollToVerticalOffset(
+                FolderTreeScrollViewer.VerticalOffset - e.Delta);
+
+            e.Handled = true;
+        }
+
         private void FolderItem_MouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton != MouseButtonState.Pressed || _draggedFolderItem == null)
@@ -322,9 +332,10 @@ namespace TinyUnrealPackerExtended
         {
             if (e.NewValue is FolderItem fi && fi.IsDirectory)
             {
-                mainWindowViewModel.SelectedFolderItem = fi;
-                mainWindowViewModel.FolderEditorRootPath = fi.FullPath;
-                mainWindowViewModel.UpdateBreadcrumbs();
+                if (mainWindowViewModel.NavigateToCommand.CanExecute(fi.FullPath))
+                    mainWindowViewModel.NavigateToCommand.Execute(fi.FullPath);
+
+                ExpandAndSelectPath(fi.FullPath);
             }
         }
 
@@ -390,11 +401,16 @@ namespace TinyUnrealPackerExtended
                 if (item.IsDirectory)
                 {
                     // Обновляем VM (хлебные крошки, прочее)
-                    mainWindowViewModel.NavigateToBreadcrumbCommand.Execute(item.FullPath);
-
+                    mainWindowViewModel.NavigateToCommand.Execute(item.FullPath);
                     // Раскрываем и выделяем в дереве
                     ExpandAndSelectPath(item.FullPath);
                 }
+                else if (Path.GetExtension(item.FullPath)
+                     .Equals(".uasset", StringComparison.OrdinalIgnoreCase))
+                {
+                    mainWindowViewModel.PreviewTextureCommand.Execute(item);
+                }
+
                 else
                 {
                     mainWindowViewModel.OpenFolderCommand.Execute(item);
@@ -402,13 +418,13 @@ namespace TinyUnrealPackerExtended
             }
         }
 
-
-        private void RefreshFolder_Click(object sender, RoutedEventArgs e)
+        private void Back_Click(object sender, RoutedEventArgs e)
         {
-            SaveTreeState();
-            mainWindowViewModel.RefreshFolderCommand.Execute(null);
-            // после перерисовки восстановим
-            Dispatcher.BeginInvoke(new Action(RestoreTreeState), DispatcherPriority.Loaded);
+
+            mainWindowViewModel.GoBackCommand.Execute(null);
+            var item = mainWindowViewModel.SelectedFolderItem;
+            if (item != null && item.IsDirectory)
+                ExpandAndSelectPath(item.FullPath);
         }
 
         private void SaveTreeState()
