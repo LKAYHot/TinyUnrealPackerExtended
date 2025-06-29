@@ -60,13 +60,16 @@ namespace TinyUnrealPackerExtended.ViewModels
         [ObservableProperty] private string rootFolder;
 
         private readonly Stack<string> _backStack = new();
+        private readonly Stack<string> _forwardStack = new Stack<string>();
 
         [ObservableProperty] private bool canGoBack;
+        [ObservableProperty] private bool canGoForward;
 
 
         private bool _suppressHistory = false;
 
         [ObservableProperty] private ImageSource _selectedTexturePreview;
+        [ObservableProperty] private string previewedUassetPath;
 
         private int _maxVisible = int.MaxValue;
         public int MaxVisible
@@ -252,8 +255,10 @@ namespace TinyUnrealPackerExtended.ViewModels
         private void UpdateNavigationProperties()
         {
             CanGoBack = _backStack.Count > 0;
+            CanGoForward = _forwardStack.Count > 0;
 
             GoBackCommand.NotifyCanExecuteChanged();
+            GoForwardCommand.NotifyCanExecuteChanged();
         }
 
         private void DoNavigate(string path, bool fromHistory)
@@ -261,6 +266,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             if (!fromHistory)
             {
                 _backStack.Push(FolderEditorRootPath);
+                _forwardStack.Clear();
             }
 
             FolderEditorRootPath = path;
@@ -282,7 +288,18 @@ namespace TinyUnrealPackerExtended.ViewModels
         private void GoBack()
         {
             var prev = _backStack.Pop();
+            _forwardStack.Push(FolderEditorRootPath);
             DoNavigate(prev, fromHistory: true);
+        }
+
+        [RelayCommand(CanExecute = nameof(CanGoForward))]
+        private void GoForward()
+        {
+            if (_forwardStack.Count == 0) return;
+
+            var next = _forwardStack.Pop();
+            _backStack.Push(FolderEditorRootPath);
+            DoNavigate(next, fromHistory: true);
         }
 
         [RelayCommand]
@@ -304,6 +321,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             if (!string.IsNullOrEmpty(FolderEditorRootPath))
                 _backStack.Clear();
+                _forwardStack.Clear();
 
             FolderEditorRootPath = RootFolder;
             LoadFolderEditor();
@@ -407,6 +425,8 @@ namespace TinyUnrealPackerExtended.ViewModels
                 _growlService.ShowWarning("Выберите .uasset с текстурой");
                 return;
             }
+
+            PreviewedUassetPath = item?.FullPath;
 
             ClearTexture();
 
@@ -594,6 +614,91 @@ namespace TinyUnrealPackerExtended.ViewModels
             foreach (var dir in Directory.GetDirectories(sourceDir))
                 CopyDirectory(dir, Path.Combine(destDir, Path.GetFileName(dir)));
         }
+
+        [RelayCommand]
+        private void OpenInExplorer(string fullPath)
+        {
+            if (string.IsNullOrEmpty(fullPath)) return;
+            // откроет папку и выделит файл
+            Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{fullPath}\"")
+            {
+                UseShellExecute = true
+            });
+        }
+
+        [RelayCommand]
+        private void CopyPath(string fullPath)
+        {
+            if (string.IsNullOrEmpty(fullPath)) return;
+            Clipboard.SetText(fullPath);
+        }
+
+        [RelayCommand]
+        private async Task SaveTextureFromUassetAsync()
+        {
+            if (string.IsNullOrEmpty(PreviewedUassetPath))
+                return;
+
+            // Запускаем декодирование в фоновом потоке и возвращаем сразу байты + размеры
+            var result = await Task.Run(() =>
+            {
+                // 1) Декодируем uasset → SKBitmap
+                var dir = Path.GetDirectoryName(PreviewedUassetPath)!;
+                using var provider = new DefaultFileProvider(
+                    dir,
+                    SearchOption.TopDirectoryOnly,
+                    new VersionContainer(EGame.GAME_UE4_LATEST)
+                );
+                provider.Initialize();
+
+                var key = provider.Files.Keys
+                            .FirstOrDefault(k => k.EndsWith(Path.GetFileName(PreviewedUassetPath),
+                                                           StringComparison.OrdinalIgnoreCase))
+                          ?? throw new FileNotFoundException(PreviewedUassetPath);
+                var pkg = provider.LoadPackage(key);
+                var tex = pkg.ExportsLazy
+                             .Select(e => e.Value)
+                             .OfType<UTexture2D>()
+                             .FirstOrDefault()
+                          ?? throw new InvalidDataException("Texture not found in uasset");
+
+                using var skBmp = tex.Decode(ETexturePlatform.DesktopMobile)
+                                   ?? throw new InvalidOperationException("Decode failed");
+
+                // Сохраняем оригинальные размеры сразу
+                int w = skBmp.Width;
+                int h = skBmp.Height;
+
+                // 2) Кодируем SKBitmap в PNG
+                using var imgData = skBmp.Encode(SKEncodedImageFormat.Png, 100);
+                var bytes = imgData.ToArray();
+
+                return (bytes, w, h);
+            });
+
+            // Распаковываем результат
+            var pngBytes = result.bytes;
+            var width = result.w;
+            var height = result.h;
+
+            // Формируем имя по шаблону: OriginalName_WIDTHxHEIGHT.png
+            var baseName = Path.GetFileNameWithoutExtension(PreviewedUassetPath);
+            var defaultName = $"{baseName}.png";
+
+            // Открываем диалог «Сохранить как…»
+            var dlg = new SaveFileDialog
+            {
+                Filter = "PNG Image|*.png",
+                FileName = defaultName
+            };
+            if (dlg.ShowDialog() != true)
+                return;
+
+            // 3) Пишем файл
+            await File.WriteAllBytesAsync(dlg.FileName, pngBytes);
+        }
+
+
 
         [RelayCommand]
         private void RemoveFolderItem(FolderItem item)

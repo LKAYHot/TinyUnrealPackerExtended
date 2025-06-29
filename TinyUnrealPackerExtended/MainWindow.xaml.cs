@@ -27,6 +27,8 @@ namespace TinyUnrealPackerExtended
         private List<string> _expandedPaths = new();
         private double _savedScrollOffset;
 
+        private bool _suppressTreeNav;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -256,6 +258,76 @@ namespace TinyUnrealPackerExtended
             return null;
         }
 
+        private void ListView_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
+                        ? DragDropEffects.Copy
+                        : DragDropEffects.None;
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// При Drop копируем каждый файл или папку в текущую папку и обновляем VM.
+        /// </summary>
+        private void ListView_Drop(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
+            var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
+            var targetFolder = mainWindowViewModel.SelectedFolderItem;
+            if (targetFolder == null || !targetFolder.IsDirectory) return;
+
+            foreach (var srcPath in paths)
+            {
+                var name = Path.GetFileName(srcPath);
+                var destPath = Path.Combine(targetFolder.FullPath, name);
+
+                try
+                {
+                    if (Directory.Exists(srcPath))
+                    {
+                        CopyDirectory(srcPath, destPath);
+                    }
+                    else if (File.Exists(srcPath))
+                    {
+                        File.Copy(srcPath, destPath, overwrite: true);
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    // Добавляем в модель, чтобы появилось в ListView
+                    mainWindowViewModel.AddFileIntoFolder(targetFolder, destPath);
+                }
+                catch (Exception ex)
+                {
+                    // Можно показывать Growl-уведомление об ошибке
+                }
+            }
+
+            e.Handled = true;
+        }
+
+        private void CopyDirectory(string sourceDir, string targetDir)
+        {
+            // Создаём корневую папку
+            Directory.CreateDirectory(targetDir);
+
+            // Копируем все файлы
+            foreach (var file in Directory.GetFiles(sourceDir))
+            {
+                var destFile = Path.Combine(targetDir, Path.GetFileName(file));
+                File.Copy(file, destFile, overwrite: true);
+            }
+
+            // Рекурсивно копируем подпапки
+            foreach (var subDir in Directory.GetDirectories(sourceDir))
+            {
+                var destSubDir = Path.Combine(targetDir, Path.GetFileName(subDir));
+                CopyDirectory(subDir, destSubDir);
+            }
+        }
+
         private void FolderItem_Drop(object sender, DragEventArgs e)
         {
             // Сначала проверяем внутренний Drag&Drop элементов дерева
@@ -330,6 +402,8 @@ namespace TinyUnrealPackerExtended
 
         private void FolderTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
+            if (_suppressTreeNav) return;
+
             if (e.NewValue is FolderItem fi && fi.IsDirectory)
             {
                 if (mainWindowViewModel.NavigateToCommand.CanExecute(fi.FullPath))
@@ -396,35 +470,65 @@ namespace TinyUnrealPackerExtended
         /// </summary>
         private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            if (sender is ListViewItem lvi && lvi.DataContext is FolderItem item)
-            {
-                if (item.IsDirectory)
-                {
-                    // Обновляем VM (хлебные крошки, прочее)
-                    mainWindowViewModel.NavigateToCommand.Execute(item.FullPath);
-                    // Раскрываем и выделяем в дереве
-                    ExpandAndSelectPath(item.FullPath);
-                }
-                else if (Path.GetExtension(item.FullPath)
-                     .Equals(".uasset", StringComparison.OrdinalIgnoreCase))
-                {
-                    mainWindowViewModel.PreviewTextureCommand.Execute(item);
-                }
+            if (!(sender is ListViewItem lvi) || !(lvi.DataContext is FolderItem item))
+                return;
 
-                else
+            if (item.IsDirectory)
+            {
+                _suppressTreeNav = true;
+
+                if (mainWindowViewModel.NavigateToCommand.CanExecute(item.FullPath))
+                    mainWindowViewModel.NavigateToCommand.Execute(item.FullPath);
+
+                ExpandAndSelectPath(item.FullPath);
+
+                Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    mainWindowViewModel.OpenFolderCommand.Execute(item);
-                }
+                    _suppressTreeNav = false;
+                }), DispatcherPriority.Background);
+            }
+            else if (Path.GetExtension(item.FullPath)
+                     .Equals(".uasset", StringComparison.OrdinalIgnoreCase))
+            {
+                mainWindowViewModel.PreviewTextureCommand.Execute(item);
+            }
+            else
+            {
+                mainWindowViewModel.OpenFolderCommand.Execute(item);
             }
         }
 
+
         private void Back_Click(object sender, RoutedEventArgs e)
         {
+            _suppressTreeNav = true;
 
             mainWindowViewModel.GoBackCommand.Execute(null);
+
             var item = mainWindowViewModel.SelectedFolderItem;
             if (item != null && item.IsDirectory)
                 ExpandAndSelectPath(item.FullPath);
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _suppressTreeNav = false;
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void Forward_Click(object sender, RoutedEventArgs e)
+        {
+            _suppressTreeNav = true;
+
+            mainWindowViewModel.GoForwardCommand.Execute(null);
+
+            var item = mainWindowViewModel.SelectedFolderItem;
+            if (item != null && item.IsDirectory)
+                ExpandAndSelectPath(item.FullPath);
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _suppressTreeNav = false;
+            }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
         private void SaveTreeState()

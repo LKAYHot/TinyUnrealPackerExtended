@@ -1292,15 +1292,24 @@ FontSize="20">
                         </Grid.RowDefinitions>
 
                         <!-- Toolbar -->
-                        <ToolBar Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,8">
+                        <ToolBar Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,8" Cursor="">
                             <Button
                                 Click="Back_Click"
-        Command="{Binding GoBackCommand}"
         IsEnabled="{Binding CanGoBack}"
         Style="{StaticResource NavigationButtonStyle}"
         Margin="0,0,6,0"
         ToolTip="Назад">
                                 <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="16" Height="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                            </Button>
+
+                            <Button Click="Forward_Click"
+        IsEnabled="{Binding CanGoForward}"
+        Style="{StaticResource NavigationButtonStyle}"
+        Margin="0,0,6,0"
+        ToolTip="Вперед" Cursor="Hand">
+                                <iconPacks:PackIconMaterial Kind="ArrowRight"
+            Width="16" Height="16"
+            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
                             </Button>
 
                             <Separator/>
@@ -1389,9 +1398,11 @@ ToolTip="Перезагрузить">
                             <TreeView x:Name="FolderTree"
                   ItemsSource="{Binding FolderItems}"
                   SelectedItemChanged="FolderTree_SelectedItemChanged"
-                  VirtualizingPanel.IsVirtualizing="True"
-                  VirtualizingPanel.VirtualizationMode="Recycling"
-                  VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                  ScrollViewer.CanContentScroll="True"
+    VirtualizingStackPanel.IsVirtualizing="True"
+    VirtualizingStackPanel.VirtualizationMode="Recycling"
+    VirtualizingStackPanel.IsVirtualizingWhenGrouping="True"
+    VirtualizingStackPanel.CacheLength="2"
                   Background="#FFE8E8E8" PreviewMouseWheel="FolderTree_PreviewMouseWheel">
 
                                 <TreeView.Resources>
@@ -1551,7 +1562,12 @@ ToolTip="Перезагрузить">
                                 <!-- 3) Область превью по умолчанию -->
                                 <RowDefinition MaxHeight="600" MinHeight="200"/>
                             </Grid.RowDefinitions>
+                            
+                            
                             <ListView Grid.Row="0" Grid.RowSpan="3" Grid.Column="1"
+                             AllowDrop="True"
+                             DragOver="ListView_DragOver"
+                             Drop="ListView_Drop"
           ItemsSource="{Binding SelectedFolderItem.Children}"
                                                 VirtualizingPanel.IsVirtualizing="True"
           VirtualizingPanel.VirtualizationMode="Recycling"
@@ -1619,7 +1635,34 @@ ToolTip="Перезагрузить">
             StretchDirection="DownOnly"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            SnapsToDevicePixels="True"/>
+            SnapsToDevicePixels="True">
+                                        <Image.ContextMenu>
+                                            <!-- контекстное меню наследует DataContext окна (MainWindowViewModel) -->
+                                            <ContextMenu>
+                                                <!-- Открыть в проводнике -->
+                                                <MenuItem
+        Header="Открыть в проводнике"
+        Command="{Binding PlacementTarget.DataContext.OpenInExplorerCommand,
+                          RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+        CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath,
+                                   RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                <!-- Скопировать путь -->
+                                                <MenuItem
+        Header="Скопировать путь"
+        Command="{Binding PlacementTarget.DataContext.CopyPathCommand,
+                          RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+        CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath,
+                                   RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                <!-- Сохранить как… -->
+                                                <MenuItem
+        Header="Сохранить как…"
+        Command="{Binding PlacementTarget.DataContext.SaveTextureFromUassetCommand,
+                          RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+        CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath,
+                                   RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                            </ContextMenu>
+                                        </Image.ContextMenu>
+                                    </Image>
 
                                     <Button
             Command="{Binding ClearTexturePreviewCommand}"
@@ -1631,7 +1674,7 @@ ToolTip="Перезагрузить">
             ToolTip="Закрыть превью">
                                         <iconPacks:PackIconMaterial
                 Kind="Close"
-                Width="17" Height="17"
+                Width="15" Height="15"
                 Foreground="#333" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Button>
                                 </Grid>
