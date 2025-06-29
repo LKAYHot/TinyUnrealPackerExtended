@@ -603,7 +603,60 @@ namespace TinyUnrealPackerExtended
         }
 
 
+        private FolderItem FindMatch(IEnumerable<FolderItem> nodes, string query)
+        {
+            foreach (var node in nodes)
+            {
+                if (node.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+                    return node;
+                var child = FindMatch(node.Children, query);
+                if (child != null)
+                    return child;
+            }
+            return null;
+        }
 
+        // Вызов поиска по нажатию Enter
+        private void SearchBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                PerformSearch();
+        }
+
+        // Вызов поиска по клику на кнопку
+        private void SearchButton_Click(object sender, RoutedEventArgs e)
+        {
+            PerformSearch();
+        }
+
+        private void PerformSearch()
+        {
+            var q = SearchBox.Text.Trim();
+            if (string.IsNullOrEmpty(q)) return;
+
+            // ищем среди корневых FolderItems
+            var match = FindMatch(mainWindowViewModel.FolderItems, q);
+            if (match == null)
+            {
+                return;
+            }
+
+            string targetPath = match.IsDirectory
+                ? match.FullPath
+                : Path.GetDirectoryName(match.FullPath);
+
+            _suppressTreeNav = true;
+
+            if (mainWindowViewModel.NavigateToCommand.CanExecute(targetPath))
+                mainWindowViewModel.NavigateToCommand.Execute(targetPath);
+
+            ExpandAndSelectPath(match.FullPath);
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _suppressTreeNav = false;
+            }), DispatcherPriority.Background);
+        }
 
 
 

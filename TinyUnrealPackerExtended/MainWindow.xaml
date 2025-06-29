@@ -45,6 +45,55 @@
             </Setter>
         </Style>
 
+        <Style x:Key="SearchTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Width" Value="270"/>
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="#FFD7D7D7"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <!-- убираем HorizontalAlignment, оно задаётся извне -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="8">
+                            <Grid>
+                                <!-- настоящий хост текста -->
+                                <ScrollViewer
+                            x:Name="PART_ContentHost"
+                            Margin="0"
+                            VerticalAlignment="Center"/>
+                                <!-- placeholder -->
+                                <TextBlock
+                            x:Name="Placeholder"
+                            Text="Поиск…"
+                            Margin="{TemplateBinding Padding}"
+                            Foreground="#888888"
+                            IsHitTestVisible="False"
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- когда Text == пустая строка, показываем placeholder -->
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="Placeholder"
+                                Property="Visibility"
+                                Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
         <Style x:Key="ListViewItemWithMenu"
            TargetType="ListViewItem">
             <!-- Увеличенные отступы для «больших» айтемов -->
@@ -1292,36 +1341,59 @@ FontSize="20">
                         </Grid.RowDefinitions>
 
                         <!-- Toolbar -->
-                        <ToolBar Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,8" Cursor="">
-                            <Button
-                                Click="Back_Click"
-        IsEnabled="{Binding CanGoBack}"
-        Style="{StaticResource NavigationButtonStyle}"
-        Margin="0,0,6,0"
-        ToolTip="Назад">
-                                <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="16" Height="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                            </Button>
+                        <Border
+    Background="#FFECECEC"
+    Padding="4"
+    Margin="0,0,0,8"
+    CornerRadius="4" Grid.Row="0" Grid.ColumnSpan="2">
+                            <DockPanel LastChildFill="False" HorizontalAlignment="Stretch" Cursor="">
 
-                            <Button Click="Forward_Click"
-        IsEnabled="{Binding CanGoForward}"
-        Style="{StaticResource NavigationButtonStyle}"
-        Margin="0,0,6,0"
-        ToolTip="Вперед" Cursor="Hand">
-                                <iconPacks:PackIconMaterial Kind="ArrowRight"
-            Width="16" Height="16"
-            Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                            </Button>
+                                <!-- Навигация слева -->
+                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Margin="0,0,8,0">
+                                    <Button Click="Back_Click"
+              IsEnabled="{Binding CanGoBack}"
+              Style="{StaticResource NavigationButtonStyle}"
+              ToolTip="Назад">
+                                        <iconPacks:PackIconMaterial Kind="ArrowLeft" Width="16" Height="16"/>
+                                    </Button>
+                                    <Button Click="Forward_Click"
+              IsEnabled="{Binding CanGoForward}"
+              Style="{StaticResource NavigationButtonStyle}"
+              ToolTip="Вперед">
+                                        <iconPacks:PackIconMaterial Kind="ArrowRight" Width="16" Height="16"/>
+                                    </Button>
+                                    <Border Width="1" CornerRadius="1"
+              Background="#CCCCCC"
+              Margin="8,0"
+              VerticalAlignment="Stretch"/>
+                                    <Button Command="{Binding RefreshFolderCommand}"
+              Style="{StaticResource NavigationButtonStyle}"
+              ToolTip="Перезагрузить">
+                                        <iconPacks:PackIconMaterial Kind="Refresh" Width="16" Height="16"/>
+                                    </Button>
+                                </StackPanel>
 
-                            <Separator/>
+                                <!-- Поиск справа -->
+                                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                                    <TextBox
+          x:Name="SearchBox"
+          Style="{StaticResource SearchTextBoxStyle}"
+          KeyDown="SearchBox_KeyDown" />
+                                    <Button
+          x:Name="SearchButton"
+          Style="{StaticResource NavigationButtonStyle}"
+          ToolTip="Искать"
+          Click="SearchButton_Click"
+          Margin="4,0,0,0">
+                                        <iconPacks:PackIconMaterial Kind="Magnify" Width="16" Height="16"/>
+                                    </Button>
+                                </StackPanel>
 
-                            <Button
-Style="{StaticResource NavigationButtonStyle}"
-Command="{Binding RefreshFolderCommand}"
-Margin="0,0,6,0"
-ToolTip="Перезагрузить">
-                                <iconPacks:PackIconMaterial Kind="Refresh" Width="16" Height="16" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                            </Button>
-                        </ToolBar>
+                                <!-- Центр (LastChildFill) можно оставить пустым или добавить дополнительные элементы -->
+
+                            </DockPanel>
+                        </Border>
+
 
                         <!-- Breadcrumbs -->
                         <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2"
