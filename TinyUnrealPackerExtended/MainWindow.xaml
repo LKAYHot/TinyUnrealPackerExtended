@@ -44,48 +44,133 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        
 
         <Style x:Key="SearchTextBoxStyle" TargetType="TextBox">
+            <!-- Базовые настройки -->
             <Setter Property="Width" Value="270"/>
-            <Setter Property="Height" Value="25"/>
-            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="10,5"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Background" Value="#FFD7D7D7"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="#FFF5F5F5"/>
+            <Setter Property="BorderBrush" Value="#FFCCCCCC"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <!-- убираем HorizontalAlignment, оно задаётся извне -->
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border
-                    Background="{TemplateBinding Background}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}"
-                    CornerRadius="8">
-                            <Grid>
-                                <!-- настоящий хост текста -->
-                                <ScrollViewer
-                            x:Name="PART_ContentHost"
-                            Margin="0"
-                            VerticalAlignment="Center"/>
-                                <!-- placeholder -->
-                                <TextBlock
-                            x:Name="Placeholder"
-                            Text="Поиск…"
-                            Margin="{TemplateBinding Padding}"
-                            Foreground="#888888"
-                            IsHitTestVisible="False"
-                            VerticalAlignment="Center"
-                            Visibility="Collapsed"/>
-                            </Grid>
-                        </Border>
+                        <Grid>
+                            <!-- Основная рамка с закруглениями -->
+                            <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6"
+                            SnapsToDevicePixels="True">
+                                <!-- Тень для фокуса -->
+                                <Border.Effect>
+                                    <DropShadowEffect x:Name="Shadow"
+                                              Color="#FF4A90E2"
+                                              BlurRadius="0"
+                                              ShadowDepth="0"
+                                              Opacity="0"/>
+                                </Border.Effect>
+
+                                <Grid>
+                                    <!-- тут выводится сам текст -->
+                                    <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="0"
+                                          VerticalAlignment="Center"/>
+
+                                    <!-- placeholder -->
+                                    <TextBlock x:Name="Placeholder"
+                                       Text="Поиск…"
+                                       FontSize="13"
+                                       Margin="12,0"
+                                       Foreground="#FF888888"
+                                       IsHitTestVisible="False"
+                                       VerticalAlignment="Center"
+                                       Opacity="0"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+
                         <ControlTemplate.Triggers>
-                            <!-- когда Text == пустая строка, показываем placeholder -->
+                            <!-- Показ placeholder, когда строка пуста -->
                             <Trigger Property="Text" Value="">
                                 <Setter TargetName="Placeholder"
-                                Property="Visibility"
-                                Value="Visible"/>
+                                Property="Opacity"
+                                Value="1"/>
+                            </Trigger>
+
+                            <!-- Мягкая смена фона при наведении -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="Border"
+                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                    To="#FFF0F0F0"
+                                                    Duration="0:0:0.25"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <ColorAnimation Storyboard.TargetName="Border"
+                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                    To="#FFF5F5F5"
+                                                    Duration="0:0:0.25"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+
+                            <!-- Анимация обводки и тени при фокусе -->
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <!-- синяя обводка -->
+                                            <ColorAnimation Storyboard.TargetName="Border"
+                                                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                    To="#FF4A90E2"
+                                                    Duration="0:0:0.2"/>
+                                            <!-- тень размытием -->
+                                            <DoubleAnimation Storyboard.TargetName="Shadow"
+                                                     Storyboard.TargetProperty="BlurRadius"
+                                                     To="8"
+                                                     Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="Shadow"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="0.4"
+                                                     Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <!-- возврат к серой обводке -->
+                                            <ColorAnimation Storyboard.TargetName="Border"
+                                                    Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                    To="#FFCCCCCC"
+                                                    Duration="0:0:0.2"/>
+                                            <!-- убираем тень -->
+                                            <DoubleAnimation Storyboard.TargetName="Shadow"
+                                                     Storyboard.TargetProperty="BlurRadius"
+                                                     To="0"
+                                                     Duration="0:0:0.2"/>
+                                            <DoubleAnimation Storyboard.TargetName="Shadow"
+                                                     Storyboard.TargetProperty="Opacity"
+                                                     To="0"
+                                                     Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -93,6 +178,56 @@
             </Setter>
         </Style>
 
+
+        <Style x:Key="ExpanderToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Width" Value="16"/>
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Grid>
+                            <iconPacks:PackIconMaterial
+              x:Name="Arrow"
+              Kind="ChevronRight"
+              Width="12" Height="12"
+              Foreground="#666"
+              RenderTransformOrigin="0.5,0.5">
+                                <iconPacks:PackIconMaterial.RenderTransform>
+                                    <RotateTransform Angle="0"/>
+                                </iconPacks:PackIconMaterial.RenderTransform>
+                            </iconPacks:PackIconMaterial>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                      Storyboard.TargetName="Arrow"
+                      Storyboard.TargetProperty="(RenderTransform).(RotateTransform.Angle)"
+                      To="90"
+                      Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation
+                      Storyboard.TargetName="Arrow"
+                      Storyboard.TargetProperty="(RenderTransform).(RotateTransform.Angle)"
+                      To="0"
+                      Duration="0:0:0.2"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <Style x:Key="ListViewItemWithMenu"
            TargetType="ListViewItem">
@@ -1599,19 +1734,78 @@ FontSize="20">
                         CommandParameter="{Binding SelectedItem, ElementName=FolderTree}"
                         Key="V"/>
                                 </TreeView.InputBindings>
-
                                 <TreeView.ItemContainerStyle>
                                     <Style TargetType="TreeViewItem">
+                                        <!-- ваши старые сеттеры/эвенты -->
                                         <Setter Property="Background" Value="Transparent"/>
                                         <Setter Property="BorderThickness" Value="0"/>
                                         <Setter Property="Padding" Value="0"/>
-                                        <Setter Property="Margin" Value="0"/>
+                                        <Setter Property="Margin" Value="4, 0, 0, 0"/>
                                         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
                                         <Setter Property="AllowDrop" Value="True"/>
                                         <EventSetter Event="DragOver" Handler="FolderItem_DragOver"/>
                                         <EventSetter Event="Drop" Handler="FolderItem_Drop"/>
                                         <EventSetter Event="PreviewMouseLeftButtonDown" Handler="FolderItem_PreviewMouseLeftButtonDown"/>
                                         <EventSetter Event="MouseMove" Handler="FolderItem_MouseMove"/>
+
+                                        <!-- 2. Подмена шаблона с нашей стрелкой + фиксом Border -->
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="TreeViewItem">
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition/>
+                                                        </Grid.RowDefinitions>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- наша стрелка-экспандер -->
+                                                        <ToggleButton 
+                x:Name="Expander"
+                Style="{StaticResource ExpanderToggleStyle}"
+                Grid.Row="0" Grid.Column="0"
+                IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                Visibility="{Binding HasItems, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVis}}"/>
+
+                                                        <!-- заголовок узла: теперь не растягивается -->
+                                                        <Border 
+                x:Name="Bd"
+                Grid.Row="0" Grid.Column="1"
+                Padding="2"
+                Background="{TemplateBinding Background}"
+                HorizontalAlignment="Left">
+                                                            <ContentPresenter 
+                  x:Name="PART_Header"
+                  ContentSource="Header"
+                  RecognizesAccessKey="True"/>
+                                                        </Border>
+
+                                                        <!-- контейнер для дочерних элементов -->
+                                                        <ItemsPresenter 
+                x:Name="ItemsHost"
+                Grid.Row="1" Grid.Column="1"
+                Margin="12,0,0,0"
+                Visibility="Collapsed"/>
+                                                    </Grid>
+
+                                                    <ControlTemplate.Triggers>
+                                                        <!-- показываем детей при IsExpanded -->
+                                                        <Trigger Property="IsExpanded" Value="True">
+                                                            <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible"/>
+                                                        </Trigger>
+                                                        <!-- ваш триггер выделения -->
+                                                        <Trigger Property="IsSelected" Value="True">
+                                                            <Setter TargetName="Bd" Property="Background" Value="Transparent"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+
+                                        <!-- ваш старый триггер на IsSelected -->
                                         <Style.Triggers>
                                             <Trigger Property="IsSelected" Value="True">
                                                 <Setter Property="Background" Value="Transparent"/>
