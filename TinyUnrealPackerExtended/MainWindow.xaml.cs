@@ -218,7 +218,7 @@ namespace TinyUnrealPackerExtended
             else
             {
                 // рядом с файлом/папкой — берём ту же коллекцию, что и у target
-                dest = FindParentCollection(target, mainWindowViewModel.FolderItems);
+                dest = FindParentCollection(target, mainWindowViewModel.FolderEditorVM.FolderItems);
                 if (dest == null) return;
             }
 
@@ -230,7 +230,7 @@ namespace TinyUnrealPackerExtended
                 : idxTarget + 1;
 
             // 6) Перемещаем через ViewModel
-            mainWindowViewModel.ReparentVisualAt(_draggedFolderItem, dest, insertIndex);
+            mainWindowViewModel.FolderEditorVM.ReparentVisualAt(_draggedFolderItem, dest, insertIndex);
 
             // 7) Запоминаем, чтобы не дергать при каждом движении
             _lastTargetFolderItem = target;
@@ -297,7 +297,7 @@ namespace TinyUnrealPackerExtended
                     }
 
                     // Добавляем в модель, чтобы появилось в ListView
-                    mainWindowViewModel.AddFileIntoFolder(targetFolder, destPath);
+                    mainWindowViewModel.FolderEditorVM.AddFileIntoFolder(targetFolder, destPath);
                 }
                 catch (Exception ex)
                 {
@@ -337,7 +337,7 @@ namespace TinyUnrealPackerExtended
                 if (source != null && sender is TreeViewItem tviInternal && tviInternal.DataContext is FolderItem targetInternal)
                 {
                     // Перемещаем узел во ViewModel
-                    mainWindowViewModel.MoveFolderItem(source, targetInternal);
+                    mainWindowViewModel.FolderEditorVM.MoveFolderItem(source, targetInternal);
                     _draggedFolderItem = null;
                     _lastTargetFolderItem = null;
                     e.Handled = true;
@@ -356,7 +356,7 @@ namespace TinyUnrealPackerExtended
                 {
                     var destPath = Path.Combine(targetExternal.FullPath, Path.GetFileName(srcPath));
                     File.Copy(srcPath, destPath, overwrite: true);
-                    mainWindowViewModel.AddFileIntoFolder(targetExternal, destPath);
+                    mainWindowViewModel.FolderEditorVM.AddFileIntoFolder(targetExternal, destPath);
                 }
 
                 e.Handled = true;  // предотвращаем дальнейшую передачу события
@@ -406,8 +406,8 @@ namespace TinyUnrealPackerExtended
 
             if (e.NewValue is FolderItem fi && fi.IsDirectory)
             {
-                if (mainWindowViewModel.NavigateToCommand.CanExecute(fi.FullPath))
-                    mainWindowViewModel.NavigateToCommand.Execute(fi.FullPath);
+                if (mainWindowViewModel.FolderEditorVM.NavigateToCommand.CanExecute(fi.FullPath))
+                    mainWindowViewModel.FolderEditorVM.NavigateToCommand.Execute(fi.FullPath);
 
                 ExpandAndSelectPath(fi.FullPath);
             }
@@ -416,7 +416,7 @@ namespace TinyUnrealPackerExtended
         private void ExpandAndSelectPath(string fullPath)
         {
             // 1) Получаем корневой FolderItem (он у вас добавлен один раз в BrowsePakFolderAsync)
-            var rootItem = mainWindowViewModel.FolderItems.FirstOrDefault();
+            var rootItem = mainWindowViewModel.FolderEditorVM.FolderItems.FirstOrDefault();
             if (rootItem == null) return;
 
             // 2) Разбиваем путь на сегменты относительно корня
@@ -477,8 +477,8 @@ namespace TinyUnrealPackerExtended
             {
                 _suppressTreeNav = true;
 
-                if (mainWindowViewModel.NavigateToCommand.CanExecute(item.FullPath))
-                    mainWindowViewModel.NavigateToCommand.Execute(item.FullPath);
+                if (mainWindowViewModel.FolderEditorVM.NavigateToCommand.CanExecute(item.FullPath))
+                    mainWindowViewModel.FolderEditorVM.NavigateToCommand.Execute(item.FullPath);
 
                 ExpandAndSelectPath(item.FullPath);
 
@@ -490,11 +490,11 @@ namespace TinyUnrealPackerExtended
             else if (Path.GetExtension(item.FullPath)
                      .Equals(".uasset", StringComparison.OrdinalIgnoreCase))
             {
-                mainWindowViewModel.PreviewTextureCommand.Execute(item);
+                mainWindowViewModel.FolderEditorVM.PreviewTextureCommand.Execute(item);
             }
             else
             {
-                mainWindowViewModel.OpenFolderCommand.Execute(item);
+                mainWindowViewModel.FolderEditorVM.OpenFolderCommand.Execute(item);
             }
         }
 
@@ -503,9 +503,9 @@ namespace TinyUnrealPackerExtended
         {
             _suppressTreeNav = true;
 
-            mainWindowViewModel.GoBackCommand.Execute(null);
+            mainWindowViewModel.FolderEditorVM.GoBackCommand.Execute(null);
 
-            var item = mainWindowViewModel.SelectedFolderItem;
+            var item = mainWindowViewModel.FolderEditorVM.SelectedFolderItem;
             if (item != null && item.IsDirectory)
                 ExpandAndSelectPath(item.FullPath);
 
@@ -519,9 +519,9 @@ namespace TinyUnrealPackerExtended
         {
             _suppressTreeNav = true;
 
-            mainWindowViewModel.GoForwardCommand.Execute(null);
+            mainWindowViewModel.FolderEditorVM.GoForwardCommand.Execute(null);
 
-            var item = mainWindowViewModel.SelectedFolderItem;
+            var item = mainWindowViewModel.FolderEditorVM.SelectedFolderItem;
             if (item != null && item.IsDirectory)
                 ExpandAndSelectPath(item.FullPath);
 
@@ -635,7 +635,7 @@ namespace TinyUnrealPackerExtended
             if (string.IsNullOrEmpty(q)) return;
 
             // ищем среди корневых FolderItems
-            var match = FindMatch(mainWindowViewModel.FolderItems, q);
+            var match = FindMatch(mainWindowViewModel.FolderEditorVM.FolderItems, q);
             if (match == null)
             {
                 return;
@@ -647,8 +647,8 @@ namespace TinyUnrealPackerExtended
 
             _suppressTreeNav = true;
 
-            if (mainWindowViewModel.NavigateToCommand.CanExecute(targetPath))
-                mainWindowViewModel.NavigateToCommand.Execute(targetPath);
+            if (mainWindowViewModel.FolderEditorVM.NavigateToCommand.CanExecute(targetPath))
+                mainWindowViewModel.FolderEditorVM.NavigateToCommand.Execute(targetPath);
 
             ExpandAndSelectPath(match.FullPath);
 

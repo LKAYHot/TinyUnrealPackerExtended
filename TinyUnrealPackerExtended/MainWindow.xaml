@@ -244,7 +244,7 @@
                 <Setter.Value>
                     <!-- Устанавливаем DataContext самого ContextMenu на ваш VM -->
                     <ContextMenu
-      DataContext="{Binding DataContext, Source={x:Reference RootWindow}}">
+      DataContext="{Binding DataContext.FolderEditorVM, Source={x:Reference RootWindow}}">
 
                         <!-- Открыть -->
                         <MenuItem
@@ -305,7 +305,7 @@
                         <MenuItem
         Header="Свойства"
         Command="{Binding ShowPropertiesCommand}"
-        CommandParameter="{Binding PlacementTarget.DataContext,
+        CommandParameter="{Binding PlacementTarget.DataContext.,
                                   RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                     </ContextMenu>
                 </Setter.Value>
@@ -1458,7 +1458,7 @@ FontSize="20">
                 </Border>
             </TabItem>
 
-            <TabItem Header="Folder Editor" IsEnabled="{Binding CanEditFolderEditor}">
+            <TabItem Header="Folder Editor" IsEnabled="{Binding CanEditFolderEditor}" DataContext="{Binding FolderEditorVM}">
                 <Border Style="{StaticResource CardStyle}" Padding="12">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -1552,13 +1552,13 @@ FontSize="20">
                                             <Button x:Name="BtnNormal"
                         Style="{StaticResource BreadcrumbButtonStyle}"
                         Content="{Binding Name}"
-                        Command="{Binding DataContext.NavigateToCommand, ElementName=RootWindow}"
+                        Command="{Binding DataContext.FolderEditorVM.NavigateToCommand, ElementName=RootWindow}"
                         CommandParameter="{Binding FullPath}"/>
                                             <Button x:Name="BtnOverflow"
                         Style="{StaticResource BreadcrumbButtonStyle}"
                         Content="…"
                         Visibility="Collapsed"
-                        Tag="{Binding DataContext, ElementName=RootWindow}">
+                        Tag="{Binding DataContext.FolderEditorVM, ElementName=RootWindow}">
                                                 <Button.ContextMenu>
                                                     <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}"
                                  ItemsSource="{Binding Overflow}">
@@ -1637,29 +1637,29 @@ FontSize="20">
                                             <Border.ContextMenu>
                                                 <ContextMenu>
                                                     <MenuItem Header="Открыть расположение"
-                              Command="{Binding DataContext.OpenFolderCommand, Source={x:Reference RootWindow}}"
+                                                   Command="{Binding DataContext.FolderEditorVM.OpenFolderCommand, Source={x:Reference RootWindow}}"
                               CommandParameter="{Binding}"/>
                                                     <Separator/>
                                                     <MenuItem Header="Копировать"
-                              Command="{Binding DataContext.CopyFolderItemCommand, Source={x:Reference RootWindow}}"
+                              Command="{Binding DataContext.FolderEditorVM.CopyFolderItemCommand, Source={x:Reference RootWindow}}"
                               CommandParameter="{Binding}"/>
                                                     <MenuItem Header="Вырезать"
-                              Command="{Binding DataContext.CutFolderItemCommand, Source={x:Reference RootWindow}}"
+                              Command="{Binding DataContext.FolderEditorVM.CutFolderItemCommand, Source={x:Reference RootWindow}}"
                               CommandParameter="{Binding}"/>
                                                     <MenuItem Header="Вставить"
-                              Command="{Binding DataContext.PasteIntoFolderCommand, Source={x:Reference RootWindow}}"
+                              Command="{Binding DataContext.FolderEditorVM.PasteIntoFolderCommand, Source={x:Reference RootWindow}}"
                               CommandParameter="{Binding}"
-                              IsEnabled="{Binding DataContext.CanPaste, Source={x:Reference RootWindow}}"/>
+                              IsEnabled="{Binding DataContext.FolderEditorVM.CanPaste, Source={x:Reference RootWindow}}"/>
                                                     <Separator/>
                                                     <MenuItem Header="Переименовать"
-                              Command="{Binding DataContext.RenameFolderItemCommand, Source={x:Reference RootWindow}}"
+                              Command="{Binding DataContext.FolderEditorVM.RenameFolderItemCommand, Source={x:Reference RootWindow}}"
                               CommandParameter="{Binding}"/>
                                                     <MenuItem Header="Удалить"
-                              Command="{Binding DataContext.RemoveFolderItemCommand, Source={x:Reference RootWindow}}"
+                              Command="{Binding DataContext.FolderEditorVM.RemoveFolderItemCommand, Source={x:Reference RootWindow}}"
                               CommandParameter="{Binding}"/>
                                                     <Separator/>
                                                     <MenuItem Header="Свойства"
-                              Command="{Binding DataContext.ShowPropertiesCommand, Source={x:Reference RootWindow}}"
+                              Command="{Binding DataContext.FolderEditorVM.ShowPropertiesCommand, Source={x:Reference RootWindow}}"
                               CommandParameter="{Binding}"/>
                                                 </ContextMenu>
                                             </Border.ContextMenu>
@@ -1717,22 +1717,31 @@ FontSize="20">
                                 </TreeView.Resources>
 
                                 <TreeView.InputBindings>
-                                    <KeyBinding Gesture="Delete"
-                        Command="{Binding RemoveFolderItemCommand}"
-                        CommandParameter="{Binding SelectedItem, ElementName=FolderTree}"/>
-                                    <KeyBinding Gesture="F2"
-                        Command="{Binding RenameFolderItemCommand}"
-                        CommandParameter="{Binding SelectedItem, ElementName=FolderTree}"/>
+                                    <!-- Удалить -->
+                                    <KeyBinding Key="Delete"
+ Command="{Binding DataContext.FolderEditorVM.RemoveFolderItemCommand,
+                                  ElementName=RootWindow}"
+                CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
+
+                                    <!-- Переименовать -->
+                                    <KeyBinding Key="F2"
+                Command="{Binding DataContext.FolderEditorVM.RenameFolderItemCommand, ElementName=RootWindow}"
+                CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
+
+                                    <!-- Копировать -->
                                     <KeyBinding Gesture="Ctrl+C"
-                        Command="{Binding CopyFolderItemCommand}"
-                        CommandParameter="{Binding SelectedItem, ElementName=FolderTree}"/>
+                Command="{Binding DataContext.FolderEditorVM.CopyFolderItemCommand, ElementName=RootWindow}"
+                CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
+
+                                    <!-- Вырезать -->
                                     <KeyBinding Gesture="Ctrl+X"
-                        Command="{Binding CutFolderItemCommand}"
-                        CommandParameter="{Binding SelectedItem, ElementName=FolderTree}"/>
-                                    <KeyBinding Gesture="Ctrl+V"
-                        Command="{Binding PasteIntoFolderCommand}"
-                        CommandParameter="{Binding SelectedItem, ElementName=FolderTree}"
-                        Key="V"/>
+                Command="{Binding DataContext.FolderEditorVM.CutFolderItemCommand, ElementName=RootWindow}"
+                CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
+
+                                    <!-- Вставить -->
+                                    <KeyBinding Key="V" Gesture="Ctrl+V"
+                Command="{Binding DataContext.FolderEditorVM.PasteIntoFolderCommand, ElementName=RootWindow}"
+                CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
                                 </TreeView.InputBindings>
                                 <TreeView.ItemContainerStyle>
                                     <Style TargetType="TreeViewItem">

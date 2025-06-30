@@ -64,7 +64,7 @@ namespace TinyUnrealPackerExtended.Behaviors
                 }
             }
 
-            vm.MaxVisible = maxVisible;
+            vm.FolderEditorVM.MaxVisible = maxVisible;
         }
     }
 }

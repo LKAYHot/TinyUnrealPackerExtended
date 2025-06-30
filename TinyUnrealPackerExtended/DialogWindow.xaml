@@ -160,7 +160,7 @@
                 Margin="0,0,8,0" Cursor="Hand"/>
                 <Button Content="{Binding PrimaryText}"
                 Command="{Binding PrimaryButtonCommand}"
-                Style="{StaticResource PrimaryButtonStyle}"/>
+                Style="{StaticResource PrimaryButtonStyle}" Margin="0"/>
             </StackPanel>
         </StackPanel>
     </Border>
