@@ -1,29 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using HandyControl.Controls;
 using MahApps.Metro.IconPacks;
-using Microsoft.Win32;
-using CUE4Parse.FileProvider;
-using CUE4Parse.UE4.Versions;
-using CUE4Parse.UE4.Assets.Exports;
 using TinyUnrealPackerExtended.Interfaces;
 using TinyUnrealPackerExtended.Services;
-using CUE4Parse.UE4.Assets.Exports.Texture;
-using CUE4Parse_Conversion;
-using CUE4Parse_Conversion.Textures;
-using System.Windows.Media.Imaging;
-using SkiaSharp;
 using TinyUnrealPackerExtended.Helpers;
-using SevenZip.Compression.LZ;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
@@ -103,10 +86,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             _fullscreenHelper.ToggleMinimizeScreen();
         }
-
-
-        [ObservableProperty]
-        private FolderItem selectedFolderItem;
+       
 
     }
 

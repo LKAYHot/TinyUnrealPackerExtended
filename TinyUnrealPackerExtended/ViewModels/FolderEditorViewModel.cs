@@ -190,7 +190,6 @@ namespace TinyUnrealPackerExtended.ViewModels
             if (item == null)
                 return;
 
-            // Сохраняем старый путь для рекурсивного обновления потомков
             var oldPath = item.FullPath;
 
             // Спрашиваем новое имя у пользователя
@@ -206,22 +205,18 @@ namespace TinyUnrealPackerExtended.ViewModels
             if (string.IsNullOrWhiteSpace(newName) || newName == item.Name)
                 return;
 
-            // Формируем новый путь на диске
             var newPath = Path.Combine(Path.GetDirectoryName(oldPath)!, newName);
 
             try
             {
-                // Физически переименовываем файл или папку
                 if (item.IsDirectory)
                     Directory.Move(oldPath, newPath);
                 else
                     File.Move(oldPath, newPath);
 
-                // 1) Обновляем свойства самого узла — теперь они вызовут PropertyChanged
                 item.Name = newName;
                 item.FullPath = newPath;
 
-                // 2) Рекурсивно обновляем FullPath у всех вложенных элементов
                 if (item.IsDirectory)
                     UpdateChildrenPaths(item, oldPath, newPath);
             }

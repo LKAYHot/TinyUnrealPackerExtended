@@ -163,5 +163,11 @@ namespace TinyUnrealPackerExtended.ViewModels
             AutoInjectOutputPath = string.Empty;
             IsAutoInjectBusy = false;
         }
+
+        [RelayCommand]
+        private void DropAutoFiles(string[] paths)
+        {
+            LoadAutoFiles(paths);
+        }
     }
 }

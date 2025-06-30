@@ -102,5 +102,29 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             ExcelFiles.Remove(file);
         }
+
+        [RelayCommand]
+        private void DropExcelFiles(string[] paths)
+        {
+            if (paths == null || paths.Length == 0) return;
+            if (ExcelFiles.Count > 0) return; // можно только один
+
+            foreach (var path in paths)
+            {
+                var ext = Path.GetExtension(path).ToLowerInvariant();
+                if (ext == ".xlsx" || ext == ".csv")
+                {
+                    ExcelFiles.Add(new FileItem
+                    {
+                        FileName = Path.GetFileName(path),
+                        FilePath = path,
+                        IconKind = ext == ".xlsx"
+                            ? PackIconMaterialKind.FileExcelOutline
+                            : PackIconMaterialKind.FileDocumentOutline
+                    });
+                    break; // только первый подходящий
+                }
+            }
+        }
     }
 }

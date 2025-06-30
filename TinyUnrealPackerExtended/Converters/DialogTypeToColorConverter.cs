@@ -4,23 +4,23 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MahApps.Metro.IconPacks;
 using System.Windows.Data;
+using System.Windows.Media;
 using TinyUnrealPackerExtended.Interfaces;
 
-namespace TinyUnrealPackerExtended.Convertes
+namespace TinyUnrealPackerExtended.Converters
 {
-    public class DialogTypeToIconConverter : IValueConverter
+    public class DialogTypeToColorConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return value is DialogType type ? type switch
             {
-                DialogType.Error => PackIconMaterialKind.AlertCircleOutline,
-                DialogType.Info => PackIconMaterialKind.InformationOutline,
-                DialogType.Confirm => PackIconMaterialKind.HelpCircleOutline,
-                _ => PackIconMaterialKind.HelpCircleOutline
-            } : PackIconMaterialKind.HelpCircleOutline;
+                DialogType.Error => Brushes.IndianRed,
+                DialogType.Info => Brushes.DodgerBlue,
+                DialogType.Confirm => Brushes.Gray,
+                _ => Brushes.Gray
+            } : Brushes.Gray;
         }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();

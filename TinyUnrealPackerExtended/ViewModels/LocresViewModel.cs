@@ -136,5 +136,58 @@ namespace TinyUnrealPackerExtended.ViewModels
             LocresFiles.Remove(file);
             OriginalLocresFiles.Remove(file);
         }
+
+        [RelayCommand]
+        private void DropLocresFiles(string[] paths)
+        {
+            if (paths == null || paths.Length == 0) return;
+            if (LocresFiles.Count > 0) return; // можно только один
+
+            foreach (var path in paths)
+            {
+                var ext = Path.GetExtension(path).ToLowerInvariant();
+                if (ext == ".csv" || ext == ".locres")
+                {
+                    // если CSV — чистим Original и ставим флаг
+                    if (ext == ".csv")
+                    {
+                        IsCsvFileDropped = true;
+                        OriginalLocresFiles.Clear();
+                    }
+                    else // .locres
+                    {
+                        IsCsvFileDropped = false;
+                    }
+
+                    LocresFiles.Add(new FileItem
+                    {
+                        FileName = Path.GetFileName(path),
+                        FilePath = path
+                    });
+                    break; // только первый подходящий
+                }
+            }
+        }
+
+        [RelayCommand]
+        private void DropOriginalLocresFiles(string[] paths)
+        {
+            if (paths == null || paths.Length == 0) return;
+            if (OriginalLocresFiles.Count > 0) return;
+
+            foreach (var path in paths)
+            {
+                if (Path.GetExtension(path).Equals(".locres", StringComparison.OrdinalIgnoreCase))
+                {
+                    OriginalLocresFiles.Add(new FileItem
+                    {
+                        FileName = Path.GetFileName(path),
+                        FilePath = path
+                    });
+                    IsCsvFileDropped = false;
+                    break;
+                }
+            }
+        }
     }
 }

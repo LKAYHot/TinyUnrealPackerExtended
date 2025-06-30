@@ -174,5 +174,47 @@ namespace TinyUnrealPackerExtended.ViewModels
             InjectFiles.Remove(file);
             TextureFiles.Remove(file);
         }
+
+        [RelayCommand]
+        private void DropUassetFiles(string[] paths)
+        {
+            if (paths == null || paths.Length == 0) return;
+            // ищем первый .uasset
+            var asset = paths.FirstOrDefault(f =>
+                Path.GetExtension(f).Equals(".uasset", StringComparison.OrdinalIgnoreCase));
+            if (asset == null) return;
+
+            InjectFiles.Clear();
+            InjectFiles.Add(new FileItem
+            {
+                FileName = Path.GetFileName(asset),
+                FilePath = asset,
+                IconKind = PackIconMaterialKind.FileDocumentOutline
+            });
+        }
+
+        [RelayCommand]
+        private void DropTextureFiles(string[] paths)
+        {
+            if (paths == null || paths.Length == 0) return;
+
+            var textures = paths
+                .Where(p =>
+                    new[] { ".png", ".jpg", ".jpeg", ".tga", ".dds" }
+                    .Contains(Path.GetExtension(p).ToLowerInvariant()))
+                .ToArray();
+            if (textures.Length == 0) return;
+
+            TextureFiles.Clear();
+            foreach (var p in textures)
+            {
+                TextureFiles.Add(new FileItem
+                {
+                    FileName = Path.GetFileName(p),
+                    FilePath = p,
+                    IconKind = PackIconMaterialKind.ImageOutline
+                });
+            }
+        }
     }
 }

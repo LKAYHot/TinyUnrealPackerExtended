@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows;
 
-namespace TinyUnrealPackerExtended.Convertes
+namespace TinyUnrealPackerExtended.Converters
 {
     public class NullToVisibilityConverter : IValueConverter
     {

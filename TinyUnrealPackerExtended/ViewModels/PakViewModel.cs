@@ -116,5 +116,22 @@ namespace TinyUnrealPackerExtended.ViewModels
         [RelayCommand]
         private void RemoveFile(FileItem file)
             => PakFiles.Remove(file);
+
+        [RelayCommand]
+        private void DropPakFolder(string[] paths)
+        {
+            if (paths == null || paths.Length == 0) return;
+
+            var folder = paths.FirstOrDefault(Directory.Exists);
+            if (folder == null) return;
+
+            PakFiles.Clear();
+            PakFiles.Add(new FileItem
+            {
+                FileName = Path.GetFileName(folder),
+                FilePath = folder,
+                IconKind = PackIconMaterialKind.FolderOutline
+            });
+        }
     }
 }

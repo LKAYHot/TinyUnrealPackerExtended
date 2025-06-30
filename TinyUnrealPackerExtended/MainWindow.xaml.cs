@@ -41,155 +41,6 @@ namespace TinyUnrealPackerExtended
             _tree = FolderTree;
         }
 
-        private void DropZone_DragOver(object sender, DragEventArgs e)
-        {
-            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
-                        ? DragDropEffects.Copy
-                        : DragDropEffects.None;
-            e.Handled = true;
-        }
-
-        private void LocresZone_Drop(object sender, DragEventArgs e)
-        {
-            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-            var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            if (files.Length == 0) return;
-            if (mainWindowViewModel.LocresVM.LocresFiles.Count > 0) return;
-
-            foreach (var path in files)
-            {
-                var ext = Path.GetExtension(path).ToLowerInvariant();
-                if (ext == ".csv" || ext == ".locres")
-                {
-                    if (ext == ".csv")
-                    {
-                        mainWindowViewModel.LocresVM.IsCsvFileDropped = true;
-                        mainWindowViewModel.LocresVM.OriginalLocresFiles.Clear();
-                    }
-                    else
-                    {
-                        mainWindowViewModel.LocresVM.IsCsvFileDropped = false;
-                    }
-
-                    mainWindowViewModel.LocresVM.LocresFiles.Add(new FileItem
-                    {
-                        FileName = Path.GetFileName(path),
-                        FilePath = path
-                    });
-                }
-            }
-        }
-
-        private void OriginalLocresZone_Drop(object sender, DragEventArgs e)
-        {
-            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-            var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            if (files.Length == 0) return;
-            if (mainWindowViewModel.LocresVM.OriginalLocresFiles.Count > 0) return;
-
-            foreach (var path in files)
-            {
-                if (Path.GetExtension(path).ToLowerInvariant() == ".locres")
-                {
-                    mainWindowViewModel.LocresVM.OriginalLocresFiles.Add(new FileItem
-                    {
-                        FileName = Path.GetFileName(path),
-                        FilePath = path
-                    });
-                    // Скрываем зону сразу после дропа
-                    mainWindowViewModel.LocresVM.IsCsvFileDropped = false;
-                }
-            }
-        }
-
-
-        private void ExcelZone_Drop(object sender, DragEventArgs e)
-        {
-            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-            var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            if (files.Length == 0) return;
-            if (mainWindowViewModel.ExcelVM.ExcelFiles.Count > 0) return;
-
-            foreach (var path in files)
-            {
-                var fileName = Path.GetFileName(path);
-                if (!mainWindowViewModel.ExcelVM.ExcelFiles.Any(f => f.FileName == fileName))
-                {
-                    mainWindowViewModel.ExcelVM.ExcelFiles.Add(new FileItem
-                    {
-                        FileName = fileName,
-                        FilePath = path
-                    });
-                }
-            }
-        }
-
-        private void PakZone_Drop(object sender, DragEventArgs e)
-        {
-            // проверяем, что у нас есть файл/папка
-            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-
-            var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
-            // берём первую папку из списка
-            var folder = paths.FirstOrDefault(Directory.Exists);
-            if (folder == null) return;
-
-            // очищаем старый выбор и добавляем новое
-            mainWindowViewModel.PakVM.PakFiles.Clear();
-            mainWindowViewModel.PakVM.PakFiles.Add(new FileItem
-            {
-                FileName = Path.GetFileName(folder), // только имя конечной папки
-                FilePath = folder,
-                IconKind = PackIconMaterialKind.FolderOutline
-            });
-        }
-
-        private void UassetZone_Drop(object sender, DragEventArgs e)
-        {
-            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-            var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
-            var asset = paths.FirstOrDefault(f =>
-                Path.GetExtension(f).Equals(".uasset", StringComparison.OrdinalIgnoreCase));
-            if (asset == null) return;
-
-            mainWindowViewModel.UassetInjectorVM.InjectFiles.Clear();
-            mainWindowViewModel.UassetInjectorVM.InjectFiles.Add(new FileItem
-            {
-                FileName = Path.GetFileName(asset),
-                FilePath = asset
-            });
-        }
-
-        private void AutoZone_Drop(object sender, DragEventArgs e)
-        {
-            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-            var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
-            mainWindowViewModel.AutoInjectVM.LoadAutoFiles(paths);
-        }
-
-
-        private void TextureZone_Drop(object sender, DragEventArgs e)
-        {
-            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
-            var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
-            mainWindowViewModel.UassetInjectorVM.TextureFiles.Clear();
-            foreach (var p in paths)
-                mainWindowViewModel.UassetInjectorVM.TextureFiles.Add(new FileItem
-                {
-                    FileName = Path.GetFileName(p),
-                    FilePath = p,
-                    IconKind = PackIconMaterialKind.ImageOutline
-                });
-        }
-
-        private void AutoZone_DragOver(object sender, DragEventArgs e)
-        {
-            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop)
-                        ? DragDropEffects.Copy
-                        : DragDropEffects.None;
-            e.Handled = true;
-        }
-
         private void FolderItem_DragOver(object sender, DragEventArgs e)
         {
             // 1) Устанавливаем эффект
@@ -273,7 +124,7 @@ namespace TinyUnrealPackerExtended
         {
             if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
             var paths = (string[])e.Data.GetData(DataFormats.FileDrop);
-            var targetFolder = mainWindowViewModel.SelectedFolderItem;
+            var targetFolder = mainWindowViewModel.FolderEditorVM.SelectedFolderItem;
             if (targetFolder == null || !targetFolder.IsDirectory) return;
 
             foreach (var srcPath in paths)
@@ -296,12 +147,10 @@ namespace TinyUnrealPackerExtended
                         continue;
                     }
 
-                    // Добавляем в модель, чтобы появилось в ListView
                     mainWindowViewModel.FolderEditorVM.AddFileIntoFolder(targetFolder, destPath);
                 }
                 catch (Exception ex)
                 {
-                    // Можно показывать Growl-уведомление об ошибке
                 }
             }
 
