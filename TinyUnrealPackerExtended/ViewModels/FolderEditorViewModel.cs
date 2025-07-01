@@ -122,14 +122,6 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private void NavigateToBreadcrumb(string path)
-        {
-            FolderEditorRootPath = path;
-            SelectedFolderItem = FindFolderItem(path, FolderItems);
-            UpdateBreadcrumbs();
-        }
-
-        [RelayCommand]
         private void RefreshFolder()
         {
             _backStack.Clear();
@@ -328,37 +320,55 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             Breadcrumbs.Clear();
             Overflow.Clear();
-            if (string.IsNullOrWhiteSpace(RootFolder)) return;
+
+            if (string.IsNullOrWhiteSpace(RootFolder))
+                return;
 
             var all = new List<BreadcrumbItem>
             {
-                new BreadcrumbItem { Name = Path.GetFileName(RootFolder.TrimEnd(Path.DirectorySeparatorChar)), FullPath = RootFolder }
+                 new BreadcrumbItem
+                 {
+                    Name = Path.GetFileName(RootFolder.TrimEnd(Path.DirectorySeparatorChar)),
+                     FullPath = RootFolder
+                 }
             };
+
             if (!FolderEditorRootPath.Equals(RootFolder, StringComparison.OrdinalIgnoreCase))
             {
-                var rel = FolderEditorRootPath.Substring(RootFolder.Length).Trim(Path.DirectorySeparatorChar);
+                var accumPath = RootFolder.TrimEnd(Path.DirectorySeparatorChar);
+                var rel = FolderEditorRootPath
+                              .Substring(accumPath.Length)
+                              .Trim(Path.DirectorySeparatorChar);
+
                 foreach (var part in rel.Split(Path.DirectorySeparatorChar))
                 {
-                    var accum = Path.Combine(RootFolder, part);
-                    all.Add(new BreadcrumbItem { Name = part, FullPath = accum });
+                    accumPath = Path.Combine(accumPath, part);
+                    all.Add(new BreadcrumbItem
+                    {
+                        Name = part,
+                        FullPath = accumPath
+                    });
                 }
             }
 
             foreach (var b in all)
                 Breadcrumbs.Add(b);
 
-            // If initial load or count <= MaxVisible, clear overflow
             if (all.Count <= MaxVisible)
             {
                 Overflow.Clear();
             }
             else if (!isInitial)
             {
-                Overflow = all.Skip(1).Take(all.Count - MaxVisible + 1).ToList();
+                Overflow = all
+                    .Skip(1)
+                    .Take(all.Count - MaxVisible + 1)
+                    .ToList();
             }
 
             OnPropertyChanged(nameof(DisplayBreadcrumbs));
         }
+
 
         private FolderItem BuildTreeItem(DirectoryInfo dir)
         {
