@@ -1,0 +1,159 @@
+﻿<UserControl x:Class="TinyUnrealPackerExtended.Views.UassetInjectorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:behaviors="clr-namespace:TinyUnrealPackerExtended.Behaviors"
+             xmlns:vm="clr-namespace:TinyUnrealPackerExtended.ViewModels"
+             DataContext="{Binding UassetInjectorVM}">
+    <Border Style="{StaticResource CardStyle}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition MinHeight="130"/>
+
+                <RowDefinition MinHeight="130"/>
+
+                <RowDefinition Height="20"/>
+
+                <RowDefinition Height="50"/>
+
+
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- .uasset DROP ZONE -->
+            <hc:DashedBorder
+                   Style="{StaticResource AnimatedDashedDropZone}" BorderBrush="#CCCCCC" BorderDashArray="3, 1" BorderThickness="2" Grid.Row="0">
+                <i:Interaction.Behaviors>
+                    <behaviors:FileDropBehavior FileDropCommand="{Binding DropUassetFilesCommand}"/>
+                </i:Interaction.Behaviors>
+                <Grid>
+                    <!-- 1) Панель «дроп/выбор», когда нет InjectFiles -->
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasInjectFile}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Drag &amp; Drop или нажмите, чтобы загрузить .uasset"
+                   FontSize="16" Foreground="#888888" TextAlignment="Center"/>
+                        <Button Content="Выбрать .uasset"
+                Command="{Binding BrowseOriginalUassetCommand}"
+                Style="{StaticResource SecondaryButtonStyle}"
+                Margin="0,12,0,0"/>
+                    </StackPanel>
+
+                    <!-- 2) Список InjectFiles + удаление через RemoveFile -->
+                    <ItemsControl ItemsSource="{Binding InjectFiles}"
+          ItemTemplate="{StaticResource FileItemTemplate}"
+          Margin="0">
+                        <ItemsControl.Style>
+                            <Style TargetType="ItemsControl">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasInjectFile}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsInjectBusy}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ItemsControl.Style>
+                    </ItemsControl>
+
+                    <ProgressBar IsIndeterminate="True"
+                   Height="16"
+                   VerticalAlignment="Center"
+                   Visibility="{Binding IsInjectBusy, Converter={StaticResource BoolToVis}}"
+                   Style="{StaticResource ProgressBarSuccess}"/>
+                </Grid>
+            </hc:DashedBorder>
+
+            <!-- TEXTURES DROP ZONE -->
+            <hc:DashedBorder
+                   Style="{StaticResource AnimatedDashedDropZone}"
+                   Margin="0,12,0,0" BorderBrush="#CCCCCC" BorderDashArray="3, 1" BorderThickness="2" Grid.Row="1">
+                <i:Interaction.Behaviors>
+                    <behaviors:FileDropBehavior FileDropCommand="{Binding DropTextureFilesCommand}"/>
+                </i:Interaction.Behaviors>
+                <Grid>
+                    <!-- Дроп/выбор -->
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasTextureFiles}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                        <TextBlock Text="Drag &amp; Drop или нажмите, чтобы загрузить текстуры"
+                   FontSize="16" Foreground="#888888" TextAlignment="Center"/>
+                        <Button Content="Выбрать файл(ы)"
+                Command="{Binding BrowseTextureCommand}"
+                Style="{StaticResource SecondaryButtonStyle}"
+                Margin="0,12,0,0"/>
+                    </StackPanel>
+
+                    <!-- Список TextureFiles + удаление -->
+                    <ItemsControl ItemsSource="{Binding TextureFiles}"
+          ItemTemplate="{StaticResource FileItemTemplate}"
+          Margin="0">
+                        <ItemsControl.Style>
+                            <Style TargetType="ItemsControl">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasTextureFiles}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+
+                                    <DataTrigger Binding="{Binding IsInjectBusy}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ItemsControl.Style>
+                    </ItemsControl>
+
+                    <ProgressBar IsIndeterminate="True"
+                   Height="16"
+                   VerticalAlignment="Center"
+                   Visibility="{Binding IsInjectBusy, Converter={StaticResource BoolToVis}}"
+                   Style="{StaticResource ProgressBarSuccess}"/>
+                </Grid>
+            </hc:DashedBorder>
+
+            <!-- OUTPUT FOLDER -->
+
+
+            <Button
+Command="{Binding BrowseInjectOutputCommand}"
+Style="{StaticResource TrimmedSecondaryButtonStyle}"
+Padding="12,8"
+Content="{Binding InjectOutputButtonText}" MinWidth="640" Width="Auto" Grid.Row="3" Margin="0,0,0,0" />
+
+            <!-- ACTION BUTTONS -->
+            <StackPanel Orientation="Horizontal"
+              HorizontalAlignment="Right" Grid.Row="4" VerticalAlignment="Bottom">
+                <Button Content="Отмена"
+            Command="{Binding CancelInjectCommand}"
+            Style="{StaticResource SecondaryButtonStyle}"
+            Visibility="{Binding HasInjectFile, Converter={StaticResource BoolToVis}}"/>
+                <Button Content="Инжект"
+            Command="{Binding ProcessInjectCommand}"
+            Style="{StaticResource PrimaryButtonStyle}"
+            Margin="6,0,0,0"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

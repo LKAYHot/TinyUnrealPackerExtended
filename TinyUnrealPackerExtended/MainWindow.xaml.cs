@@ -507,56 +507,6 @@ namespace TinyUnrealPackerExtended
             }), DispatcherPriority.Background);
         }
 
-
-
-        private void OnAnimatedDropZoneLoaded(object sender, RoutedEventArgs e)
-        {
-            if (sender is not DashedBorder dz) return;
-            if (dz.Background is SolidColorBrush bg && bg.IsFrozen)
-                dz.Background = bg.Clone();
-            if (dz.BorderBrush is SolidColorBrush bd && bd.IsFrozen)
-                dz.BorderBrush = bd.Clone();
-        }
-
-        private void OnAnimatedDropZoneDragEnter(object sender, DragEventArgs e)
-        {
-            if (sender is not DashedBorder dz) return;
-            var bg = dz.Background as SolidColorBrush;
-            var bd = dz.BorderBrush as SolidColorBrush;
-            bg?.BeginAnimation(SolidColorBrush.ColorProperty,
-                new ColorAnimation((Color)ColorConverter.ConvertFromString("#eff8ff"), TimeSpan.FromSeconds(0.2)));
-            bd?.BeginAnimation(SolidColorBrush.ColorProperty,
-                new ColorAnimation((Color)ColorConverter.ConvertFromString("#0f80d6"), TimeSpan.FromSeconds(0.2)));
-        }
-
-        private void OnAnimatedDropZoneDragLeave(object sender, DragEventArgs e)
-        {
-            if (sender is not DashedBorder dz) return;
-            var bg = dz.Background as SolidColorBrush;
-            var bd = dz.BorderBrush as SolidColorBrush;
-            bg?.BeginAnimation(SolidColorBrush.ColorProperty,
-                new ColorAnimation(Colors.White, TimeSpan.FromSeconds(0.2)));
-            bd?.BeginAnimation(SolidColorBrush.ColorProperty,
-                new ColorAnimation((Color)ColorConverter.ConvertFromString("#CCCCCC"), TimeSpan.FromSeconds(0.2)));
-        }
-
-        private void OnAnimatedDropZoneDrop(object sender, DragEventArgs e)
-        {
-            if (sender is not DashedBorder dz) return;
-            if (dz.Background is SolidColorBrush bg0 && bg0.IsFrozen)
-                dz.Background = bg0.Clone();
-            if (dz.BorderBrush is SolidColorBrush bd0 && bd0.IsFrozen)
-                dz.BorderBrush = bd0.Clone();
-            var successBg = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#e6ffed"));
-            var successBd = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#28a745"));
-            dz.Background = successBg;
-            dz.BorderBrush = successBd;
-            var bgAnim = new ColorAnimation(Colors.White, new Duration(TimeSpan.FromSeconds(0.5))) { BeginTime = TimeSpan.FromSeconds(0.5) };
-            var bdAnim = new ColorAnimation((Color)ColorConverter.ConvertFromString("#CCCCCC"), new Duration(TimeSpan.FromSeconds(0.5))) { BeginTime = TimeSpan.FromSeconds(0.5) };
-            successBg.BeginAnimation(SolidColorBrush.ColorProperty, bgAnim);
-            successBd.BeginAnimation(SolidColorBrush.ColorProperty, bdAnim);
-        }
-
         private void DragArea_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)

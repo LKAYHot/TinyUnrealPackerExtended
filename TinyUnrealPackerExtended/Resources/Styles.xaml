@@ -322,6 +322,63 @@ CommandParameter="{Binding PlacementTarget.DataContext,
         </Setter>
     </Style>
 
+    <Style x:Key="FileBorderStyle1" TargetType="Border">
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="10" Opacity="0.15" ShadowDepth="2"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <DataTemplate x:Key="AutoInjectItemTemplate">
+        <Border x:Name="Bd"
+  Background="White"
+  CornerRadius="6"
+  Padding="12"
+  Tag="{Binding DataContext.AutoInjectVM, RelativeSource={RelativeSource AncestorType=Window}}"
+  Margin="0,8,0,0" Style="{StaticResource FileBorderStyle1}">
+            
+            <Border.ContextMenu>
+                <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                    <MenuItem Header="Удалить"
+                          Command="{Binding RemoveAutoInjectItemCommand}"
+                          CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                </ContextMenu>
+            </Border.ContextMenu>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <iconPacks:PackIconMaterial
+  Kind="FileDocumentOutline"
+  Width="24" Height="24"
+  VerticalAlignment="Center"
+  Grid.Column="0"/>
+                <TextBlock
+  Text="{Binding Name}"
+  VerticalAlignment="Center"
+  Margin="12,0,0,0"
+  Grid.Column="1"
+  FontSize="14"
+  TextTrimming="CharacterEllipsis"/>
+                <TextBlock
+  Text="{Binding Status}"
+  VerticalAlignment="Center"
+  Margin="12,0,0,0"
+  Grid.Column="2"
+  FontSize="14"/>
+            </Grid>
+        </Border>
+
+        <DataTemplate.Triggers>
+            <Trigger SourceName="Bd" Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bd" Property="Background" Value="#e6f2ff"/>
+            </Trigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
     <Style x:Key="CardStyle" TargetType="Border">
         <Setter Property="Background" Value="White"/>
         <Setter Property="CornerRadius" Value="8"/>
@@ -597,5 +654,121 @@ CommandParameter="{Binding PlacementTarget.DataContext,
         </Setter>
     </Style>
 
+    <Storyboard x:Key="DashOffsetStoryboard">
+        <DoubleAnimation
+            Storyboard.TargetProperty="(hc:DashedBorder.BorderDashOffset)"
+            From="0" To="4"
+            Duration="0:0:1"
+            RepeatBehavior="Forever"/>
+    </Storyboard>
+
+    <Storyboard x:Key="DragEnterColorStoryboard">
+        <ColorAnimation
+            Storyboard.TargetProperty="(hc:DashedBorder.Background).(SolidColorBrush.Color)"
+            To="#EFF8FF"
+            Duration="0:0:0.2"/>
+        <ColorAnimation
+            Storyboard.TargetProperty="(hc:DashedBorder.BorderBrush).(SolidColorBrush.Color)"
+            To="#0F80D6"
+            Duration="0:0:0.2"/>
+    </Storyboard>
+
+    <Storyboard x:Key="DragLeaveColorStoryboard">
+        <ColorAnimation
+            Storyboard.TargetProperty="(hc:DashedBorder.Background).(SolidColorBrush.Color)"
+            To="White"
+            Duration="0:0:0.2"/>
+        <ColorAnimation
+            Storyboard.TargetProperty="(hc:DashedBorder.BorderBrush).(SolidColorBrush.Color)"
+            To="#CCCCCC"
+            Duration="0:0:0.2"/>
+    </Storyboard>
+
+    <Storyboard x:Key="DropColorStoryboard">
+        <!-- Background animation -->
+        <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(hc:DashedBorder.Background).(SolidColorBrush.Color)">
+            <DiscreteColorKeyFrame Value="#E6FFED" KeyTime="0:0:0"/>
+            <LinearColorKeyFrame Value="White" KeyTime="0:0:1"/>
+        </ColorAnimationUsingKeyFrames>
+        <!-- BorderBrush animation -->
+        <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(hc:DashedBorder.BorderBrush).(SolidColorBrush.Color)">
+            <DiscreteColorKeyFrame Value="#28A745" KeyTime="0:0:0"/>
+            <LinearColorKeyFrame Value="#CCCCCC" KeyTime="0:0:1"/>
+        </ColorAnimationUsingKeyFrames>
+    </Storyboard>
+
+    <Style x:Key="AnimatedDashedDropZone" TargetType="hc:DashedBorder">
+        <!-- Базовые визуальные настройки -->
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        <Setter Property="BorderDashArray" Value="3,1"/>
+        <Setter Property="BorderDashThickness" Value="2"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="24"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="10" Opacity="0.15" ShadowDepth="2"/>
+            </Setter.Value>
+        </Setter>
+
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="DragEnter">
+                <BeginStoryboard x:Name="DashAnim" Storyboard="{StaticResource DashOffsetStoryboard}"/>
+                <BeginStoryboard Storyboard="{StaticResource DragEnterColorStoryboard}"/>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="DragLeave">
+                <StopStoryboard BeginStoryboardName="DashAnim"/>
+                <BeginStoryboard Storyboard="{StaticResource DragLeaveColorStoryboard}"/>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="Drop">
+                <StopStoryboard BeginStoryboardName="DashAnim"/>
+                <BeginStoryboard Storyboard="{StaticResource DropColorStoryboard}"/>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <DataTemplate x:Key="FileItemTemplate">
+        <!-- Обёртка для тени/фонового цвета -->
+        <Border Style="{StaticResource FileBorderStyle}"
+    Background="White"
+    CornerRadius="6"
+    Padding="12"
+    Margin="0,8,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Иконка -->
+                <iconPacks:PackIconMaterial
+        Kind="{Binding IconKind}"
+        Width="24" Height="24"
+        VerticalAlignment="Center"
+        Grid.Column="0"/>
+
+                <!-- Имя файла -->
+                <TextBlock
+        Text="{Binding FileName}"
+        VerticalAlignment="Center"
+        Margin="12,0,0,0"
+        Grid.Column="1"
+        FontSize="14"
+        TextTrimming="CharacterEllipsis"/>
+
+                <!-- Кнопка удаления -->
+                <Button
+        Content="✕"
+        VerticalAlignment="Center"
+        Width="28" Height="28"
+        Command="{Binding DataContext.RemoveFileCommand,
+                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+        CommandParameter="{Binding}"
+        Style="{StaticResource SecondaryButtonStyle}"
+        Grid.Column="2"/>
+            </Grid>
+        </Border>
+    </DataTemplate>
 
 </ResourceDictionary>
