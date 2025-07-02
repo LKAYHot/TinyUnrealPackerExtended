@@ -6,14 +6,6 @@
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:behaviors="clr-namespace:TinyUnrealPackerExtended.Behaviors"
              xmlns:local1="clr-namespace:TinyUnrealPackerExtended.ViewModels">
-    <UserControl.Resources>
-        <Style x:Key="ListViewItemWithMenuWithDoubleClick"
-               TargetType="ListViewItem"
-               BasedOn="{StaticResource ListViewItemWithMenu}">
-            <EventSetter Event="MouseDoubleClick"
-                         Handler="ListViewItem_MouseDoubleClick" />
-        </Style>
-    </UserControl.Resources>
     <Border Style="{StaticResource CardStyle}"
             Padding="12">
         <Grid>
@@ -40,16 +32,14 @@
                     <StackPanel Orientation="Horizontal"
                                 DockPanel.Dock="Left"
                                 Margin="0,0,8,0">
-                        <Button Click="Back_Click"
-                                IsEnabled="{Binding CanGoBack}"
+                        <Button Command="{Binding GoBackCommand}"
                                 Style="{StaticResource NavigationButtonStyle}"
                                 ToolTip="Назад">
                             <iconPacks:PackIconMaterial Kind="ArrowLeft"
                                                         Width="16"
                                                         Height="16" />
                         </Button>
-                        <Button Click="Forward_Click"
-                                IsEnabled="{Binding CanGoForward}"
+                        <Button Command="{Binding GoForwardCommand}"
                                 Style="{StaticResource NavigationButtonStyle}"
                                 ToolTip="Вперед">
                             <iconPacks:PackIconMaterial Kind="ArrowRight"
@@ -72,13 +62,16 @@
 
                     <StackPanel Orientation="Horizontal"
                                 DockPanel.Dock="Right">
-                        <TextBox x:Name="SearchBox"
-                                 Style="{StaticResource SearchTextBoxStyle}"
-                                 KeyDown="SearchBox_KeyDown" />
-                        <Button x:Name="SearchButton"
+                        <TextBox Style="{StaticResource SearchTextBoxStyle}"
+                                 Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter"
+                                            Command="{Binding SearchCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
+                        <Button Command="{Binding SearchCommand}"
                                 Style="{StaticResource NavigationButtonStyle}"
                                 ToolTip="Искать"
-                                Click="SearchButton_Click"
                                 Margin="4,0,0,0">
                             <iconPacks:PackIconMaterial Kind="Magnify"
                                                         Width="16"
@@ -86,7 +79,6 @@
                         </Button>
                     </StackPanel>
 
-                    <!-- Центр (LastChildFill) можно оставить пустым или добавить дополнительные элементы -->
 
                 </DockPanel>
             </Border>
@@ -117,8 +109,7 @@
                                 <Button x:Name="BtnNormal"
                                         Style="{StaticResource BreadcrumbButtonStyle}"
                                         Content="{Binding Name}"
-                                        Command="{Binding Path=DataContext.NavigateToCommand,
-                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        Command="{Binding Path=DataContext.NavigateToCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding FullPath}" />
                                 <Button x:Name="BtnOverflow"
                                         Style="{StaticResource BreadcrumbButtonStyle}"
@@ -182,17 +173,51 @@
                           Grid.Column="0"
                           VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled"
+                          behaviors:TreeViewMouseWheelBehavior.EnableMouseWheelScrolling="True"
                           x:Name="FolderTreeScrollViewer">
                 <TreeView x:Name="FolderTree"
                           ItemsSource="{Binding FolderItems}"
-                          SelectedItemChanged="FolderTree_SelectedItemChanged"
                           ScrollViewer.CanContentScroll="True"
                           VirtualizingStackPanel.IsVirtualizing="True"
                           VirtualizingStackPanel.VirtualizationMode="Recycling"
                           VirtualizingStackPanel.IsVirtualizingWhenGrouping="True"
                           VirtualizingStackPanel.CacheLength="2"
-                          Background="#FFE8E8E8"
-                          PreviewMouseWheel="FolderTree_PreviewMouseWheel">
+                          Background="#FFE8E8E8">
+
+                    <i:Interaction.Triggers>
+
+                        <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                            <i:InvokeCommandAction Command="{Binding BeginDragCommand}"
+                                                   PassEventArgsToCommand="True" />
+                        </i:EventTrigger>
+
+                        <i:EventTrigger EventName="MouseMove">
+                            <i:InvokeCommandAction Command="{Binding MouseMoveCommand}"
+                                                   PassEventArgsToCommand="True" />
+                        </i:EventTrigger>
+
+                        <i:EventTrigger EventName="DragOver">
+                            <i:InvokeCommandAction Command="{Binding DragOverCommand}"
+                                                   PassEventArgsToCommand="True" />
+                        </i:EventTrigger>
+
+                        <i:EventTrigger EventName="Drop">
+                            <i:InvokeCommandAction Command="{Binding DropCommand}"
+                                                   PassEventArgsToCommand="True" />
+                        </i:EventTrigger>
+
+                        <i:EventTrigger EventName="SelectedItemChanged">
+                            <i:InvokeCommandAction Command="{Binding TreeSelectionChangedCommand}"
+                                                   PassEventArgsToCommand="True" />
+                        </i:EventTrigger>
+
+                        <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                            <i:InvokeCommandAction Command="{Binding PreviewMouseDownCommand}"
+                                                   PassEventArgsToCommand="True" />
+                        </i:EventTrigger>
+
+
+                    </i:Interaction.Triggers>
 
                     <TreeView.Resources>
                         <!-- Отключаем стандартные подсветки -->
@@ -216,16 +241,21 @@
                                     Margin="0,4"
                                     MinHeight="36"
                                     Effect="{StaticResource ItemShadowEffect}"
-                                    Tag="{Binding DataContext.FolderEditorVM, RelativeSource={RelativeSource AncestorType=Window}}"
-                                    PreviewMouseLeftButtonDown="FolderItem_PreviewMouseLeftButtonDown">
+                                    Tag="{Binding DataContext.FolderEditorVM, RelativeSource={RelativeSource AncestorType=Window}}">
 
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                        <i:InvokeCommandAction Command="{Binding DataContext.PreviewMouseDownCommand, 
+               RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                               PassEventArgsToCommand="True" />
+                                    </i:EventTrigger>
+                                </i:Interaction.Triggers>
                                 <!-- Контекстное меню -->
                                 <Border.ContextMenu>
                                     <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                         <MenuItem Header="Открыть расположение"
                                                   Command="{Binding OpenFolderCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext,
-                           RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                         <Separator />
                                         <MenuItem Header="Копировать"
                                                   Command="{Binding CopyFolderItemCommand}"
@@ -233,27 +263,22 @@
                                             RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                         <MenuItem Header="Вырезать"
                                                   Command="{Binding CutFolderItemCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext,
-RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                         <MenuItem Header="Вставить"
                                                   Command="{Binding PasteIntoFolderCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext,
-RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                   IsEnabled="{Binding CanPaste}" />
                                         <Separator />
                                         <MenuItem Header="Переименовать"
                                                   Command="{Binding RenameFolderItemCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext,
-RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                         <MenuItem Header="Удалить"
                                                   Command="{Binding RemoveFolderItemCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext,
-RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                         <Separator />
                                         <MenuItem Header="Свойства"
                                                   Command="{Binding ShowPropertiesCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext,
-RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                     </ContextMenu>
                                 </Border.ContextMenu>
 
@@ -376,14 +401,7 @@ RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                     Value="{x:Null}" />
                             <Setter Property="AllowDrop"
                                     Value="True" />
-                            <EventSetter Event="DragOver"
-                                         Handler="FolderItem_DragOver" />
-                            <EventSetter Event="Drop"
-                                         Handler="FolderItem_Drop" />
-                            <EventSetter Event="PreviewMouseLeftButtonDown"
-                                         Handler="FolderItem_PreviewMouseLeftButtonDown" />
-                            <EventSetter Event="MouseMove"
-                                         Handler="FolderItem_MouseMove" />
+
 
                             <!-- 2. Подмена шаблона с нашей стрелкой + фиксом Border -->
                             <Setter Property="Template">
@@ -480,14 +498,31 @@ RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                           Grid.RowSpan="3"
                           Grid.Column="1"
                           AllowDrop="True"
-                          DragOver="ListView_DragOver"
-                          Drop="ListView_Drop"
+                          x:Name="FolderListView"
                           ItemsSource="{Binding SelectedFolderItem.Children}"
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.VirtualizationMode="Recycling"
                           VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                           SnapsToDevicePixels="True"
-                          ItemContainerStyle="{StaticResource ListViewItemWithMenuWithDoubleClick}">
+                          ItemContainerStyle="{StaticResource ListViewItemWithMenu}">
+                    <i:Interaction.Triggers>
+                        <!-- Перетаскивание файлов -->
+                        <i:EventTrigger EventName="DragOver">
+                            <i:InvokeCommandAction Command="{Binding FileDropOverCommand}"
+                                                   PassEventArgsToCommand="True" />
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="Drop">
+                            <i:InvokeCommandAction Command="{Binding FileDropCommand}"
+                                                   PassEventArgsToCommand="True" />
+                        </i:EventTrigger>
+
+                        <!-- Двойной клик -->
+                        <i:EventTrigger EventName="MouseDoubleClick">
+                            <i:InvokeCommandAction Command="{Binding ItemDoubleClickCommand}"
+                                                   PassEventArgsToCommand="False"
+                                                   CommandParameter="{Binding SelectedItem, ElementName=FolderListView}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
                     <!-- Существующий GridView -->
                     <ListView.View>
                         <GridView>

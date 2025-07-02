@@ -23,6 +23,8 @@ using System.Diagnostics;
 using HandyControl.Controls;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
@@ -44,6 +46,11 @@ namespace TinyUnrealPackerExtended.ViewModels
         [ObservableProperty] private bool canGoForward;
         [ObservableProperty] private int maxVisible = int.MaxValue;
 
+        public TreeView FolderTreeControl { get; set; }
+        private FolderItem _draggedFolderItem;
+        private FolderItem _lastTargetFolderItem;
+        private Point _dragStartPoint;
+
         [ObservableProperty] private bool canEditFolderEditor;
 
         [ObservableProperty] private ImageSource selectedTexturePreview;
@@ -58,6 +65,8 @@ namespace TinyUnrealPackerExtended.ViewModels
         private FolderItem _clipboardItem;
         private bool _isCut;
         public bool CanPaste => _clipboardItem != null;
+
+        private bool _suppressTreeNav;
 
         /// <summary>
         /// Exposes breadcrumbs with overflow handling.
@@ -110,7 +119,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private void NavigateTo(string path) => DoNavigate(path, false);
+        private void NavigateTo(string path) => DoNavigateInternal(path, false);
 
         [RelayCommand(CanExecute = nameof(CanGoBack))]
         private void GoBack()
@@ -118,7 +127,12 @@ namespace TinyUnrealPackerExtended.ViewModels
             if (_backStack.Count == 0) return;
             var prev = _backStack.Pop();
             _forwardStack.Push(FolderEditorRootPath);
-            DoNavigate(prev, true);
+
+            // Навигация без добавления в историю
+            _suppressTreeNav = true;
+            DoNavigateInternal(prev, addToHistory: false);
+            Application.Current.Dispatcher.BeginInvoke(new Action(() => _suppressTreeNav = false),
+                                                       DispatcherPriority.Background);
         }
 
         [RelayCommand(CanExecute = nameof(CanGoForward))]
@@ -127,7 +141,14 @@ namespace TinyUnrealPackerExtended.ViewModels
             if (_forwardStack.Count == 0) return;
             var next = _forwardStack.Pop();
             _backStack.Push(FolderEditorRootPath);
-            DoNavigate(next, true);
+
+            _suppressTreeNav = true;
+            PerformNavigation(next);
+
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _suppressTreeNav = false;
+            }), DispatcherPriority.Background);
         }
 
         [RelayCommand]
@@ -305,24 +326,26 @@ namespace TinyUnrealPackerExtended.ViewModels
             UpdateBreadcrumbs();
         }
 
-        private void DoNavigate(string path, bool fromHistory)
+       
+        private void DoNavigateInternal(string path, bool addToHistory)
         {
-            if (!fromHistory && !string.IsNullOrEmpty(FolderEditorRootPath))
-            {
+            if (addToHistory && !string.IsNullOrEmpty(FolderEditorRootPath))
                 _backStack.Push(FolderEditorRootPath);
-                _forwardStack.Clear();
-            }
 
             FolderEditorRootPath = path;
             SelectedFolderItem = FindFolderItem(path, FolderItems) ?? SelectedFolderItem;
             UpdateBreadcrumbs();
             UpdateNavigationProperties();
+            ExpandAndSelectPath(path);
         }
 
         private void UpdateNavigationProperties()
         {
             CanGoBack = _backStack.Count > 0;
             CanGoForward = _forwardStack.Count > 0;
+
+            GoBackCommand.NotifyCanExecuteChanged();
+            GoForwardCommand.NotifyCanExecuteChanged();
         }
 
         private void UpdateBreadcrumbs(bool isInitial = false)
@@ -635,44 +658,195 @@ int insertIndex)
             });
         }
 
-        ////////////// Future refactoring ----- MVVM
-      /*  [RelayCommand]
-        private void Search(string query)
-        {
-            if (string.IsNullOrWhiteSpace(query)) return;
-
-            // Поиск узла
-            var match = FindMatch(FolderItems, query);
-            if (match == null) return;
-
-            string target = match.IsDirectory ? match.FullPath : Path.GetDirectoryName(match.FullPath)!;
-            NavigateToCommand.Execute(target);
-            // Открыть/выбрать найденный узел
-            ExpandAndSelect(match.FullPath);
-        }
 
         [RelayCommand]
-        private void TreeViewSelectionChanged(object item)
+        private void BeginDrag(MouseButtonEventArgs args)
         {
-            if (item is FolderItem fi && fi.IsDirectory)
+            // Запоминаем точку старта и сам элемент
+            _dragStartPoint = args.GetPosition(null);
+            if (args.OriginalSource is FrameworkElement fe
+                && fe.DataContext is FolderItem fi)
             {
-                NavigateToCommand.Execute(fi.FullPath);
-                ExpandAndSelect(fi.FullPath);
+                _draggedFolderItem = fi;
+                _lastTargetFolderItem = null;
             }
         }
 
         [RelayCommand]
-        private void ListItemDoubleClick(object selected)
+        private void PreviewMouseDown(MouseButtonEventArgs args)
         {
-            if (selected is not FolderItem item) return;
+            // Запоминаем точку старта и элемент для Drag&Drop
+            _dragStartPoint = args.GetPosition(null);
+            if (args.OriginalSource is FrameworkElement fe && fe.DataContext is FolderItem fi)
+            {
+                _draggedFolderItem = fi;
+            }
+        }
+
+        // 2.2. Движение мыши — проверяем, перешли ли Threshold, и запускаем DragDrop
+        [RelayCommand]
+        private void OnMouseMove(MouseEventArgs args)
+        {
+            if (_draggedFolderItem == null || args.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            var current = args.GetPosition(null);
+            if (Math.Abs(current.X - _dragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
+                Math.Abs(current.Y - _dragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
+                return;
+
+            // Запускаем нативный DragDrop
+            var data = new DataObject("FolderItem", _draggedFolderItem);
+            DragDrop.DoDragDrop(Application.Current.MainWindow, data, DragDropEffects.Move);
+
+            // Сброс состояния
+            _draggedFolderItem = null;
+            _lastTargetFolderItem = null;
+        }
+
+        // 2.3. Перетаскивание над элементом — аналог FolderItem_DragOver
+        [RelayCommand]
+        private void OnDragOver(DragEventArgs args)
+        {
+            // 1) Устанавливаем эффект
+            if (args.Data.GetDataPresent("FolderItem"))
+                args.Effects = DragDropEffects.Move;
+            else if (args.Data.GetDataPresent(DataFormats.FileDrop))
+                args.Effects = DragDropEffects.Copy;
+            else
+                args.Effects = DragDropEffects.None;
+            args.Handled = true;
+
+            if (_draggedFolderItem == null) return;
+
+            // 2) Находим target
+            if (!(args.OriginalSource is DependencyObject src)) return;
+            var container = VisualTreeHelperExtensions.GetAncestor<TreeViewItem>(src);
+            if (container?.DataContext is not FolderItem target) return;
+            if (target == _draggedFolderItem || target == _lastTargetFolderItem) return;
+
+            // 3) Выбираем коллекцию-назначение
+            var dest = target.IsDirectory
+                       ? target.Children
+                       : FindParentCollection(target, FolderItems);
+
+            if (dest == null) return;
+
+            // 4) Решаем индекс вставки (можно упростить — всегда вставляем в конец)
+            int insertIndex = dest.Count;
+
+            // 5) Вызываем метод VM
+            ReparentVisualAt(_draggedFolderItem, dest, insertIndex);
+
+            _lastTargetFolderItem = target;
+        }
+
+        // 2.4. Бросок — аналог FolderItem_Drop
+        [RelayCommand]
+        private void OnDrop(DragEventArgs args)
+        {
+            // Внутренний DnD
+            if (args.Data.GetDataPresent("FolderItem") &&
+                args.OriginalSource is DependencyObject src &&
+                VisualTreeHelperExtensions.GetAncestor<TreeViewItem>(src) is TreeViewItem tvi &&
+                tvi.DataContext is FolderItem target)
+            {
+                var source = args.Data.GetData("FolderItem") as FolderItem;
+                if (source != null)
+                {
+                    MoveFolderItem(source, target);
+                    _draggedFolderItem = null;
+                    _lastTargetFolderItem = null;
+                    args.Handled = true;
+                    return;
+                }
+            }
+
+            // Внешний файловый Drop
+            if (args.Data.GetDataPresent(DataFormats.FileDrop) &&
+                args.OriginalSource is DependencyObject src2 &&
+                VisualTreeHelperExtensions.GetAncestor<TreeViewItem>(src2)?.DataContext is FolderItem targetExt)
+            {
+                var files = (string[])args.Data.GetData(DataFormats.FileDrop);
+                foreach (var srcPath in files)
+                {
+                    var destPath = Path.Combine(targetExt.FullPath, Path.GetFileName(srcPath));
+                    File.Copy(srcPath, destPath, overwrite: true);
+                    AddFileIntoFolder(targetExt, destPath);
+                }
+                args.Handled = true;
+            }
+        }
+
+        private ObservableCollection<FolderItem> FindParentCollection(
+    FolderItem item,
+    ObservableCollection<FolderItem> nodes)
+        {
+            if (nodes.Contains(item))
+                return nodes;
+
+            foreach (var node in nodes)
+            {
+                var found = FindParentCollection(item, node.Children);
+                if (found != null)
+                    return found;
+            }
+
+            return null;
+        }
+
+        [RelayCommand]
+        private void FileDropOver(DragEventArgs args)
+        {
+            args.Effects = args.Data.GetDataPresent(DataFormats.FileDrop)
+                ? DragDropEffects.Copy
+                : DragDropEffects.None;
+            args.Handled = true;
+        }
+
+        // 2) Обработка Drop на ListView
+        [RelayCommand]
+        private void FileDrop(DragEventArgs args)
+        {
+            if (!args.Data.GetDataPresent(DataFormats.FileDrop)) return;
+            var paths = (string[])args.Data.GetData(DataFormats.FileDrop);
+            if (SelectedFolderItem == null || !SelectedFolderItem.IsDirectory) return;
+
+            foreach (var srcPath in paths)
+            {
+                CopyDirectoryOrFile(srcPath, SelectedFolderItem);
+            }
+            args.Handled = true;
+        }
+
+        // Вспомогательный метод
+        private void CopyDirectoryOrFile(string srcPath, FolderItem target)
+        {
+            var dest = Path.Combine(target.FullPath, Path.GetFileName(srcPath));
+            if (Directory.Exists(srcPath))
+                CopyDirectory(srcPath, dest);
+            else if (File.Exists(srcPath))
+                File.Copy(srcPath, dest, overwrite: true);
+
+            AddFileIntoFolder(target, dest);
+        }
+
+        [RelayCommand]
+        private void ItemDoubleClick(FolderItem item)
+        {
+            if (item == null) return;
 
             if (item.IsDirectory)
             {
-                NavigateToCommand.Execute(item.FullPath);
-                ExpandAndSelect(item.FullPath);
+                _suppressTreeNav = true;
+                DoNavigateInternal(item.FullPath, addToHistory: true);
+                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    _suppressTreeNav = false;
+                }), DispatcherPriority.Background);
             }
             else if (Path.GetExtension(item.FullPath)
-                     .Equals(".uasset", StringComparison.OrdinalIgnoreCase))
+                             .Equals(".uasset", StringComparison.OrdinalIgnoreCase))
             {
                 PreviewTextureCommand.Execute(item);
             }
@@ -680,6 +854,148 @@ int insertIndex)
             {
                 OpenFolderCommand.Execute(item);
             }
-        } */
+        }
+        private void PerformNavigation(string path)
+        {
+            FolderEditorRootPath = path;
+            SelectedFolderItem = FindFolderItem(path, FolderItems) ?? SelectedFolderItem;
+            UpdateBreadcrumbs();
+            UpdateNavigationProperties();
+        }
+
+        partial void OnSelectedFolderItemChanged(FolderItem oldItem, FolderItem newItem)
+        {
+            if (newItem == null || !newItem.IsDirectory) return;
+
+            _suppressTreeNav = true;
+            NavigateToCommand.Execute(newItem.FullPath);
+            ExpandAndSelectPath(newItem.FullPath);
+
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _suppressTreeNav = false;
+            }), DispatcherPriority.Background);
+        }
+
+        // 2) Метод разворачивания и выбора узлов
+        public void ExpandAndSelectPath(string fullPath)
+        {
+            // Берём первый элемент — корень
+            var root = FolderItems.FirstOrDefault();
+            if (root == null) return;
+
+            // Получаем контейнер корня
+            var rootContainer = (TreeViewItem)TreeViewContainerFromItem(root);
+            if (rootContainer == null) return;
+            rootContainer.IsExpanded = true;
+
+            // Разбиваем путь на сегменты после корня
+            var segments = fullPath
+                .Substring(root.FullPath.Length)
+                .Trim(Path.DirectorySeparatorChar)
+                .Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+
+            var currentContainer = rootContainer;
+            var currentItem = root;
+
+            foreach (var seg in segments)
+            {
+                currentContainer.UpdateLayout();
+                // Находим следующий элемент модели
+                var nextItem = currentItem.Children
+                    .FirstOrDefault(c =>
+                        string.Equals(c.Name, seg, StringComparison.OrdinalIgnoreCase));
+                if (nextItem == null) break;
+
+                // Достаём контейнер для него
+                var nextContainer = (TreeViewItem)
+                    currentContainer.ItemContainerGenerator
+                                    .ContainerFromItem(nextItem);
+                if (nextContainer == null) break;
+
+                nextContainer.IsExpanded = true;
+                currentItem = nextItem;
+                currentContainer = nextContainer;
+            }
+
+            currentContainer.IsSelected = true;
+            currentContainer.BringIntoView();
+            currentContainer.Focus();
+        }
+
+        private DependencyObject TreeViewContainerFromItem(object item)
+        {
+            return FolderTreeControl.ItemContainerGenerator.ContainerFromItem(item);
+        }
+
+
+        [RelayCommand]
+        private void TreeSelectionChanged(RoutedPropertyChangedEventArgs<object> args)
+        {
+            if (_suppressTreeNav) return;
+            if (args.NewValue is FolderItem fi && fi.IsDirectory)
+            {
+                // Навигация с добавлением в историю
+                DoNavigateInternal(fi.FullPath, addToHistory: true);
+            }
+        }
+
+        [RelayCommand]
+        private void Search()
+        {
+            var q = SearchQuery?.Trim();
+            if (string.IsNullOrEmpty(q)) return;
+
+            // Находим первый матч в дереве
+            var match = FindMatch(FolderItems, q);
+            if (match == null) return;
+
+            // Вычисляем папку, куда нужно перейти
+            var targetPath = match.IsDirectory
+                ? match.FullPath
+                : Path.GetDirectoryName(match.FullPath)!;
+
+            // Блокируем реакцию TreeSelectionChanged
+            _suppressTreeNav = true;
+
+            // Навигация через единый метод (с записью в историю)
+            DoNavigateInternal(targetPath, addToHistory: true);
+
+            // Разворачиваем и выделяем сам файл/папку
+            ExpandAndSelectPath(match.FullPath);
+
+            // Снимаем блокировку после отрисовки
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                _suppressTreeNav = false;
+            }), DispatcherPriority.Background);
+        }
+
+        private FolderItem FindMatch(IEnumerable<FolderItem> nodes, string query)
+        {
+            foreach (var node in nodes)
+            {
+                if (node.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
+                    return node;
+                var child = FindMatch(node.Children, query);
+                if (child != null)
+                    return child;
+            }
+            return null;
+        }
+    }
+    
+
+    public static class VisualTreeHelperExtensions
+    {
+        public static T GetAncestor<T>(DependencyObject child) where T : DependencyObject
+        {
+            while (child != null)
+            {
+                if (child is T correctlyTyped) return correctlyTyped;
+                child = VisualTreeHelper.GetParent(child);
+            }
+            return null;
+        }
     }
 }

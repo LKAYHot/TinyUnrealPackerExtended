@@ -97,6 +97,7 @@
                     Margin="24"
                     VerticalContentAlignment="Stretch"
                     HorizontalContentAlignment="Stretch">
+
             <!-- ===== LOCRES TOOLKIT ===== -->
             <TabItem Header="Locres Toolkit"
                      DataContext="{Binding LocresVM}">
