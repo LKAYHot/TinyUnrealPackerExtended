@@ -701,6 +701,7 @@ CommandParameter="{Binding PlacementTarget.DataContext,
         <!-- Базовые визуальные настройки -->
         <Setter Property="Background" Value="White"/>
         <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        <Setter Property="BorderThickness" Value="2"/>
         <Setter Property="BorderDashArray" Value="3,1"/>
         <Setter Property="BorderDashThickness" Value="2"/>
         <Setter Property="CornerRadius" Value="8"/>

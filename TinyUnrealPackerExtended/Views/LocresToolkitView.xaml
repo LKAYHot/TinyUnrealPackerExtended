@@ -8,65 +8,85 @@
     <Border Style="{StaticResource CardStyle}">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition MinHeight="250"/>
+                <RowDefinition MinHeight="250" />
 
-                <RowDefinition MinHeight="180" Height="*" MaxHeight="180"/>
+                <RowDefinition MinHeight="180"
+                               Height="*"
+                               MaxHeight="180" />
 
 
 
                 <!-- 4) Кнопки внизу: по содержимому -->
-                <RowDefinition Height="60"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="60" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <!-- Drop Zone -->
             <hc:DashedBorder Style="{StaticResource AnimatedDashedDropZone}"
-                                         
-                          BorderBrush="#CCCCCC" BorderDashArray="3, 1" BorderThickness="2" VerticalAlignment="Stretch" Cursor="" Grid.Row="0">
+                             Grid.Row="0">
                 <i:Interaction.Behaviors>
-                    <behaviors:FileDropBehavior
-          FileDropCommand="{Binding DropLocresFilesCommand}"/>
+                    <behaviors:FileDropBehavior FileDropCommand="{Binding DropLocresFilesCommand}" />
                 </i:Interaction.Behaviors>
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <iconPacks:PackIconMaterial Kind="FileDownloadOutline" Width="50" Height="90" Foreground="#0f80d6"  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <iconPacks:PackIconMaterial Kind="FileDownloadOutline"
+                                                Width="50"
+                                                Height="90"
+                                                Foreground="#0f80d6"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center" />
 
                     <TextBlock Text="Drag &amp; Drop или нажмите, чтобы загрузить"
-                                           FontSize="20"
-                                           Foreground="#888888"
-                                           TextAlignment="Center"/>
+                               FontSize="20"
+                               Foreground="#888888"
+                               TextAlignment="Center" />
 
                     <Button Content="Выбрать файл"
-                                        Command="{Binding BrowseLocresInputCommand}"
-                                        Style="{StaticResource SecondaryButtonStyle}"
-                                        Margin="0,14,0,0"
-                                        HorizontalAlignment="Center"/>
+                            Command="{Binding BrowseLocresInputCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,14,0,0"
+                            HorizontalAlignment="Center" />
                     <TextBlock Text=".locres или .csv"
-                                           FontSize="12"
-                                           Foreground="#AAAAAA"
-                                           TextAlignment="Center"
-                                           Margin="0,6,0,0"/>
+                               FontSize="12"
+                               Foreground="#AAAAAA"
+                               TextAlignment="Center"
+                               Margin="0,6,0,0" />
                 </StackPanel>
             </hc:DashedBorder>
 
-            <hc:DashedBorder Margin="10, 20, 10, 10" Grid.Row="1">
+            <hc:DashedBorder Margin="10, 20, 10, 10"
+                             Grid.Row="1">
                 <i:Interaction.Behaviors>
-                    <behaviors:FileDropBehavior
-          FileDropCommand="{Binding DropOriginalLocresFilesCommand}"/>
+                    <behaviors:FileDropBehavior FileDropCommand="{Binding DropOriginalLocresFilesCommand}" />
                 </i:Interaction.Behaviors>
                 <hc:DashedBorder.Style>
-                    <Style TargetType="hc:DashedBorder" BasedOn="{StaticResource AnimatedDashedDropZone}">
-                        <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style TargetType="hc:DashedBorder"
+                           BasedOn="{StaticResource AnimatedDashedDropZone}">
+                        <Setter Property="Visibility"
+                                Value="Collapsed" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsCsvFileDropped}" Value="True">
-                                <Setter Property="Visibility" Value="Visible"/>
+                            <DataTrigger Binding="{Binding IsCsvFileDropped}"
+                                         Value="True">
+                                <Setter Property="Visibility"
+                                        Value="Visible" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
                 </hc:DashedBorder.Style>
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
                     <TextBlock Text="Drag &amp; Drop или нажмите, чтобы загрузить оригинальный .locres"
-                                           FontSize="16" Foreground="#888888" TextAlignment="Center"/>
-                    <Button Content="Выбрать оригинальный .locres" Command="{Binding BrowseOriginalLocresCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,14,0,0"/>
-                    <TextBlock Text=".locres" FontSize="12" Foreground="#AAAAAA" TextAlignment="Center" Margin="0,6,0,0"/>
+                               FontSize="16"
+                               Foreground="#888888"
+                               TextAlignment="Center" />
+                    <Button Content="Выбрать оригинальный .locres"
+                            Command="{Binding BrowseOriginalLocresCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,14,0,0" />
+                    <TextBlock Text=".locres"
+                               FontSize="12"
+                               Foreground="#AAAAAA"
+                               TextAlignment="Center"
+                               Margin="0,6,0,0" />
                 </StackPanel>
             </hc:DashedBorder>
 
@@ -74,13 +94,20 @@
             <!-- Список загруженных файлов -->
 
             <!-- Кнопки внизу -->
-            <Border Margin="10, 20, 10, 10" CornerRadius="6" Background="#FFF1F1F1" Grid.Row="1">
+            <Border Margin="10, 20, 10, 10"
+                    CornerRadius="6"
+                    Background="#FFF1F1F1"
+                    Grid.Row="1">
                 <Border.Style>
-                    <Style TargetType="Border" BasedOn="{StaticResource FileBorderStyle}">
-                        <Setter Property="Visibility" Value="Visible"/>
+                    <Style TargetType="Border"
+                           BasedOn="{StaticResource FileBorderStyle}">
+                        <Setter Property="Visibility"
+                                Value="Visible" />
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsCsvFileDropped}" Value="True">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                            <DataTrigger Binding="{Binding IsCsvFileDropped}"
+                                         Value="True">
+                                <Setter Property="Visibility"
+                                        Value="Collapsed" />
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -88,13 +115,19 @@
                 <Grid>
 
 
-                    <TextBlock Text="Пусто" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20">
+                    <TextBlock Text="Пусто"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="20">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Visible"/>
+                                <Setter Property="Visibility"
+                                        Value="Visible" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsLocresFileDropped}" Value="True">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    <DataTrigger Binding="{Binding IsLocresFileDropped}"
+                                                 Value="True">
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -102,18 +135,20 @@
                         </TextBlock.Style>
                     </TextBlock>
 
-                    <ProgressBar
-Margin="20,31,20,32"
-                               
-IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
+                    <ProgressBar Margin="20,31,20,32"
+                                 IsIndeterminate="True"
+                                 Background="#FFD6D6D6"
+                                 Foreground="#FF48AAFF">
                         <ProgressBar.Style>
-                            <Style 
-        TargetType="ProgressBar"
-        BasedOn="{StaticResource ProgressBarSuccess}">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style TargetType="ProgressBar"
+                                   BasedOn="{StaticResource ProgressBarSuccess}">
+                                <Setter Property="Visibility"
+                                        Value="Collapsed" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsLocresBusy}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
+                                    <DataTrigger Binding="{Binding IsLocresBusy}"
+                                                 Value="True">
+                                        <Setter Property="Visibility"
+                                                Value="Visible" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -122,26 +157,34 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
 
                     <StackPanel Margin="10">
 
-                        <ItemsControl ItemsSource="{Binding LocresFiles}" ItemTemplate="{StaticResource FileItemTemplate}">
+                        <ItemsControl ItemsSource="{Binding LocresFiles}"
+                                      ItemTemplate="{StaticResource FileItemTemplate}">
                             <ItemsControl.Style>
                                 <Style TargetType="ItemsControl">
-                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Setter Property="Visibility"
+                                            Value="Visible" />
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsLocresBusy}" Value="True">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        <DataTrigger Binding="{Binding IsLocresBusy}"
+                                                     Value="True">
+                                            <Setter Property="Visibility"
+                                                    Value="Collapsed" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </ItemsControl.Style>
                         </ItemsControl>
 
-                        <ItemsControl ItemsSource="{Binding OriginalLocresFiles}" ItemTemplate="{StaticResource FileItemTemplate}">
+                        <ItemsControl ItemsSource="{Binding OriginalLocresFiles}"
+                                      ItemTemplate="{StaticResource FileItemTemplate}">
                             <ItemsControl.Style>
                                 <Style TargetType="ItemsControl">
-                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Setter Property="Visibility"
+                                            Value="Visible" />
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsLocresBusy}" Value="True">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        <DataTrigger Binding="{Binding IsLocresBusy}"
+                                                     Value="True">
+                                            <Setter Property="Visibility"
+                                                    Value="Collapsed" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -151,13 +194,18 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
 
                 </Grid>
             </Border>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom" Grid.Row="2">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Grid.Row="2">
                 <Button Content="Отмена"
-                                    Command="{Binding CancelLocresCommand}"
-                                    Style="{StaticResource SecondaryButtonStyle}" Cursor="Hand"/>
+                        Command="{Binding CancelLocresCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Cursor="Hand" />
                 <Button Content="Импорт / Экспорт"
-                                    Command="{Binding ProcessLocresCommand}"
-                                    Style="{StaticResource PrimaryButtonStyle}" Cursor="Hand"/>
+                        Command="{Binding ProcessLocresCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Cursor="Hand" />
             </StackPanel>
         </Grid>
     </Border>

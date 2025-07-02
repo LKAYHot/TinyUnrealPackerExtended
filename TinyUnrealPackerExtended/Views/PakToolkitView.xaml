@@ -9,69 +9,76 @@
     <Border Style="{StaticResource CardStyle}">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition MinHeight="250"/>
+                <RowDefinition MinHeight="250" />
 
-                <RowDefinition MinHeight="130" Height="*" MaxHeight="130"/>
+                <RowDefinition MinHeight="130"
+                               Height="*"
+                               MaxHeight="130" />
 
 
-                <RowDefinition Height="60"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="60" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <!-- Drop Zone -->
-            <hc:DashedBorder
-        Style="{StaticResource AnimatedDashedDropZone}" BorderBrush="#CCCCCC" BorderDashArray="3, 1" BorderThickness="2" Grid.Row="0">
+            <hc:DashedBorder Style="{StaticResource AnimatedDashedDropZone}"
+                             Grid.Row="0">
                 <i:Interaction.Behaviors>
-                    <behaviors:FileDropBehavior
-  FileDropCommand="{Binding DropPakFolderCommand}"/>
+                    <behaviors:FileDropBehavior FileDropCommand="{Binding DropPakFolderCommand}" />
                 </i:Interaction.Behaviors>
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <iconPacks:PackIconMaterial
-                Kind="FolderZipOutline"
-                Width="60" Height="50"
-                Foreground="#0f80d6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    <TextBlock
-                Text="Drag &amp; Drop папку или нажмите, чтобы выбрать"
-                FontSize="20"
-                Foreground="#888888"
-                TextAlignment="Center"
-                Margin="0,12,0,0"/>
-                    <Button
-                Content="Выбрать папку"
-                Command="{Binding BrowsePakFolderCommand}"
-                Style="{StaticResource SecondaryButtonStyle}"
-                Margin="0,14,0,0"
-                HorizontalAlignment="Center"/>
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <iconPacks:PackIconMaterial Kind="FolderZipOutline"
+                                                Width="60"
+                                                Height="50"
+                                                Foreground="#0f80d6"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center" />
+                    <TextBlock Text="Drag &amp; Drop папку или нажмите, чтобы выбрать"
+                               FontSize="20"
+                               Foreground="#888888"
+                               TextAlignment="Center"
+                               Margin="0,12,0,0" />
+                    <Button Content="Выбрать папку"
+                            Command="{Binding BrowsePakFolderCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,14,0,0"
+                            HorizontalAlignment="Center" />
                 </StackPanel>
             </hc:DashedBorder>
 
             <!-- Список выбранной папки -->
-            <Border
-        Margin="10,20,10,10"
-        CornerRadius="6"
-        Background="#FFF1F1F1" Grid.Row="1">
+            <Border Margin="10,20,10,10"
+                    CornerRadius="6"
+                    Background="#FFF1F1F1"
+                    Grid.Row="1">
                 <Border.Style>
-                    <Style TargetType="Border" BasedOn="{StaticResource FileBorderStyle}">
+                    <Style TargetType="Border"
+                           BasedOn="{StaticResource FileBorderStyle}">
 
                     </Style>
                 </Border.Style>
 
                 <Grid>
                     <!-- Когда папка не выбрана -->
-                    <TextBlock
-                Text="Папка не выбрана"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                FontSize="20">
+                    <TextBlock Text="Папка не выбрана"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="20">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Visible"/>
+                                <Setter Property="Visibility"
+                                        Value="Visible" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding PakFiles.Count}" Value="0">
+                                    <DataTrigger Binding="{Binding PakFiles.Count}"
+                                                 Value="0">
                                         <!-- показываем, когда нет элементов -->
-                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Setter Property="Visibility"
+                                                Value="Visible" />
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding PakFiles.Count}" Value="1">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    <DataTrigger Binding="{Binding PakFiles.Count}"
+                                                 Value="1">
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -79,19 +86,23 @@
                     </TextBlock>
 
                     <!-- Когда папка выбрана -->
-                    <ItemsControl
-                ItemsSource="{Binding PakFiles}"
-                ItemTemplate="{StaticResource FileItemTemplate}"
-                Margin="10">
+                    <ItemsControl ItemsSource="{Binding PakFiles}"
+                                  ItemTemplate="{StaticResource FileItemTemplate}"
+                                  Margin="10">
                         <ItemsControl.Style>
                             <Style TargetType="ItemsControl">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Visibility"
+                                        Value="Collapsed" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding PakFiles.Count}" Value="1">
-                                        <Setter Property="Visibility" Value="Visible"/>
+                                    <DataTrigger Binding="{Binding PakFiles.Count}"
+                                                 Value="1">
+                                        <Setter Property="Visibility"
+                                                Value="Visible" />
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding IsPakBusy}" Value="True">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    <DataTrigger Binding="{Binding IsPakBusy}"
+                                                 Value="True">
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -99,17 +110,20 @@
                     </ItemsControl>
 
                     <!-- Прогресс-бар -->
-                    <ProgressBar
-                Margin="20,31,20,32"
-                IsIndeterminate="True"
-                Background="#FFD6D6D6"
-                Foreground="#FF48AAFF">
+                    <ProgressBar Margin="20,31,20,32"
+                                 IsIndeterminate="True"
+                                 Background="#FFD6D6D6"
+                                 Foreground="#FF48AAFF">
                         <ProgressBar.Style>
-                            <Style TargetType="ProgressBar" BasedOn="{StaticResource ProgressBarSuccess}">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style TargetType="ProgressBar"
+                                   BasedOn="{StaticResource ProgressBarSuccess}">
+                                <Setter Property="Visibility"
+                                        Value="Collapsed" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsPakBusy}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
+                                    <DataTrigger Binding="{Binding IsPakBusy}"
+                                                 Value="True">
+                                        <Setter Property="Visibility"
+                                                Value="Visible" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -119,22 +133,22 @@
             </Border>
 
             <!-- Кнопки -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="2" VerticalAlignment="Bottom">
-                <Button
-Content="Отмена"
-Command="{Binding CancelPakCommand}"
-Style="{StaticResource SecondaryButtonStyle}"/>
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Grid.Row="2"
+                        VerticalAlignment="Bottom">
+                <Button Content="Отмена"
+                        Command="{Binding CancelPakCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}" />
 
-                <Button
-Content="Упаковать (compress)"
-Command="{Binding ProcessPakCompressedCommand}"
-Style="{StaticResource PrimaryButtonStyle}"
-Margin="6,0,0,0"/>
-                <Button
-Content="Упаковать"
-Command="{Binding ProcessPakCommand}"
-Style="{StaticResource PrimaryButtonStyle}"
-Margin="6,0,0,0"/>
+                <Button Content="Упаковать (compress)"
+                        Command="{Binding ProcessPakCompressedCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Margin="6,0,0,0" />
+                <Button Content="Упаковать"
+                        Command="{Binding ProcessPakCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Margin="6,0,0,0" />
 
             </StackPanel>
         </Grid>

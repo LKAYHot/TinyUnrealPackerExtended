@@ -7,85 +7,91 @@
              xmlns:behaviors="clr-namespace:TinyUnrealPackerExtended.Behaviors"
              xmlns:vm="clr-namespace:TinyUnrealPackerExtended.ViewModels"
              DataContext="{Binding AutoInjectVM}">
-    <Border Style="{StaticResource CardStyle}" Padding="12">
+    <Border Style="{StaticResource CardStyle}"
+            Padding="12">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition MinHeight="130"/>
+                <RowDefinition MinHeight="130" />
 
-                <RowDefinition Height="15"/>
+                <RowDefinition Height="15" />
 
-                <RowDefinition Height="50"/>
+                <RowDefinition Height="50" />
 
-                <RowDefinition Height="15"/>
-
-
-                <RowDefinition MinHeight="130" MaxHeight="250"/>
+                <RowDefinition Height="15" />
 
 
+                <RowDefinition MinHeight="130"
+                               MaxHeight="350" />
 
 
-                <RowDefinition Height="60"/>
-                <RowDefinition Height="Auto"/>
+
+
+                <RowDefinition Height="60" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <hc:DashedBorder x:Name="AutoZone"
-                       Style="{StaticResource AnimatedDashedDropZone}"
-                       BorderBrush="#CCCCCC"
-                       BorderDashArray="3,1"
-                       BorderThickness="2" Grid.Row="0">
+                             Style="{StaticResource AnimatedDashedDropZone}"
+                             Grid.Row="0">
                 <i:Interaction.Behaviors>
-                    <behaviors:FileDropBehavior FileDropCommand="{Binding DropAutoFilesCommand}"/>
+                    <behaviors:FileDropBehavior FileDropCommand="{Binding DropAutoFilesCommand}" />
                 </i:Interaction.Behaviors>
                 <Grid>
-                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
                         <!-- Экранирование амперсанда -->
                         <TextBlock Text="Drag &amp; Drop .uasset + .png файлы, чтобы загрузить"
-                       FontSize="16"
-                       Foreground="#888888"
-                       TextAlignment="Center"/>
+                                   FontSize="16"
+                                   Foreground="#888888"
+                                   TextAlignment="Center" />
                         <TextBlock Text="(файлы будут сгруппированы по имени)"
-                       FontSize="12"
-                       Foreground="#aaaaaa"
-                       TextAlignment="Center"/>
+                                   FontSize="12"
+                                   Foreground="#aaaaaa"
+                                   TextAlignment="Center" />
                         <Button Content="Выбрать файлы"
-                    Command="{Binding BrowseAutoFilesCommand}"
-                    Style="{StaticResource SecondaryButtonStyle}"
-                    Margin="0,12,0,0"/>
+                                Command="{Binding BrowseAutoFilesCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,12,0,0" />
                     </StackPanel>
                 </Grid>
             </hc:DashedBorder>
 
 
             <Button Content="{Binding AutoInjectOutputButtonText}"
-              Command="{Binding BrowseAutoOutputCommand}"
-              Style="{StaticResource TrimmedSecondaryButtonStyle}" MinWidth="640" Width="Auto" Grid.Row="2" VerticalAlignment="Stretch"/>
+                    Command="{Binding BrowseAutoOutputCommand}"
+                    Style="{StaticResource TrimmedSecondaryButtonStyle}"
+                    MinWidth="640"
+                    Width="Auto"
+                    Grid.Row="2"
+                    VerticalAlignment="Stretch" />
 
-            <!-- Кнопка запуска автоматического инжекта -->
-
-            <Border Margin="0, 0, 0, 0" Style="{StaticResource CardStyle}" Grid.Row="4">
+            <Border Margin="0, 0, 0, 0"
+                    Style="{StaticResource CardStyle}"
+                    Grid.Row="4">
                 <Grid Margin="-12,-14,-12,-14">
 
-                    <ScrollViewer
-            VerticalScrollBarVisibility="Auto"
-            HorizontalScrollBarVisibility="Disabled"
-            Margin="0,0,0,0">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  Margin="0,0,0,0">
                         <ItemsControl x:Name="AutoInjectItemsControl"
-                ItemsSource="{Binding AutoInjectItems}"
-                ItemTemplate="{StaticResource AutoInjectItemTemplate}"
-                Margin="10"/>
+                                      ItemsSource="{Binding AutoInjectItems}"
+                                      ItemTemplate="{StaticResource AutoInjectItemTemplate}"
+                                      Margin="10" />
                     </ScrollViewer>
-                    <TextBlock
-Text="Пусто"
-HorizontalAlignment="Center"
-VerticalAlignment="Center"
-FontSize="20">
+                    <TextBlock Text="Пусто"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="20">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Visibility" Value="Visible"/>
+                                <Setter Property="Visibility"
+                                        Value="Visible" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasAutoInjectItems}" Value="True">
+                                    <DataTrigger Binding="{Binding HasAutoInjectItems}"
+                                                 Value="True">
                                         <!-- показываем, когда нет элементов -->
-                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -94,11 +100,13 @@ FontSize="20">
                 </Grid>
             </Border>
             <StackPanel Orientation="Horizontal"
-                  HorizontalAlignment="Right"
-                  Margin="0,15,0,0" Grid.Row="5" VerticalAlignment="Bottom">
+                        HorizontalAlignment="Right"
+                        Margin="0,15,0,0"
+                        Grid.Row="5"
+                        VerticalAlignment="Bottom">
                 <Button Content="Start Auto Inject"
-                Command="{Binding ProcessAutoInjectCommand}"
-                Style="{StaticResource PrimaryButtonStyle}"/>
+                        Command="{Binding ProcessAutoInjectCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}" />
             </StackPanel>
 
         </Grid>

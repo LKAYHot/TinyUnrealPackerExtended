@@ -9,38 +9,46 @@
     <Border Style="{StaticResource CardStyle}">
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition MinHeight="250"/>
+                <RowDefinition MinHeight="250" />
 
-                <RowDefinition MinHeight="130" Height="*" MaxHeight="130"/>
+                <RowDefinition MinHeight="130"
+                               Height="*"
+                               MaxHeight="130" />
 
 
-                <RowDefinition Height="60"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="60" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <!-- Drop Zone -->
-            <hc:DashedBorder Style="{StaticResource AnimatedDashedDropZone}" BorderBrush="#CCCCCC" BorderDashArray="3, 1" BorderThickness="2" Grid.Row="0">
+            <hc:DashedBorder Style="{StaticResource AnimatedDashedDropZone}"
+                             Grid.Row="0">
                 <i:Interaction.Behaviors>
-                    <behaviors:FileDropBehavior
-    FileDropCommand="{Binding DropExcelFilesCommand}"/>
+                    <behaviors:FileDropBehavior FileDropCommand="{Binding DropExcelFilesCommand}" />
                 </i:Interaction.Behaviors>
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <iconPacks:PackIconMaterial Kind="FileDownloadOutline" Width="50" Height="90" Foreground="#0f80d6"  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <StackPanel HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <iconPacks:PackIconMaterial Kind="FileDownloadOutline"
+                                                Width="50"
+                                                Height="90"
+                                                Foreground="#0f80d6"
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center" />
 
 
                     <TextBlock Text="Drag &amp; Drop или нажмите, чтобы загрузить"
-                                       FontSize="20"
-                                       Foreground="#888888"
-                                       TextAlignment="Center"/>
+                               FontSize="20"
+                               Foreground="#888888"
+                               TextAlignment="Center" />
                     <Button Content="Выбрать файл"
-                                    Command="{Binding BrowseExcelInputCommand}"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Margin="0,14,0,0"
-                                    HorizontalAlignment="Center"/>
+                            Command="{Binding BrowseExcelInputCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="0,14,0,0"
+                            HorizontalAlignment="Center" />
                     <TextBlock Text=".csv или .xlsx"
-                                       FontSize="12"
-                                       Foreground="#AAAAAA"
-                                       TextAlignment="Center"
-                                       Margin="0,6,0,0"/>
+                               FontSize="12"
+                               Foreground="#AAAAAA"
+                               TextAlignment="Center"
+                               Margin="0,6,0,0" />
                 </StackPanel>
             </hc:DashedBorder>
 
@@ -49,37 +57,51 @@
 
             <!-- Кнопки внизу -->
 
-            <Border Margin="10, 20, 10, 10" CornerRadius="6" Background="#FFF1F1F1" Style="{StaticResource FileBorderStyle}" Grid.Row="1">
+            <Border Margin="10, 20, 10, 10"
+                    CornerRadius="6"
+                    Background="#FFF1F1F1"
+                    Style="{StaticResource FileBorderStyle}"
+                    Grid.Row="1">
                 <Grid>
 
 
-                    <TextBlock Text="Пусто" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+                    <TextBlock Text="Пусто"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="20" />
 
-                    <ProgressBar
-Margin="20,31,20,32"
-                               
-IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
+                    <ProgressBar Margin="20,31,20,32"
+                                 IsIndeterminate="True"
+                                 Background="#FFD6D6D6"
+                                 Foreground="#FF48AAFF">
                         <ProgressBar.Style>
-                            <Style 
-        TargetType="ProgressBar"
-        BasedOn="{StaticResource ProgressBarSuccess}">
-                                <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style TargetType="ProgressBar"
+                                   BasedOn="{StaticResource ProgressBarSuccess}">
+                                <Setter Property="Visibility"
+                                        Value="Collapsed" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsExcelBusy}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
+                                    <DataTrigger Binding="{Binding IsExcelBusy}"
+                                                 Value="True">
+                                        <Setter Property="Visibility"
+                                                Value="Visible" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </ProgressBar.Style>
                     </ProgressBar>
 
-                    <ItemsControl ItemsSource="{Binding ExcelFiles}" ItemTemplate="{StaticResource FileItemTemplate}" Margin="10">
+                    <ItemsControl ItemsSource="{Binding ExcelFiles}"
+                                  ItemTemplate="{StaticResource FileItemTemplate}"
+                                  Margin="10">
                         <ItemsControl.Style>
                             <Style TargetType="ItemsControl">
-                                <Setter Property="Visibility" Value="Visible"/>
+                                <Setter Property="Visibility"
+                                        Value="Visible" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsExcelBusy}" Value="True">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    <DataTrigger Binding="{Binding IsExcelBusy}"
+                                                 Value="True">
+                                        <Setter Property="Visibility"
+                                                Value="Collapsed" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -89,13 +111,16 @@ IsIndeterminate="True" Background="#FFD6D6D6" Foreground="#FF48AAFF">
                 </Grid>
             </Border>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Grid.Row="2" VerticalAlignment="Bottom">
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Grid.Row="2"
+                        VerticalAlignment="Bottom">
                 <Button Content="Отмена"
-                                Command="{Binding CancelExcelCommand}"
-                                Style="{StaticResource SecondaryButtonStyle}"/>
+                        Command="{Binding CancelExcelCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}" />
                 <Button Content="Импорт"
-                                Command="{Binding ProcessExcelCommand}"
-                                Style="{StaticResource PrimaryButtonStyle}"/>
+                        Command="{Binding ProcessExcelCommand}"
+                        Style="{StaticResource PrimaryButtonStyle}" />
             </StackPanel>
         </Grid>
     </Border>
