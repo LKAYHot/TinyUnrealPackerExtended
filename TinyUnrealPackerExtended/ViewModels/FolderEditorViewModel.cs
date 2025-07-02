@@ -22,6 +22,7 @@ using TinyUnrealPackerExtended.Services;
 using System.Diagnostics;
 using HandyControl.Controls;
 using System.Windows;
+using System.Windows.Input;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
@@ -47,6 +48,8 @@ namespace TinyUnrealPackerExtended.ViewModels
 
         [ObservableProperty] private ImageSource selectedTexturePreview;
         [ObservableProperty] private string previewedUassetPath;
+
+        [ObservableProperty] private string searchQuery;
 
         public ObservableCollection<FolderItem> FolderItems { get; } = new();
         public ObservableCollection<BreadcrumbItem> Breadcrumbs { get; } = new();
@@ -94,8 +97,14 @@ namespace TinyUnrealPackerExtended.ViewModels
                 return;
 
             FolderItems.Clear();
+            ClearTexture();
+
             RootFolder = FolderEditorRootPath;
-            FolderItems.Add(BuildTreeItem(new DirectoryInfo(FolderEditorRootPath)));
+
+            var rootItem = BuildTreeItem(new DirectoryInfo(FolderEditorRootPath));
+            FolderItems.Add(rootItem);
+            SelectedFolderItem = rootItem;
+
             UpdateBreadcrumbs(isInitial: true);
             UpdateNavigationProperties();
         }
@@ -625,5 +634,52 @@ int insertIndex)
                 UseShellExecute = true
             });
         }
+
+        ////////////// Future refactoring ----- MVVM
+      /*  [RelayCommand]
+        private void Search(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query)) return;
+
+            // Поиск узла
+            var match = FindMatch(FolderItems, query);
+            if (match == null) return;
+
+            string target = match.IsDirectory ? match.FullPath : Path.GetDirectoryName(match.FullPath)!;
+            NavigateToCommand.Execute(target);
+            // Открыть/выбрать найденный узел
+            ExpandAndSelect(match.FullPath);
+        }
+
+        [RelayCommand]
+        private void TreeViewSelectionChanged(object item)
+        {
+            if (item is FolderItem fi && fi.IsDirectory)
+            {
+                NavigateToCommand.Execute(fi.FullPath);
+                ExpandAndSelect(fi.FullPath);
+            }
+        }
+
+        [RelayCommand]
+        private void ListItemDoubleClick(object selected)
+        {
+            if (selected is not FolderItem item) return;
+
+            if (item.IsDirectory)
+            {
+                NavigateToCommand.Execute(item.FullPath);
+                ExpandAndSelect(item.FullPath);
+            }
+            else if (Path.GetExtension(item.FullPath)
+                     .Equals(".uasset", StringComparison.OrdinalIgnoreCase))
+            {
+                PreviewTextureCommand.Execute(item);
+            }
+            else
+            {
+                OpenFolderCommand.Execute(item);
+            }
+        } */
     }
 }
