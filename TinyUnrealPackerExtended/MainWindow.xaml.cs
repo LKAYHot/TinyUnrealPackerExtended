@@ -19,15 +19,6 @@ namespace TinyUnrealPackerExtended
     {
         private readonly MainWindowViewModel mainWindowViewModel;
 
-        private FolderItem _draggedFolderItem;
-        private FolderItem _lastTargetFolderItem;
-        private Point _dragStartPoint;
-
-        private List<string> _expandedPaths = new();
-        private double _savedScrollOffset;
-
-        private bool _suppressTreeNav;
-
         public MainWindow()
         {
             InitializeComponent();

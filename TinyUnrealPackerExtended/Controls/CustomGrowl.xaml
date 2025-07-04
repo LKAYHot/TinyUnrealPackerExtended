@@ -51,7 +51,7 @@
                         FontSize="16"
                         Margin="0, 15, 0, 0"
                         FontFamily="Bahnschrift SemiBold" />
-                <TextBlock Text="{Binding Message}"
+                <TextBlock x:Name="MessageTextBlock"
                         Foreground="#FF8E8E8E"
                         FontSize="14"
                         TextWrapping="Wrap"

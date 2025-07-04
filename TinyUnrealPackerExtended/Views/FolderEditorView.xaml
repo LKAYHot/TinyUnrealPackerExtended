@@ -600,10 +600,14 @@
                                    RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                     <!-- Сохранить как… -->
                                     <MenuItem Header="Сохранить как…"
-                                              Command="{Binding PlacementTarget.DataContext.SaveTextureFromUassetCommand,
+                                              Command="{Binding PlacementTarget.DataContext.SaveTextureCommand,
                           RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                               CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath,
                                    RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+
+                                    <MenuItem Header="Переключить альфа-канал"
+                                              Command="{Binding PlacementTarget.DataContext.ToggleAlphaChannelCommand,
+                                RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                 </ContextMenu>
                             </Image.ContextMenu>
                         </Image>

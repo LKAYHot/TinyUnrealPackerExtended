@@ -61,11 +61,9 @@ namespace TinyUnrealPackerExtended.ViewModels
                 {
                     var folder = PakVM.PakFiles.First().FilePath;
 
-                    // Переключаем FolderEditorVM на новую папку
                     FolderEditorVM.RootFolder = folder;
                     FolderEditorVM.FolderEditorRootPath = folder;
 
-                    // Инициализируем дерево
                     FolderEditorVM.LoadFolderEditorCommand.Execute(null);
                 }
             };
@@ -117,7 +115,6 @@ namespace TinyUnrealPackerExtended.ViewModels
             IconKind = icon;
         }
 
-        // ← Добавляем эти два свойства ↓
         public string DateModified
             => File.GetLastWriteTime(FullPath).ToString("g");
 

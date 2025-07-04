@@ -36,8 +36,14 @@ namespace TinyUnrealPackerExtended.ViewModels
     {
         private readonly IFileDialogService _fileDialog;
         private readonly IDialogService _dialog;
+        private readonly IBreadcrumbService _breadcrumbs = new BreadcrumbService();
+        private readonly ITexturePreviewService _textureService;
+
+
         private readonly Stack<string> _backStack = new();
         private readonly Stack<string> _forwardStack = new();
+
+
 
         [ObservableProperty] private string rootFolder;
         [ObservableProperty] private string folderEditorRootPath;
@@ -59,14 +65,19 @@ namespace TinyUnrealPackerExtended.ViewModels
         [ObservableProperty] private string searchQuery;
 
         public ObservableCollection<FolderItem> FolderItems { get; } = new();
-        public ObservableCollection<BreadcrumbItem> Breadcrumbs { get; } = new();
+        public ObservableCollection<BreadcrumbItem> Breadcrumbs => _breadcrumbs.Items;
         public List<BreadcrumbItem> Overflow { get; private set; } = new();
+
 
         private FolderItem _clipboardItem;
         private bool _isCut;
         public bool CanPaste => _clipboardItem != null;
 
         private bool _suppressTreeNav;
+
+
+        [ObservableProperty] private bool isAlphaEnabled = true;
+        private BitmapSource _originalTexture;
 
         /// <summary>
         /// Exposes breadcrumbs with overflow handling.
@@ -96,6 +107,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             _dialog = dialogService;
             _fileDialog = fileDialogService;
+            _textureService = new TexturePreviewService();
         }
 
         // Directory loading and navigation
@@ -114,7 +126,8 @@ namespace TinyUnrealPackerExtended.ViewModels
             FolderItems.Add(rootItem);
             SelectedFolderItem = rootItem;
 
-            UpdateBreadcrumbs(isInitial: true);
+            _breadcrumbs.Initialize(RootFolder);
+            _breadcrumbs.OnUpdate += () => OnPropertyChanged(nameof(DisplayBreadcrumbs));
             UpdateNavigationProperties();
         }
 
@@ -143,7 +156,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             _backStack.Push(FolderEditorRootPath);
 
             _suppressTreeNav = true;
-            PerformNavigation(next);
+            DoNavigateInternal(next, addToHistory: false);
 
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
@@ -323,7 +336,7 @@ namespace TinyUnrealPackerExtended.ViewModels
 
         partial void OnMaxVisibleChanged(int oldValue, int newValue)
         {
-            UpdateBreadcrumbs();
+            _breadcrumbs.Update(FolderEditorRootPath);
         }
 
        
@@ -334,7 +347,7 @@ namespace TinyUnrealPackerExtended.ViewModels
 
             FolderEditorRootPath = path;
             SelectedFolderItem = FindFolderItem(path, FolderItems) ?? SelectedFolderItem;
-            UpdateBreadcrumbs();
+            _breadcrumbs.Update(path);
             UpdateNavigationProperties();
             ExpandAndSelectPath(path);
         }
@@ -346,59 +359,6 @@ namespace TinyUnrealPackerExtended.ViewModels
 
             GoBackCommand.NotifyCanExecuteChanged();
             GoForwardCommand.NotifyCanExecuteChanged();
-        }
-
-        private void UpdateBreadcrumbs(bool isInitial = false)
-        {
-            Breadcrumbs.Clear();
-            Overflow.Clear();
-
-            if (string.IsNullOrWhiteSpace(RootFolder))
-                return;
-
-            var all = new List<BreadcrumbItem>
-            {
-                 new BreadcrumbItem
-                 {
-                    Name = Path.GetFileName(RootFolder.TrimEnd(Path.DirectorySeparatorChar)),
-                     FullPath = RootFolder
-                 }
-            };
-
-            if (!FolderEditorRootPath.Equals(RootFolder, StringComparison.OrdinalIgnoreCase))
-            {
-                var accumPath = RootFolder.TrimEnd(Path.DirectorySeparatorChar);
-                var rel = FolderEditorRootPath
-                              .Substring(accumPath.Length)
-                              .Trim(Path.DirectorySeparatorChar);
-
-                foreach (var part in rel.Split(Path.DirectorySeparatorChar))
-                {
-                    accumPath = Path.Combine(accumPath, part);
-                    all.Add(new BreadcrumbItem
-                    {
-                        Name = part,
-                        FullPath = accumPath
-                    });
-                }
-            }
-
-            foreach (var b in all)
-                Breadcrumbs.Add(b);
-
-            if (all.Count <= MaxVisible)
-            {
-                Overflow.Clear();
-            }
-            else if (!isInitial)
-            {
-                Overflow = all
-                    .Skip(1)
-                    .Take(all.Count - MaxVisible + 1)
-                    .ToList();
-            }
-
-            OnPropertyChanged(nameof(DisplayBreadcrumbs));
         }
 
 
@@ -439,70 +399,43 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private async Task PreviewTexture(FolderItem item)
+        private async Task PreviewTextureAsync(FolderItem item)
         {
-            if (item == null || !item.FullPath.EndsWith(".uasset", StringComparison.OrdinalIgnoreCase))
-            {
-                ShowWarning("Выберите .uasset для предпросмотра");
-                return;
-            }
-            PreviewedUassetPath = item.FullPath;
-            ClearTexture();
             try
             {
-                SelectedTexturePreview = await ExtractTextureAsync(item.FullPath);
+                ClearTexture();
+                var bmp = await _textureService.ExtractAsync(item.FullPath);
+                _originalTexture = bmp;
+                SelectedTexturePreview = _originalTexture; 
+                PreviewedUassetPath = item.FullPath;
+                IsAlphaEnabled = true;
             }
-            catch
+            catch (Exception ex)
             {
-                ShowError("Не удалось извлечь текстуру");
+                ShowError(ex.Message);
             }
-        }
-
-        private async Task<BitmapImage> ExtractTextureAsync(string uassetPath)
-        {
-            return await Task.Run(() =>
-            {
-                var dir = Path.GetDirectoryName(Path.GetFullPath(uassetPath));
-                var fileName = Path.GetFileName(uassetPath);
-                using var provider = new DefaultFileProvider(dir, SearchOption.TopDirectoryOnly, new VersionContainer(EGame.GAME_UE4_LATEST));
-                provider.Initialize();
-                var key = provider.Files.Keys.FirstOrDefault(k => k.EndsWith(fileName, StringComparison.OrdinalIgnoreCase))
-                          ?? throw new FileNotFoundException(fileName);
-                var pkg = provider.LoadPackage(key);
-                var tex = pkg.ExportsLazy.Select(e => e.Value).OfType<UTexture2D>().FirstOrDefault()
-                          ?? throw new InvalidDataException("Texture not found");
-                using var bmp = tex.Decode(ETexturePlatform.DesktopMobile)
-                                  ?? throw new InvalidOperationException("Decode failed");
-                const int MAX = 512;
-                SKBitmap toEnc = (bmp.Width > MAX || bmp.Height > MAX)
-                    ? bmp.Resize(new SKImageInfo(
-                        (int)(bmp.Width * Math.Min((float)MAX / bmp.Width, (float)MAX / bmp.Height)),
-                        (int)(bmp.Height * Math.Min((float)MAX / bmp.Width, (float)MAX / bmp.Height))
-                      ),
-                      SKFilterQuality.Medium) ?? bmp
-                    : bmp;
-                using var img = toEnc.Encode(SKEncodedImageFormat.Png, 100);
-                using var ms = new MemoryStream(img.ToArray());
-                var result = new BitmapImage();
-                result.BeginInit(); result.StreamSource = ms; result.CacheOption = BitmapCacheOption.OnLoad; result.CreateOptions = BitmapCreateOptions.PreservePixelFormat; result.EndInit(); result.Freeze();
-                return result;
-            });
         }
 
         [RelayCommand]
-        private async Task SaveTextureFromUasset()
+        private async Task SaveTextureAsync()
         {
-            if (string.IsNullOrEmpty(PreviewedUassetPath)) return;
+            if (string.IsNullOrEmpty(PreviewedUassetPath))
+                return;
+
             byte[] data;
             try
             {
-                var img = await ExtractTextureAsync(PreviewedUassetPath);
-                var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(img));
-                using var ms = new MemoryStream(); encoder.Save(ms); data = ms.ToArray();
+                var bitmap = await _textureService
+                                    .ExtractFullResolutionAsync(PreviewedUassetPath, CancellationToken.None);
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(bitmap));
+                using var ms = new MemoryStream();
+                encoder.Save(ms);
+                data = ms.ToArray();
             }
-            catch
+            catch (Exception ex)
             {
-                ShowError("Ошибка подготовки текстуры");
+                ShowError($"Ошибка сохранения текстуры: {ex.Message}");
                 return;
             }
 
@@ -511,8 +444,47 @@ namespace TinyUnrealPackerExtended.ViewModels
                 Filter = "PNG Image|*.png",
                 FileName = Path.GetFileNameWithoutExtension(PreviewedUassetPath) + ".png"
             };
-            if (saveDlg.ShowDialog() != true) return;
+            if (saveDlg.ShowDialog() != true)
+                return;
+
             await File.WriteAllBytesAsync(saveDlg.FileName, data);
+        }
+
+        [RelayCommand]
+        private void ToggleAlphaChannel()
+        {
+            if (_originalTexture == null)
+                return;
+
+            if (IsAlphaEnabled)
+            {
+                SelectedTexturePreview = MakeOpaque(_originalTexture);
+                IsAlphaEnabled = false;
+            }
+            else
+            {
+                SelectedTexturePreview = _originalTexture;
+                IsAlphaEnabled = true;
+            }
+        }
+
+        private BitmapSource MakeOpaque(BitmapSource src)
+        {
+            int w = src.PixelWidth, h = src.PixelHeight;
+            int bpp = src.Format.BitsPerPixel;
+            int bytesPerPixel = bpp / 8;
+            int stride = (w * bpp + 7) / 8;
+            var pixels = new byte[h * stride];
+            src.CopyPixels(pixels, stride, 0);
+
+            // для каждого пикселя ставим alpha = 255
+            for (int i = bytesPerPixel - 1; i < pixels.Length; i += bytesPerPixel)
+                pixels[i] = 0xFF;
+
+            var wb = new WriteableBitmap(w, h, src.DpiX, src.DpiY, src.Format, null);
+            wb.WritePixels(new Int32Rect(0, 0, w, h), pixels, stride, 0);
+            wb.Freeze();
+            return wb;
         }
 
         [RelayCommand]
@@ -854,13 +826,6 @@ int insertIndex)
             {
                 OpenFolderCommand.Execute(item);
             }
-        }
-        private void PerformNavigation(string path)
-        {
-            FolderEditorRootPath = path;
-            SelectedFolderItem = FindFolderItem(path, FolderItems) ?? SelectedFolderItem;
-            UpdateBreadcrumbs();
-            UpdateNavigationProperties();
         }
 
         partial void OnSelectedFolderItemChanged(FolderItem oldItem, FolderItem newItem)
