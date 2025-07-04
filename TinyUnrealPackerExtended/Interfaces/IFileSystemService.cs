@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyUnrealPackerExtended.ViewModels;
 
 namespace TinyUnrealPackerExtended.Interfaces
 {
     public interface IFileSystemService
     {
-        bool Exists(string path);
-        void WriteAllText(string path, string content);
-        string ReadAllText(string path);
-        void CopyFile(string source, string dest, bool overwrite = false);
-        void DeleteFile(string path);
-        void CreateDirectory(string path);
-        void DeleteDirectory(string path, bool recursive);
-        IEnumerable<string> GetFiles(string directory);
-        IEnumerable<string> GetDirectories(string directory);
+
+        Task<FolderItem> GetTreeAsync(string rootPath, CancellationToken ct);
+        Task CopyAsync(string sourcePath, string destinationPath, bool recursive, CancellationToken ct);
+        Task MoveAsync(string sourcePath, string destinationPath, CancellationToken ct);
+        Task DeleteAsync(string path, bool recursive, CancellationToken ct);
+        Task CreateDirectoryAsync(string path, CancellationToken ct);
+        bool DirectoryExists(string path);
+        bool FileExists(string path);
     }
 }

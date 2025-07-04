@@ -20,11 +20,10 @@ namespace TinyUnrealPackerExtended.ViewModels
     
     public partial class FolderEditorViewModel : ViewModelBase
     {
-        private readonly IFileDialogService _fileDialog;
         private readonly IDialogService _dialog;
         private readonly IBreadcrumbService _breadcrumbs = new BreadcrumbService();
         private readonly ITexturePreviewService _textureService;
-
+        private readonly IFileSystemService _fileSystem;
 
         private readonly Stack<string> _backStack = new();
         private readonly Stack<string> _forwardStack = new();
@@ -50,6 +49,11 @@ namespace TinyUnrealPackerExtended.ViewModels
 
         [ObservableProperty] private string searchQuery;
 
+        private readonly List<FolderItem> _searchIndex = new();
+
+        private readonly List<FolderItem> _searchResults = new();
+        private int _searchResultsIndex = -1;
+
         public ObservableCollection<FolderItem> FolderItems { get; } = new();
         public ObservableCollection<BreadcrumbItem> Breadcrumbs => _breadcrumbs.Items;
         public List<BreadcrumbItem> Overflow { get; private set; } = new();
@@ -65,7 +69,9 @@ namespace TinyUnrealPackerExtended.ViewModels
         [ObservableProperty] private bool isAlphaEnabled = true;
         private BitmapSource _originalTexture;
 
-       
+        private CancellationTokenSource _loadCts;
+
+
         public IEnumerable<BreadcrumbItem> DisplayBreadcrumbs
         {
             get
@@ -90,28 +96,47 @@ namespace TinyUnrealPackerExtended.ViewModels
             : base(fileDialogService, growlService)
         {
             _dialog = dialogService;
-            _fileDialog = fileDialogService;
+            _fileSystem = new FileSystemService();
             _textureService = new TexturePreviewService();
         }
 
         [RelayCommand]
-        private void LoadFolderEditor()
+        private async Task LoadFolderEditorAsync(CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(FolderEditorRootPath) || !Directory.Exists(FolderEditorRootPath))
+            _loadCts?.Cancel();
+            _loadCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var ct = _loadCts.Token;
+
+            if (string.IsNullOrEmpty(FolderEditorRootPath) || !_fileSystem.DirectoryExists(FolderEditorRootPath))
                 return;
 
             FolderItems.Clear();
             ClearTexture();
-
             RootFolder = FolderEditorRootPath;
 
-            var rootItem = BuildTreeItem(new DirectoryInfo(FolderEditorRootPath));
-            FolderItems.Add(rootItem);
-            SelectedFolderItem = rootItem;
+            try
+            {
+                var rootItem = await _fileSystem.GetTreeAsync(FolderEditorRootPath, ct);
+                FolderItems.Add(rootItem);
+                SelectedFolderItem = rootItem;
 
-            _breadcrumbs.Initialize(RootFolder);
-            _breadcrumbs.OnUpdate += () => OnPropertyChanged(nameof(DisplayBreadcrumbs));
-            UpdateNavigationProperties();
+                _searchIndex.Clear();
+                BuildSearchIndex(rootItem);
+
+                _breadcrumbs.Initialize(RootFolder);
+                _breadcrumbs.OnUpdate += () => OnPropertyChanged(nameof(DisplayBreadcrumbs));
+                UpdateNavigationProperties();
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private void BuildSearchIndex(FolderItem node)
+        {
+            _searchIndex.Add(node);
+            foreach (var child in node.Children)
+                BuildSearchIndex(child);
         }
 
         [RelayCommand]
@@ -147,12 +172,13 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private void RefreshFolder()
+        private async Task RefreshFolder(CancellationToken cancellationToken)
         {
             _backStack.Clear();
             _forwardStack.Clear();
+
             FolderEditorRootPath = RootFolder;
-            LoadFolderEditor();
+            await LoadFolderEditorAsync(cancellationToken);
         }
 
         [RelayCommand]
@@ -200,9 +226,8 @@ namespace TinyUnrealPackerExtended.ViewModels
             _isCut = false;
             OnPropertyChanged(nameof(CanPaste));
         }
-
         [RelayCommand]
-        private void RenameFolderItem(FolderItem item)
+        private async Task RenameFolderItemAsync(FolderItem item)
         {
             if (item == null)
                 return;
@@ -218,6 +243,7 @@ namespace TinyUnrealPackerExtended.ViewModels
                 primaryText: "Переименовать",
                 secondaryText: "Отмена"
             );
+
             if (string.IsNullOrWhiteSpace(newName) || newName == item.Name)
                 return;
 
@@ -225,11 +251,9 @@ namespace TinyUnrealPackerExtended.ViewModels
 
             try
             {
-                if (item.IsDirectory)
-                    Directory.Move(oldPath, newPath);
-                else
-                    File.Move(oldPath, newPath);
+                await _fileSystem.MoveAsync(oldPath, newPath, CancellationToken.None);
 
+                // Обновляем модель
                 item.Name = newName;
                 item.FullPath = newPath;
 
@@ -238,6 +262,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             }
             catch (Exception ex)
             {
+                // Показ ошибки
                 _dialog.ShowDialog(
                     title: "Ошибка переименования",
                     message: ex.Message,
@@ -271,48 +296,48 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private void PasteIntoFolder(FolderItem target)
+        private async Task PasteIntoFolderAsync(FolderItem target)
         {
-            if (_clipboardItem == null || target == null) return;
+            if (_clipboardItem == null || target == null)
+                return;
+
             var src = _clipboardItem.FullPath;
             var dest = Path.Combine(target.FullPath, _clipboardItem.Name);
 
-            if (_isCut)
-                Directory.Move(src, dest);
-            else
+            try
             {
-                if (_clipboardItem.IsDirectory)
-                    CopyDirectory(src, dest);
+                if (_isCut)
+                {
+                    await _fileSystem.MoveAsync(src, dest, CancellationToken.None);
+                }
                 else
-                    File.Copy(src, dest);
+                {
+                    await _fileSystem.CopyAsync(src, dest, recursive: _clipboardItem.IsDirectory, CancellationToken.None);
+                }
+
+                // Добавляем в модель дерева новый узел
+                var clone = new FolderItem(
+                    _clipboardItem.Name,
+                    dest,
+                    _clipboardItem.IsDirectory,
+                    _clipboardItem.IconKind
+                );
+                target.Children.Add(clone);
+
+                if (_isCut)
+                {
+                    // удаляем оригинал из дерева
+                    RemoveFromParent(FolderItems, _clipboardItem);
+                    _clipboardItem = null;
+                }
+
+                OnPropertyChanged(nameof(CanPaste));
             }
-
-            // Добавляем в модель дерева
-            var clone = new FolderItem(
-                _clipboardItem.Name,
-                dest,
-                _clipboardItem.IsDirectory,
-                _clipboardItem.IconKind
-            );
-            target.Children.Add(clone);
-
-            if (_isCut)
+            catch (Exception ex)
             {
-                // удаляем оригинал
-                RemoveFromParent(FolderItems, _clipboardItem);
-                _clipboardItem = null;
+                // показываем ошибку пользователю
+                _growlService.ShowError(ex.Message);
             }
-
-            OnPropertyChanged(nameof(CanPaste));
-        }
-
-        private void CopyDirectory(string sourceDir, string destDir)
-        {
-            Directory.CreateDirectory(destDir);
-            foreach (var file in Directory.GetFiles(sourceDir))
-                File.Copy(file, Path.Combine(destDir, Path.GetFileName(file)));
-            foreach (var dir in Directory.GetDirectories(sourceDir))
-                CopyDirectory(dir, Path.Combine(destDir, Path.GetFileName(dir)));
         }
 
         partial void OnMaxVisibleChanged(int oldValue, int newValue)
@@ -342,17 +367,6 @@ namespace TinyUnrealPackerExtended.ViewModels
             GoForwardCommand.NotifyCanExecuteChanged();
         }
 
-
-        private FolderItem BuildTreeItem(DirectoryInfo dir)
-        {
-            var node = new FolderItem(dir.Name, dir.FullName, true, PackIconMaterialKind.FolderOutline);
-            foreach (var d in dir.GetDirectories())
-                node.Children.Add(BuildTreeItem(d));
-            foreach (var f in dir.GetFiles())
-                node.Children.Add(new FolderItem(f.Name, f.FullName, false, PackIconMaterialKind.FileOutline));
-            return node;
-        }
-
         private FolderItem FindFolderItem(string path, IEnumerable<FolderItem> source)
         {
             foreach (var node in source)
@@ -380,16 +394,20 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private async Task PreviewTextureAsync(FolderItem item)
+        private async Task PreviewTextureAsync(FolderItem item, CancellationToken ct)
         {
             try
             {
                 ClearTexture();
-                var bmp = await _textureService.ExtractAsync(item.FullPath);
+                var bmp = await _textureService.ExtractAsync(item.FullPath, ct);
                 _originalTexture = bmp;
-                SelectedTexturePreview = _originalTexture; 
+                SelectedTexturePreview = _originalTexture;
                 PreviewedUassetPath = item.FullPath;
                 IsAlphaEnabled = true;
+            }
+            catch (OperationCanceledException)
+            {
+                // Предпросмотр отменён
             }
             catch (Exception ex)
             {
@@ -469,10 +487,12 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private void RemoveFolderItem(FolderItem item)
+        private async Task RemoveFolderItemAsync(FolderItem item)
         {
-            if (item == null) return;
+            if (item == null)
+                return;
 
+            // Показываем подтверждение
             bool ok = _dialog.ShowDialog(
                title: "Удалить элемент?",
                message: $"Вы точно хотите удалить «{item.Name}»?",
@@ -480,17 +500,20 @@ namespace TinyUnrealPackerExtended.ViewModels
                primaryText: "Да",
                secondaryText: "Нет"
             );
-            if (!ok) return;
+            if (!ok)
+                return;
 
             try
             {
-                if (item.IsDirectory)
-                    Directory.Delete(item.FullPath, true);
-                else
-                    File.Delete(item.FullPath);
+                await _fileSystem.DeleteAsync(
+                    path: item.FullPath,
+                    recursive: item.IsDirectory,
+                    ct: CancellationToken.None
+                );
+
                 RemoveFromParent(FolderItems, item);
             }
-            catch (IOException ex)
+            catch (Exception ex)
             {
                 _dialog.ShowDialog(
                    title: "Ошибка удаления",
@@ -537,17 +560,29 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private void AddFolderToFolder()
+        private async Task AddFolderToFolderAsync()
         {
-            if (SelectedFolderItem == null || !SelectedFolderItem.IsDirectory) return;
-            var newDir = Path.Combine(SelectedFolderItem.FullPath, "NewFolder");
-            Directory.CreateDirectory(newDir);
-            SelectedFolderItem.Children.Add(new FolderItem
+            if (SelectedFolderItem == null || !SelectedFolderItem.IsDirectory)
+                return;
+
+            var newDirPath = Path.Combine(SelectedFolderItem.FullPath, "NewFolder");
+
+            try
             {
-                Name = Path.GetFileName(newDir),
-                FullPath = newDir,
-                IsDirectory = true
-            });
+                await _fileSystem.CreateDirectoryAsync(newDirPath, CancellationToken.None);
+
+                var newItem = new FolderItem(
+                    name: Path.GetFileName(newDirPath),
+                    fullPath: newDirPath,
+                    isDirectory: true,
+                    icon: PackIconMaterialKind.FolderOutline
+                );
+                SelectedFolderItem.Children.Add(newItem);
+            }
+            catch (Exception ex)
+            {
+                _growlService.ShowError($"Не удалось создать папку: {ex.Message}");
+            }
         }
 
         public void ReparentVisualAt(
@@ -615,7 +650,6 @@ int insertIndex)
         [RelayCommand]
         private void BeginDrag(MouseButtonEventArgs args)
         {
-            // Запоминаем точку старта и сам элемент
             _dragStartPoint = args.GetPosition(null);
             if (args.OriginalSource is FrameworkElement fe
                 && fe.DataContext is FolderItem fi)
@@ -628,7 +662,6 @@ int insertIndex)
         [RelayCommand]
         private void PreviewMouseDown(MouseButtonEventArgs args)
         {
-            // Запоминаем точку старта и элемент для Drag&Drop
             _dragStartPoint = args.GetPosition(null);
             if (args.OriginalSource is FrameworkElement fe && fe.DataContext is FolderItem fi)
             {
@@ -636,7 +669,6 @@ int insertIndex)
             }
         }
 
-        // 2.2. Движение мыши — проверяем, перешли ли Threshold, и запускаем DragDrop
         [RelayCommand]
         private void OnMouseMove(MouseEventArgs args)
         {
@@ -691,10 +723,10 @@ int insertIndex)
             _lastTargetFolderItem = target;
         }
 
-        // 2.4. Бросок — аналог FolderItem_Drop
         [RelayCommand]
-        private void OnDrop(DragEventArgs args)
+        private async Task OnDropAsync(DragEventArgs args)
         {
+            // 1) Перетаскивание своих узлов
             if (args.Data.GetDataPresent("FolderItem") &&
                 args.OriginalSource is DependencyObject src &&
                 VisualTreeHelperExtensions.GetAncestor<TreeViewItem>(src) is TreeViewItem tvi &&
@@ -703,9 +735,27 @@ int insertIndex)
                 var source = args.Data.GetData("FolderItem") as FolderItem;
                 if (source != null)
                 {
-                    MoveFolderItem(source, target);
-                    _draggedFolderItem = null;
-                    _lastTargetFolderItem = null;
+                    var oldPath = source.FullPath;
+                    var newPath = Path.Combine(target.FullPath, source.Name);
+
+                    try
+                    {
+                        await _fileSystem.MoveAsync(oldPath, newPath, CancellationToken.None);
+
+                        RemoveFromParent(FolderItems, source);
+                        source.FullPath = newPath;
+                        if (source.IsDirectory)
+                            UpdateChildrenPaths(source, oldPath, newPath);
+                        target.Children.Add(source);
+
+                        _draggedFolderItem = null;
+                        _lastTargetFolderItem = null;
+                    }
+                    catch (Exception ex)
+                    {
+                        _growlService.ShowError($"Не удалось переместить элемент: {ex.Message}");
+                    }
+
                     args.Handled = true;
                     return;
                 }
@@ -716,12 +766,24 @@ int insertIndex)
                 VisualTreeHelperExtensions.GetAncestor<TreeViewItem>(src2)?.DataContext is FolderItem targetExt)
             {
                 var files = (string[])args.Data.GetData(DataFormats.FileDrop);
-                foreach (var srcPath in files)
+                try
                 {
-                    var destPath = Path.Combine(targetExt.FullPath, Path.GetFileName(srcPath));
-                    File.Copy(srcPath, destPath, overwrite: true);
-                    AddFileIntoFolder(targetExt, destPath);
+                    foreach (var srcPath in files)
+                    {
+                        var fileName = Path.GetFileName(srcPath);
+                        var destPath = Path.Combine(targetExt.FullPath, fileName);
+
+                        bool isDir = _fileSystem.DirectoryExists(srcPath);
+                        await _fileSystem.CopyAsync(srcPath, destPath, recursive: isDir, CancellationToken.None);
+
+                        AddFileIntoFolder(targetExt, destPath);
+                    }
                 }
+                catch (Exception ex)
+                {
+                    _growlService.ShowError($"Ошибка при вставке файлов: {ex.Message}");
+                }
+
                 args.Handled = true;
             }
         }
@@ -751,30 +813,37 @@ int insertIndex)
                 : DragDropEffects.None;
             args.Handled = true;
         }
-
         [RelayCommand]
-        private void FileDrop(DragEventArgs args)
+        private async Task FileDropAsync(DragEventArgs args)
         {
-            if (!args.Data.GetDataPresent(DataFormats.FileDrop)) return;
+            if (!args.Data.GetDataPresent(DataFormats.FileDrop))
+                return;
+
             var paths = (string[])args.Data.GetData(DataFormats.FileDrop);
-            if (SelectedFolderItem == null || !SelectedFolderItem.IsDirectory) return;
+            if (SelectedFolderItem == null || !SelectedFolderItem.IsDirectory)
+                return;
 
-            foreach (var srcPath in paths)
+            try
             {
-                CopyDirectoryOrFile(srcPath, SelectedFolderItem);
+                foreach (var srcPath in paths)
+                {
+                    var fileName = Path.GetFileName(srcPath);
+                    var destPath = Path.Combine(SelectedFolderItem.FullPath, fileName);
+
+                    bool isDir = _fileSystem.DirectoryExists(srcPath);
+                    await _fileSystem.CopyAsync(srcPath, destPath, recursive: isDir, ct: CancellationToken.None);
+
+                    AddFileIntoFolder(SelectedFolderItem, destPath);
+                }
             }
-            args.Handled = true;
-        }
-
-        private void CopyDirectoryOrFile(string srcPath, FolderItem target)
-        {
-            var dest = Path.Combine(target.FullPath, Path.GetFileName(srcPath));
-            if (Directory.Exists(srcPath))
-                CopyDirectory(srcPath, dest);
-            else if (File.Exists(srcPath))
-                File.Copy(srcPath, dest, overwrite: true);
-
-            AddFileIntoFolder(target, dest);
+            catch (Exception ex)
+            {
+                ShowError($"Ошибка при добавлении файлов: {ex.Message}");
+            }
+            finally
+            {
+                args.Handled = true;
+            }
         }
 
         [RelayCommand]
@@ -872,29 +941,56 @@ int insertIndex)
             }
         }
 
-        [RelayCommand]
+        [RelayCommand(CanExecute = nameof(CanSearch))]
         private void Search()
         {
-            var q = SearchQuery?.Trim();
-            if (string.IsNullOrEmpty(q)) return;
+            var q = SearchQuery.Trim();
+            if (string.IsNullOrEmpty(q))
+                return;
 
-            var match = FindMatch(FolderItems, q);
-            if (match == null) return;
+            if (_searchResultsIndex < 0)
+            {
+                var cmp = StringComparison.OrdinalIgnoreCase;
+
+                var prefixMatches = _searchIndex
+                                        .Where(fi => fi.Name.StartsWith(q, cmp));
+                var substringMatches = _searchIndex
+                                        .Where(fi => !fi.Name.StartsWith(q, cmp)
+                                                  && fi.Name.IndexOf(q, cmp) >= 0);
+
+                _searchResults.Clear();
+                _searchResults.AddRange(prefixMatches.Concat(substringMatches));
+            }
+
+            if (_searchResults.Count == 0)
+            { 
+                ShowWarning("Не найдено результатов");
+                return;
+            }
+
+            _searchResultsIndex = (_searchResultsIndex + 1) % _searchResults.Count;
+            var match = _searchResults[_searchResultsIndex];
 
             var targetPath = match.IsDirectory
                 ? match.FullPath
                 : Path.GetDirectoryName(match.FullPath)!;
 
             _suppressTreeNav = true;
-
             DoNavigateInternal(targetPath, addToHistory: true);
-
             ExpandAndSelectPath(match.FullPath);
 
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                _suppressTreeNav = false;
-            }), DispatcherPriority.Background);
+            Application.Current.Dispatcher.BeginInvoke(
+                new Action(() => _suppressTreeNav = false),
+                DispatcherPriority.Background);
+        }
+
+        public bool CanSearch => !string.IsNullOrWhiteSpace(SearchQuery);
+
+        partial void OnSearchQueryChanged(string oldValue, string newValue)
+        {
+            _searchResults.Clear();
+            _searchResultsIndex = -1;
+            SearchCommand.NotifyCanExecuteChanged();
         }
 
         private FolderItem FindMatch(IEnumerable<FolderItem> nodes, string query)
