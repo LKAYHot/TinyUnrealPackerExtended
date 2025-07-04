@@ -1,3 +1,9 @@
 [submodule "CUE4Parse"]
 	path = CUE4Parse
 	url = https://github.com/FabianFG/CUE4Parse.git
+[submodule "UnrealPak"]
+	path = UnrealPak
+	url = https://github.com/allcoolthingsatoneplace/UnrealPakTool
+[submodule "DDS-Tools"]
+	path = DDS-Tools
+	url = https://github.com/matyalatte/UE4-DDS-Tools.git
