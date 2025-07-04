@@ -1,6 +1,6 @@
 # TinyPackerExtended
 
-![TinyPackerExtended](Screenshots/logo.png)
+![TinyPackerExtended](TinyUnrealPackerExtended/Screenshots/logo.png)
 
 ## 📖 Описание / Description
 
