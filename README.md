@@ -34,7 +34,8 @@
    ```
 2. Откройте решение в Visual Studio 2022 (или выше).
 3. Соберите проект в конфигурации `Release`.
-4. Запустите `TinyPackerExtended.exe`.
+4. Перебросьте из `Externals` папки `UnrealPak` и `DDS-Tools` в репозиторий, где собрался `TinyPackerExtended.exe`.
+5. Запустите `TinyPackerExtended.exe`.
 
 **EN:**
 1. Clone the repository:
@@ -43,7 +44,8 @@
    ```
 2. Open the solution in Visual Studio 2022 (or later).
 3. Build the project in the `Release` configuration.
-4. Run `TinyPackerExtended.exe`.
+4. Copy the `UnrealPak` and `DDS-Tools` folders from the `Externals directory` into the folder where `TinyPackerExtended.exe` was built.
+5. Run `TinyPackerExtended.exe`.
 
 ---
 
