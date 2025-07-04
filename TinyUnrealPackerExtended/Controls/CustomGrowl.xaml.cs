@@ -76,13 +76,11 @@ namespace TinyUnrealPackerExtended.Controls
             DataContext = this;
         }
 
-        // Вызывается при изменении свойства Message
         private static void OnMessageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((CustomGrowl)d).UpdateMessageText(e.NewValue as string);
         }
 
-        // Разбивает текст на обычные части и гиперссылки-пути
         private void UpdateMessageText(string message)
         {
             MessageTextBlock.Inlines.Clear();
@@ -121,7 +119,6 @@ namespace TinyUnrealPackerExtended.Controls
             }
         }
 
-        // Открывает папку или выделяет файл в Проводнике
         private void OpenPath(string path)
         {
             try
