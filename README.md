@@ -8,9 +8,9 @@
 
 ## 📖 Описание / Description
 
-**RU:** TinyPackerExtended — универсальный инструмент для обратной упаковки ассетов из игровых пакетов Unreal Engine. Вместо распаковки он позволяет собрать и упаковать ресурсы обратно, поддерживая широкий набор форматов.
+**RU:** TinyPackerExtended — универсальный инструмент для обратной упаковки ассетов из игровых пакетов Unreal Engine. Вместо распаковки он позволяет собрать и упаковать ресурсы обратно.
 
-**EN:** TinyPackerExtended is a universal tool for reverse packaging of assets from Unreal Engine game packages. Instead of unpacking, it allows you to assemble and pack resources back, supporting a wide range of formats.
+**EN:** TinyPackerExtended is a universal tool for reverse packaging of assets from Unreal Engine game packages. Instead of unpacking, it allows you to assemble and pack resources back.
 
 ---
 
@@ -66,8 +66,8 @@
 ## 📸 Скриншоты / Screenshots
 
 <p align="center">
-  <img src="TinyUnrealPackerExtended/Screenshots/main.png" alt="Main window" width="300" style="max-width:100%; margin:0 10px;" />
-  <img src="TinyUnrealPackerExtended/Screenshots/folder-editor.png" alt="Folder Editor" width="300" style="max-width:100%; margin:0 10px;" />
+  <img src="TinyUnrealPackerExtended/Screenshots/main.png" alt="Main window" width="500" style="max-width:100%; margin:0 10px;" />
+  <img src="TinyUnrealPackerExtended/Screenshots/folder-editor.png" alt="Folder Editor" width="500" style="max-width:100%; margin:0 10px;" />
 </p>
 
 ---
@@ -75,33 +75,10 @@
 ## 🔧 Настройка / Customization
 
 **RU:**
-- Все настройки доступны в **AppSettings.json** или через UI в разделе `Settings`.
-- Локализация текстов хранится в `/src/Core/Localization`.
-- Для добавления нового модуля создайте папку в `/Modules` и зарегистрируйте его в `ModuleLoader`.
+- В прогрессе
 
 **EN:**
-- All settings are available in **AppSettings.json** or via the UI under `Settings`.
-- Text localization files are located in `/src/Core/Localization`.
-- To add a new module, create a folder under `/Modules` and register it in the `ModuleLoader`.
-
----
-
-## 🤝 Вклад / Contributing
-
-**RU:**
-1. Форкните репозиторий.
-2. Создайте ветку: `git checkout -b feature/YourFeature`.
-3. Внесите изменения и закоммитьте: `git commit -m "Добавил новую фичу"`.
-4. Отправьте ветку в свой форк: `git push origin feature/YourFeature`.
-5. Создайте Pull Request.
-
-**EN:**
-1. Fork the repository.
-2. Create a branch: `git checkout -b feature/YourFeature`.
-3. Commit your changes: `git commit -m "Add new feature"`.
-4. Push the branch to your fork: `git push origin feature/YourFeature`.
-5. Open a Pull Request.
-
+- In progress
 ---
 
 ## 📜 Лицензия / License
@@ -111,5 +88,3 @@
 **EN:** This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
-
-> *Шаблон README полностью двуязычный — свободно меняйте, дополняйте или удаляйте секции по необходимости.*
