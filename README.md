@@ -34,14 +34,12 @@
 
 ## 📸 Скриншоты / Screenshots
 
-![Главное окно](Screenshots/main.png)
-![Folder Editor](Screenshots/folder-editor.png)
+![Главное окно](TinyUnrealPackerExtended/Screenshots/main.png)
+![Folder Editor](TinyUnrealPackerExtended/Screenshots/folder-editor.png)
 
 ## 🔧 Настройка / Customization
 
-- Все настройки доступны в **AppSettings.json** или через UI в разделе `Settings`.
-- Локализация текстов хранится в `/src/Core/Localization`.
-- Для добавления нового модуля создайте папку в `/Modules` и зарегистрируйте в `ModuleLoader`.
+- В разработке
 
 ## 📜 Лицензия / License
 
