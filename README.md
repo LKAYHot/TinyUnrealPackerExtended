@@ -19,7 +19,7 @@
 - **Locres Toolkit** — работа с локализованными ресурсами (.locres, .csv) / working with localized resources (.locres, .csv).
 - **Excel Toolkit** — импорт/экспорт таблиц (.csv, .xlsx) / import/export tables (.csv, .xlsx).
 - **Pak Toolkit** — упаковка папок в `.pak` / packaging folders into `.pak`.
-- **UAsset Injector** — встраивание текстур в `.uasset` файлы / embedding textures into `.uasset` files.
+- **DDS Injector** — возможность паковать .png и .jpg текстуры в DDS с разными форматами. / Ability to pack .png and .jpg textures into `DDS` (.dds) in various formats.
 - **Auto Injector** — автоматическая группировка и инжект `.uasset` + `.png` / automatic grouping and injection of `.uasset` + `.png`.
 - **Folder Editor** — интерактивный проводник для просмотра и управления файлами проекта / interactive file explorer for browsing and managing project files.
 
@@ -32,9 +32,9 @@
    ```bash
    git clone https://github.com/LKAYHot/TinyUnrealPackerExtended.git
    ```
-2. Откройте решение в Visual Studio 2022 (или выше).
+2. Откройте решение в Visual Studio 2022.
 3. Соберите проект в конфигурации `Release`.
-4. Перебросьте из `Externals` папки `UnrealPak` и `DDS-Tools` в репозиторий, где собрался `TinyPackerExtended.exe`.
+4. Перебросьте из `Externals` файлы и папки `UnrealPak`, `DDS-Tools`, `textconv.exe` и `ConvertPngToDds.bat` в репозиторий, где собрался `TinyPackerExtended.exe`.
 5. Запустите `TinyPackerExtended.exe`.
 
 **EN:**
@@ -42,9 +42,9 @@
    ```bash
    git clone https://github.com/LKAYHot/TinyUnrealPackerExtended.git
    ```
-2. Open the solution in Visual Studio 2022 (or later).
+2. Open the solution in Visual Studio 2022.
 3. Build the project in the `Release` configuration.
-4. Copy the `UnrealPak` and `DDS-Tools` folders from the `Externals directory` into the folder where `TinyPackerExtended.exe` was built.
+4. Copy the `UnrealPak`, `DDS-Tools`, `textconv.exe` and `ConvertPngToDds.bat` folders and files from the `Externals directory` into the folder where `TinyPackerExtended.exe` was built.
 5. Run `TinyPackerExtended.exe`.
 
 ---
