@@ -117,8 +117,9 @@
             </TabItem>
 
             <!-- ===== UASSET TOOLKIT ===== -->
-            <TabItem Header="UAsset Injector">
-                <views:UassetInjectorView />
+
+            <TabItem Header="DDS Injector">
+                <views:PngToDdsConverterView />
             </TabItem>
 
             <!-- ===== AUTOINJECTOR UASSET TOOLKIT ===== -->

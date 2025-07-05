@@ -1,1 +1,0 @@
-C:\Users\dmitr\Desktop\TinyTools\TinyUnrealPackerExtended\TinyUnrealPackerExtended\bin\Debug\net8.0-windows\DDS\SourceTiles\T_Map_AdminLabel.uasset

@@ -332,49 +332,52 @@ CommandParameter="{Binding PlacementTarget.DataContext,
 
     <DataTemplate x:Key="AutoInjectItemTemplate">
         <Border x:Name="Bd"
-  Background="White"
-  CornerRadius="6"
-  Padding="12"
-  Tag="{Binding DataContext.AutoInjectVM, RelativeSource={RelativeSource AncestorType=Window}}"
-  Margin="0,8,0,0" Style="{StaticResource FileBorderStyle1}">
-            
+                Background="White"
+                CornerRadius="6"
+                Padding="12"
+                Tag="{Binding DataContext.AutoInjectVM, RelativeSource={RelativeSource AncestorType=Window}}"
+                Margin="0,8,0,0"
+                Style="{StaticResource FileBorderStyle1}">
+
             <Border.ContextMenu>
                 <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                     <MenuItem Header="Удалить"
-                          Command="{Binding RemoveAutoInjectItemCommand}"
-                          CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                              Command="{Binding RemoveAutoInjectItemCommand}"
+                              CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                 </ContextMenu>
             </Border.ContextMenu>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <iconPacks:PackIconMaterial
-  Kind="FileDocumentOutline"
-  Width="24" Height="24"
-  VerticalAlignment="Center"
-  Grid.Column="0"/>
-                <TextBlock
-  Text="{Binding Name}"
-  VerticalAlignment="Center"
-  Margin="12,0,0,0"
-  Grid.Column="1"
-  FontSize="14"
-  TextTrimming="CharacterEllipsis"/>
-                <TextBlock
-  Text="{Binding Status}"
-  VerticalAlignment="Center"
-  Margin="12,0,0,0"
-  Grid.Column="2"
-  FontSize="14"/>
+                <iconPacks:PackIconMaterial Kind="FileDocumentOutline"
+                                            Width="24"
+                                            Height="24"
+                                            VerticalAlignment="Center"
+                                            Grid.Column="0" />
+                <TextBlock Text="{Binding Name}"
+                           VerticalAlignment="Center"
+                           Margin="12,0,0,0"
+                           Grid.Column="1"
+                           FontSize="14"
+                           TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="{Binding Status}"
+                           VerticalAlignment="Center"
+                           Margin="12,0,0,0"
+                           Grid.Column="2"
+                           FontSize="14" />
             </Grid>
         </Border>
 
         <DataTemplate.Triggers>
-            <Trigger SourceName="Bd" Property="IsMouseOver" Value="True">
-                <Setter TargetName="Bd" Property="Background" Value="#e6f2ff"/>
+            <Trigger SourceName="Bd"
+                     Property="IsMouseOver"
+                     Value="True">
+                <Setter TargetName="Bd"
+                        Property="Background"
+                        Value="#e6f2ff" />
             </Trigger>
         </DataTemplate.Triggers>
     </DataTemplate>

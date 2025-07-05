@@ -28,6 +28,9 @@ namespace TinyUnrealPackerExtended.ViewModels
 
         public FolderEditorViewModel FolderEditorVM { get; }
 
+        public PngToDdsConverterViewModel PngToDdsConverterVM { get; }
+
+
 
         private readonly LocresService _locresService = new();
         private readonly ExcelService _excelService = new();
@@ -52,6 +55,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             UassetInjectorVM = new UassetInjectorViewModel(_fileDialogService, growlService, _processRunner);
             AutoInjectVM = new AutoInjectViewModel(_fileDialogService, growlService, _processRunner);
             FolderEditorVM = new FolderEditorViewModel(growlService, fileDialogService, dialogService);
+            PngToDdsConverterVM = new PngToDdsConverterViewModel(_fileDialogService, growlService, _processRunner);
 
             PakVM.PakFiles.CollectionChanged += (_, __) =>
             {

@@ -12,6 +12,8 @@ namespace TinyUnrealPackerExtended.ViewModels
     {
         private readonly IProcessRunner _processRunner;
 
+        private static readonly string[] TextureExtensions = new[] { ".png", ".jpg", ".jpeg", ".tga", ".dds" };
+
         public ObservableCollection<AutoInjectItem> AutoInjectItems { get; } = new();
 
         [ObservableProperty] private string autoInjectOutputPath;
@@ -47,21 +49,23 @@ namespace TinyUnrealPackerExtended.ViewModels
             if (paths == null || paths.Length == 0) return;
 
             var groups = paths
-                .Select(p => new { Path = p, Base = Path.GetFileNameWithoutExtension(p), Ext = Path.GetExtension(p).ToLowerInvariant() })
+                .Select(p => new { Path = p, Base = System.IO.Path.GetFileNameWithoutExtension(p), Ext = System.IO.Path.GetExtension(p).ToLowerInvariant() })
                 .GroupBy(x => x.Base);
 
             foreach (var g in groups)
             {
                 if (AutoInjectItems.Any(item => item.Name == g.Key)) continue;
+
                 var asset = g.FirstOrDefault(x => x.Ext == ".uasset");
-                var tex = g.FirstOrDefault(x => x.Ext == ".png");
+                var tex = g.FirstOrDefault(x => TextureExtensions.Contains(x.Ext));
+
                 if (asset != null && tex != null)
                 {
                     AutoInjectItems.Add(new AutoInjectItem
                     {
                         Name = g.Key,
-                        AssetFile = new FileItem { FileName = Path.GetFileName(asset.Path), FilePath = asset.Path },
-                        TextureFile = new FileItem { FileName = Path.GetFileName(tex.Path), FilePath = tex.Path },
+                        AssetFile = new FileItem { FileName = System.IO.Path.GetFileName(asset.Path), FilePath = asset.Path },
+                        TextureFile = new FileItem { FileName = System.IO.Path.GetFileName(tex.Path), FilePath = tex.Path },
                         Status = "Загружено"
                     });
                 }

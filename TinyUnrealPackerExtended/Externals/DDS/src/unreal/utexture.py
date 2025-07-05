@@ -58,6 +58,17 @@ PF_TO_UNCOMPRESSED = {
     "PF_ETC2_RGBA": "PF_B8G8R8A8",
 }
 
+def _dxgi_base(fmt: DXGI_FORMAT) -> DXGI_FORMAT:
+    """
+    Если fmt — это, скажем, BC1_UNORM_SRGB, вернуть BC1_UNORM,
+    иначе вернуть fmt без изменений.
+    """
+    name = fmt.name
+    if name.endswith("_UNORM_SRGB"):
+        base_name = name.replace("_UNORM_SRGB", "_UNORM")
+        return DXGI_FORMAT[base_name]
+    return fmt
+
 
 def is_power_of_2(n):
     if n == 1:
@@ -368,10 +379,12 @@ class Utexture:
             raise RuntimeError(f"Unsupported pixel format. ({self.pixel_format})")
 
         # check formats
-        if dds.header.dxgi_format != self.dxgi_format:
+        u_fmt = self.dxgi_format
+        d_fmt = dds.header.dxgi_format
+        if _dxgi_base(u_fmt) != _dxgi_base(d_fmt):
             raise RuntimeError(
-                "The format does not match. "
-                f"(Uasset: {self.dxgi_format.name}, DDS: {dds.header.dxgi_format.name})"
+                f"The format does not match. "
+                f"(Uasset: {u_fmt.name}, DDS: {d_fmt.name})"
             )
 
         if dds.get_texture_type() != self.get_texture_type():
