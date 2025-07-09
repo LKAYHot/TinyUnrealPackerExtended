@@ -14,6 +14,11 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using ICSharpCode.AvalonEdit.Document;
+using CUE4Parse.FileProvider;
+using CUE4Parse.UE4.Versions;
+using Newtonsoft.Json;
+using TinyUnrealPackerExtended.Extensions;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
@@ -70,6 +75,18 @@ namespace TinyUnrealPackerExtended.ViewModels
         private BitmapSource _originalTexture;
 
         private CancellationTokenSource _loadCts;
+
+        [ObservableProperty]
+        private string selectedCodeText;
+
+        // Новое свойство для AvalonEdit
+        [ObservableProperty]
+        private TextDocument codeDocument = new TextDocument();
+
+        partial void OnSelectedCodeTextChanged(string oldValue, string newValue)
+        {
+            CodeDocument.Text = newValue ?? string.Empty;
+        }
 
 
         public IEnumerable<BreadcrumbItem> DisplayBreadcrumbs
@@ -388,8 +405,9 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private void ClearTexturePreview()
+        private void ClearPreview()
         {
+            SelectedCodeText = null;
             ClearTexture();
         }
 
@@ -1005,8 +1023,59 @@ int insertIndex)
             }
             return null;
         }
+
+        private async Task<string> LoadJsonFromAssetAsync(string uassetPath, string rootDir, CancellationToken ct)
+        {
+            // 1) создаём провайдера и инициализируем
+            var provider = new DefaultFileProvider(rootDir, SearchOption.AllDirectories,
+                                                   new VersionContainer(EGame.GAME_UE4_LATEST));
+            provider.Initialize();
+
+            // 2) находим нужный asset по пути
+            var fileName = Path.GetFileName(uassetPath);
+            var assetFile = provider.Files.Values
+                                  .First(f => f.Path.EndsWith(fileName, StringComparison.OrdinalIgnoreCase));
+
+            // 3) грузим пакет и получаем DisplayData
+            var result = provider.GetLoadPackageResult(assetFile);
+            var displayData = result.GetDisplayData(save: false);
+
+            // 4) сериализуем в форматированный JSON
+            return JsonConvert.SerializeObject(displayData,
+                                               Formatting.Indented,
+                                               new JsonSerializerSettings { NullValueHandling = NullValueHandling.Include });
+        }
+
+        [RelayCommand]
+        private async Task PreviewAssetAsync(FolderItem item, CancellationToken ct)
+        {
+            if (item == null || !item.FullPath.EndsWith(".uasset", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            try
+            {
+                var json = await LoadJsonFromAssetAsync(item.FullPath, FolderEditorRootPath, ct);
+
+                var previewWindow = new CodePreviewWindow
+                {
+                    Owner = Application.Current.MainWindow
+                };
+
+                var previewVm = new CodePreviewViewModel(json, previewWindow);
+
+                previewWindow.DataContext = previewVm;
+
+                // 4) Показываем
+                previewWindow.Show();
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Не удалось загрузить asset: {ex.Message}");
+            }
+        }
+
     }
-    
+
 
     public static class VisualTreeHelperExtensions
     {

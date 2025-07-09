@@ -1,0 +1,141 @@
+﻿<Window x:Class="TinyUnrealPackerExtended.CodePreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:avalon="http://icsharpcode.net/sharpdevelop/avalonedit"
+        Title="Preview JSON"
+        x:Name="RootWindow"
+        Height="750"
+        Width="800"
+        MinHeight="750"
+        MinWidth="800"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResize"
+        Background="#F5F5F5"
+        AllowsTransparency="True"
+        FontFamily="Bahnschrift"
+        FontSize="14"
+        WindowStyle="None">
+
+    <!-- перекопировали из MainWindow: конвертеры, общие ресурсы -->
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+       
+        <!-- наши коды цвета для редактора -->
+        <SolidColorBrush x:Key="CodeBackgroundBrush"
+                         Color="#1E1E1E" />
+        <SolidColorBrush x:Key="CodeForegroundBrush"
+                         Color="#FF191919" />
+        <SolidColorBrush x:Key="CodeLineNumbersBrush"
+                         Color="#FF656565" />
+    </Window.Resources>
+
+
+
+    <Window.InputBindings>
+        <KeyBinding Key="F"
+                    Modifiers="Control"
+                    Command="{Binding FocusSearchCommand}" />
+    </Window.InputBindings>
+
+    <Grid>
+        <!-- полоса «хвата» для перетаскивания окна -->
+        <Border x:Name="DragArea"
+                Height="32"
+                Background="Transparent"
+                VerticalAlignment="Top"
+                MouseDown="DragArea_MouseDown" />
+
+        <Border Margin="16,48,16,0"
+                CornerRadius="4"
+                Background="#FFFFFFFF"
+                Padding="4"
+                VerticalAlignment="Top">
+            <!-- prevent last child filling, so docked StackPanel sticks right -->
+            <DockPanel LastChildFill="False">
+                <StackPanel Orientation="Horizontal"
+                            DockPanel.Dock="Right"
+                            HorizontalAlignment="Right">
+                    <TextBox Style="{StaticResource SearchTextBoxStyle}"
+                             x:Name="SearchBox"
+                             Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                             Width="200">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter"
+                                        Command="{Binding SearchCommand}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <Button Command="{Binding SearchCommand}"
+                            Style="{StaticResource NavigationButtonStyle}"
+                            ToolTip="Искать"
+                            Margin="4,0,0,0">
+                        <iconPacks:PackIconMaterial Kind="Magnify"
+                                                    Width="16"
+                                                    Height="16" />
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+
+        <!-- кнопки сворачивания/макса/закрытия -->
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,8,8,0">
+            <Button Width="37"
+                    Height="32"
+                    Command="{Binding MinimizeWindowCommand}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Cursor="Hand">
+                <iconPacks:PackIconMaterial Kind="WindowMinimize"
+                                            Width="16"
+                                            Height="16"
+                                            Foreground="#333" />
+            </Button>
+            <Button Width="37"
+                    Height="32"
+                    Command="{Binding MaximizeWindowCommand}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Cursor="Hand">
+                <iconPacks:PackIconMaterial Kind="Fullscreen"
+                                            Width="16"
+                                            Height="16"
+                                            Foreground="#333" />
+            </Button>
+            <Button Width="37"
+                    Height="32"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Click="CloseButton_Click">
+                <iconPacks:PackIconMaterial Kind="Close"
+                                            Width="16"
+                                            Height="16"
+                                            Foreground="#333"
+                                            Cursor="" />
+            </Button>
+        </StackPanel>
+
+        <!-- сам редактор кода -->
+        <Border Margin="16,88,16,16"
+                CornerRadius="6"
+                SnapsToDevicePixels="True"
+                Style="{StaticResource CardStyle}">
+            <avalon:TextEditor x:Name="EditorMain"
+                               Background="Transparent"
+                               Foreground="{StaticResource CodeForegroundBrush}"
+                               FontFamily="Consolas"
+                               FontSize="14"
+                               ShowLineNumbers="True"
+                               LineNumbersForeground="{StaticResource CodeLineNumbersBrush}"
+                               SyntaxHighlighting="JavaScript"
+                               Document="{Binding CodeDocument}"
+                               HorizontalScrollBarVisibility="Auto"
+                               VerticalScrollBarVisibility="Auto"
+                               Margin="0" />
+        </Border>
+    </Grid>
+</Window>

@@ -5,7 +5,14 @@
              xmlns:hc="https://handyorg.github.io/handycontrol"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:behaviors="clr-namespace:TinyUnrealPackerExtended.Behaviors"
+             xmlns:avalon="http://icsharpcode.net/sharpdevelop/avalonedit"
+             xmlns:conv="clr-namespace:TinyUnrealPackerExtended.Converters"
              xmlns:local1="clr-namespace:TinyUnrealPackerExtended.ViewModels">
+    <UserControl.Resources>
+        <conv:StringNullOrEmptyToVisibilityConverter x:Key="StringNullOrEmptyToCollapsed"
+                                                     NullOrEmptyVisibility="Collapsed"
+                                                     NotNullOrEmptyVisibility="Visible" />
+    </UserControl.Resources>
     <Border Style="{StaticResource CardStyle}"
             Padding="12">
         <Grid>
@@ -612,7 +619,7 @@
                             </Image.ContextMenu>
                         </Image>
 
-                        <Button Command="{Binding ClearTexturePreviewCommand}"
+                        <Button Command="{Binding ClearPreviewCommand}"
                                 Style="{StaticResource DeleteIconButtonStyle}"
                                 Width="20"
                                 Height="20"

@@ -10,10 +10,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Json.xshd" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="iconPacker3.ico" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
     <PackageReference Include="BCnEncoder.Net" Version="2.2.1" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
@@ -33,6 +38,10 @@
 
   <ItemGroup>
     <Folder Include="Elements\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Json.xshd" />
   </ItemGroup>
 
 </Project>

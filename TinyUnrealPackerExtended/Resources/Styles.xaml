@@ -229,6 +229,11 @@
 Header="Открыть картинку"
 Command="{Binding PreviewTextureCommand}"
 CommandParameter="{Binding PlacementTarget.DataContext,
+                  RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>   
+                    <MenuItem
+Header="Открыть .JSON"
+Command="{Binding PreviewAssetCommand}"
+CommandParameter="{Binding PlacementTarget.DataContext,
                   RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
 
                     <Separator/>
