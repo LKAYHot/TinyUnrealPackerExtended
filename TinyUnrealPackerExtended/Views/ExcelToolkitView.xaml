@@ -30,14 +30,14 @@
                     <iconPacks:PackIconMaterial Kind="FileDownloadOutline"
                                                 Width="50"
                                                 Height="90"
-                                                Foreground="#0f80d6"
+                                                Foreground="{DynamicResource PrimaryButtonBackgroundBrush}"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center" />
 
 
                     <TextBlock Text="Drag &amp; Drop или нажмите, чтобы загрузить"
                                FontSize="20"
-                               Foreground="#888888"
+                               Foreground="{DynamicResource PlaceholderBrush}"
                                TextAlignment="Center" />
                     <Button Content="Выбрать файл"
                             Command="{Binding BrowseExcelInputCommand}"
@@ -46,7 +46,7 @@
                             HorizontalAlignment="Center" />
                     <TextBlock Text=".csv или .xlsx"
                                FontSize="12"
-                               Foreground="#AAAAAA"
+                               Foreground="{DynamicResource NavigationButtonDisabledForegroundBrush}"
                                TextAlignment="Center"
                                Margin="0,6,0,0" />
                 </StackPanel>
@@ -59,7 +59,7 @@
 
             <Border Margin="10, 20, 10, 10"
                     CornerRadius="6"
-                    Background="#FFF1F1F1"
+                    Background="{DynamicResource ItemHolderBackgroundBrush}"
                     Style="{StaticResource FileBorderStyle}"
                     Grid.Row="1">
                 <Grid>
@@ -72,8 +72,8 @@
 
                     <ProgressBar Margin="20,31,20,32"
                                  IsIndeterminate="True"
-                                 Background="#FFD6D6D6"
-                                 Foreground="#FF48AAFF">
+                                 Background="{DynamicResource ProgressBarBackgroundBrush}"
+                                 Foreground="{DynamicResource ProgressBarFillBrush}">
                         <ProgressBar.Style>
                             <Style TargetType="ProgressBar"
                                    BasedOn="{StaticResource ProgressBarSuccess}">

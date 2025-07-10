@@ -48,9 +48,9 @@
 
         <Border Margin="16,48,16,0"
                 CornerRadius="4"
-                Background="#FFFFFFFF"
+                Background="#FFFFFF"
                 Padding="4"
-                VerticalAlignment="Top">
+                VerticalAlignment="Top" Style="{StaticResource CardStyle}">
             <!-- prevent last child filling, so docked StackPanel sticks right -->
             <DockPanel LastChildFill="False">
                 <StackPanel Orientation="Horizontal"
@@ -120,7 +120,7 @@
         </StackPanel>
 
         <!-- сам редактор кода -->
-        <Border Margin="16,88,16,16"
+        <Border Margin="16,100,16,16"
                 CornerRadius="6"
                 SnapsToDevicePixels="True"
                 Style="{StaticResource CardStyle}">

@@ -10,8 +10,10 @@
                 <hc:ThemeResources/>
                 <hc:Theme/>
 
+                <ResourceDictionary Source="/Resources/Themes/LightTheme.xaml" />
                 <ResourceDictionary Source="/TinyUnrealPackerExtended;component/Resources/Styles.xaml"/>
                 <ResourceDictionary Source="/TinyUnrealPackerExtended;component/Resources/Animations.xaml"/>
+
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->

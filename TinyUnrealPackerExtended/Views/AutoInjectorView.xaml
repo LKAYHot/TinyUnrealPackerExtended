@@ -42,11 +42,11 @@
                         <!-- Экранирование амперсанда -->
                         <TextBlock Text="Drag &amp; Drop .uasset + .png файлы, чтобы загрузить"
                                    FontSize="16"
-                                   Foreground="#888888"
+                                   Foreground="{DynamicResource PlaceholderBrush}"
                                    TextAlignment="Center" />
                         <TextBlock Text="(файлы будут сгруппированы по имени)"
                                    FontSize="12"
-                                   Foreground="#aaaaaa"
+                                   Foreground="{DynamicResource NavigationButtonDisabledForegroundBrush}"
                                    TextAlignment="Center" />
                         <Button Content="Выбрать файлы"
                                 Command="{Binding BrowseAutoFilesCommand}"

@@ -36,8 +36,10 @@
         <Setter Property="Height" Value="30"/>
         <Setter Property="Padding" Value="10,5"/>
         <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Background" Value="#FFF5F5F5"/>
-        <Setter Property="BorderBrush" Value="#FFCCCCCC"/>
+        <Setter Property="Background"
+                Value="{DynamicResource SearchTextBoxBackgroundBrush}"/>
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource SearchTextBoxBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
@@ -54,7 +56,7 @@
                     SnapsToDevicePixels="True">
                             <Border.Effect>
                                 <DropShadowEffect x:Name="Shadow"
-                                      Color="#FF4A90E2"
+                                      Color="{DynamicResource SearchTextBoxShadowColor}"
                                       BlurRadius="0"
                                       ShadowDepth="0"
                                       Opacity="0"/>
@@ -69,7 +71,7 @@
                                Text="Поиск…"
                                FontSize="13"
                                Margin="12,0"
-                               Foreground="#FF888888"
+                               Foreground="{DynamicResource PlaceholderBrush}"
                                IsHitTestVisible="False"
                                VerticalAlignment="Center"
                                Opacity="0"/>
@@ -84,14 +86,15 @@
                         Value="1"/>
                         </Trigger>
 
-                        <Trigger Property="IsMouseOver" Value="True">
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="Border"
-                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                            To="#FFF0F0F0"
-                                            Duration="0:0:0.25"/>
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="{StaticResource SearchTextBoxHoverBackgroundColor}"
+                                                        Duration="0:0:0.25" />
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.EnterActions>
@@ -99,9 +102,9 @@
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="Border"
-                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                            To="#FFF5F5F5"
-                                            Duration="0:0:0.25"/>
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="{StaticResource SearchTextBoxBackgroundColor}"
+                                                        Duration="0:0:0.25" />
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
@@ -113,7 +116,7 @@
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="Border"
                                             Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
-                                            To="#FF4A90E2"
+                                            To="{StaticResource SearchTextBoxFocusBorderColor}"
                                             Duration="0:0:0.2"/>
                                         <DoubleAnimation Storyboard.TargetName="Shadow"
                                              Storyboard.TargetProperty="BlurRadius"
@@ -131,7 +134,7 @@
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="Border"
                                             Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
-                                            To="#FFCCCCCC"
+                                            To="{StaticResource SearchTextBoxDefaultBorderColor}"
                                             Duration="0:0:0.2"/>
                                         <DoubleAnimation Storyboard.TargetName="Shadow"
                                              Storyboard.TargetProperty="BlurRadius"
@@ -163,7 +166,7 @@
       x:Name="Arrow"
       Kind="ChevronRight"
       Width="12" Height="12"
-      Foreground="#666"
+      Foreground="{DynamicResource ExpanderArrowBrush}"
       RenderTransformOrigin="0.5,0.5">
                             <iconPacks:PackIconMaterial.RenderTransform>
                                 <RotateTransform Angle="0"/>
@@ -207,7 +210,8 @@
         <Setter Property="Margin" Value="6"/>
         <Setter Property="Padding" Value="12"/>
         <!-- Белый фон по умолчанию -->
-        <Setter Property="Background" Value="White"/>
+        <Setter Property="Background"
+                Value="{DynamicResource ItemBackgroundBrush}"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Tag" Value="{Binding DataContext.FolderEditorVM, RelativeSource={RelativeSource AncestorType=Window}}"/>
@@ -307,7 +311,9 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                     <ControlTemplate.Triggers>
                         <!-- Наведение: чуть серый фон -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#FFE4E4E4"/>
+                            <Setter TargetName="Bd"
+                                    Property="Background"
+                                    Value="{DynamicResource ListViewItemHoverBrush}"/>
                         </Trigger>
                         <!-- Выделение: системный Highlight -->
                         <Trigger Property="IsSelected" Value="True">
@@ -337,7 +343,7 @@ CommandParameter="{Binding PlacementTarget.DataContext,
 
     <DataTemplate x:Key="AutoInjectItemTemplate">
         <Border x:Name="Bd"
-                Background="White"
+                Background="{DynamicResource AutoInjectItemBackgroundBrush}"
                 CornerRadius="6"
                 Padding="12"
                 Tag="{Binding DataContext.AutoInjectVM, RelativeSource={RelativeSource AncestorType=Window}}"
@@ -382,13 +388,13 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                      Value="True">
                 <Setter TargetName="Bd"
                         Property="Background"
-                        Value="#e6f2ff" />
+                        Value="{DynamicResource AutoInjectItemHoverBackgroundBrush}" />
             </Trigger>
         </DataTemplate.Triggers>
     </DataTemplate>
 
     <Style x:Key="CardStyle" TargetType="Border">
-        <Setter Property="Background" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Padding" Value="24"/>
         <Setter Property="Margin" Value="24"/>
@@ -416,7 +422,8 @@ CommandParameter="{Binding PlacementTarget.DataContext,
         <Setter Property="Width" Value="32"/>
         <Setter Property="Height" Value="32"/>
         <Setter Property="Padding" Value="0"/>
-        <Setter Property="Foreground" Value="#333333"/>
+        <Setter Property="Foreground"
+                Value="{DynamicResource TextPrimaryBrush}" />
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -436,15 +443,20 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#E5E5E5"/>
+                            <Setter TargetName="Bd"
+                                    Property="Background"
+                                    Value="{DynamicResource NavigationButtonHoverBackgroundBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#FFB3B2B2"/>
+                            <Setter TargetName="Bd"
+                                    Property="Background"
+                                    Value="{DynamicResource NavigationButtonPressedBackgroundBrush}" />
                         </Trigger>
 
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Bd" Property="Background" Value="Transparent"/>
-                            <Setter Property="Foreground" Value="#AAAAAA"/>
+                            <Setter Property="Foreground"
+                                    Value="{DynamicResource NavigationButtonDisabledForegroundBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -466,10 +478,12 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#FFF0F0F0"/>
+                            <Setter Property="Background"
+                                    Value="{DynamicResource DeleteIconHoverBackgroundBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="#FFE0E0E0"/>
+                            <Setter Property="Background"
+                                    Value="{DynamicResource DeleteIconPressedBackgroundBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -502,12 +516,12 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                     <ControlTemplate.Triggers>
                         <!-- плавный ховер -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background">
-                                <Setter.Value>
-                                    <SolidColorBrush Color="#FFF0F0F0"/>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="#FFB0B0B0"/>
+                            <Setter TargetName="Bd"
+                                    Property="Background"
+                                    Value="{DynamicResource BreadcrumbHoverBackgroundBrush}" />
+                            <Setter TargetName="Bd"
+                                    Property="BorderBrush"
+                                    Value="{DynamicResource BreadcrumbHoverBorderBrush}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -523,7 +537,9 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                         </Trigger>
                         <!-- нажатие -->
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#FFE0E0E0"/>
+                            <Setter TargetName="Bd"
+                                    Property="Background"
+                                    Value="{DynamicResource BreadcrumbPressedBackgroundBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -534,7 +550,8 @@ CommandParameter="{Binding PlacementTarget.DataContext,
     <Style x:Key="BreadcrumbSeparatorStyle" TargetType="TextBlock">
         <Setter Property="FontSize" Value="25"/>
         <!-- увеличил -->
-        <Setter Property="Foreground" Value="#666"/>
+        <Setter Property="Foreground"
+                Value="{DynamicResource BreadcrumbSeparatorBrush}" />
         <!-- чуть потемнее -->
         <Setter Property="Margin" Value="6,0"/>
         <!-- больше пространства -->
@@ -554,8 +571,10 @@ CommandParameter="{Binding PlacementTarget.DataContext,
 
     <!-- Primary -->
     <Style x:Key="PrimaryButtonStyle" BasedOn="{StaticResource BaseButtonStyle}" TargetType="Button">
-        <Setter Property="Background" Value="#0f80d6"/>
-        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background"
+                Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource PrimaryButtonForegroundBrush}" />
         <Setter Property="MinHeight" Value="44"/>
         <Setter Property="MinWidth" Value="100"/>
         <Setter Property="Template">
@@ -577,8 +596,8 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="border"
                                   Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                  To="#0c6eb9"
-                                  Duration="0:0:0.2"/>
+                                   To="{StaticResource PrimaryButtonHoverColor}"
+                                                        Duration="0:0:0.2"/>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.EnterActions>
@@ -587,14 +606,16 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                                     <Storyboard>
                                         <ColorAnimation Storyboard.TargetName="border"
                                   Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                  To="#0f80d6"
+                                  To="{StaticResource PrimaryButtonBackgroundColor}"
                                   Duration="0:0:0.2"/>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#004578"/>
+                            <Setter TargetName="border"
+                                    Property="Background"
+                                    Value="{DynamicResource PrimaryButtonPressedBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -604,8 +625,10 @@ CommandParameter="{Binding PlacementTarget.DataContext,
 
     <!-- Secondary -->
     <Style x:Key="SecondaryButtonStyle" BasedOn="{StaticResource BaseButtonStyle}" TargetType="Button">
-        <Setter Property="Background" Value="#E5E5E5"/>
-        <Setter Property="Foreground" Value="#333"/>
+        <Setter Property="Background"
+                Value="{DynamicResource SecondaryButtonBackgroundBrush}" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource TextPrimaryBrush}" />
         <Setter Property="MinHeight" Value="44"/>
         <Setter Property="MinWidth" Value="100"/>
         <Setter Property="Template">
@@ -622,10 +645,14 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#CCCCCC"/>
+                            <Setter TargetName="border"
+                                    Property="Background"
+                                    Value="{DynamicResource SecondaryButtonHoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#AAAAAA"/>
+                            <Setter TargetName="border"
+                                    Property="Background"
+                                    Value="{DynamicResource SecondaryButtonPressedBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -633,34 +660,45 @@ CommandParameter="{Binding PlacementTarget.DataContext,
         </Setter>
     </Style>
 
-    <Style x:Key="TrimmedSecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
-        <Setter Property="MinWidth" Value="0"/>
-        <Setter Property="Width" Value="Auto"/>
+    <Style x:Key="TrimmedSecondaryButtonStyle"
+           TargetType="Button"
+           BasedOn="{StaticResource SecondaryButtonStyle}">
+        <Setter Property="MinWidth"
+                Value="0" />
+        <Setter Property="Width"
+                Value="Auto" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="border"
-                Background="{TemplateBinding Background}"
-                CornerRadius="4"
-                Padding="{TemplateBinding Padding}">
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="4"
+                            Padding="{TemplateBinding Padding}">
                         <TextBlock Text="{TemplateBinding Content}"
-                     TextTrimming="CharacterEllipsis"
-                     TextWrapping="NoWrap"
-                     HorizontalAlignment="Center"
-                     VerticalAlignment="Center"/>
+                                   TextTrimming="CharacterEllipsis"
+                                   TextWrapping="NoWrap"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#CCCCCC"/>
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="border"
+                                    Property="Background"
+                                    Value="{DynamicResource SecondaryButtonHoverBrush}" />
                         </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#AAAAAA"/>
+                        <Trigger Property="IsPressed"
+                                 Value="True">
+                            <Setter TargetName="border"
+                                    Property="Background"
+                                    Value="{DynamicResource SecondaryButtonPressedBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
+
 
     <Storyboard x:Key="DashOffsetStoryboard">
         <DoubleAnimation
@@ -671,44 +709,46 @@ CommandParameter="{Binding PlacementTarget.DataContext,
     </Storyboard>
 
     <Storyboard x:Key="DragEnterColorStoryboard">
-        <ColorAnimation
-            Storyboard.TargetProperty="(hc:DashedBorder.Background).(SolidColorBrush.Color)"
-            To="#EFF8FF"
-            Duration="0:0:0.2"/>
-        <ColorAnimation
-            Storyboard.TargetProperty="(hc:DashedBorder.BorderBrush).(SolidColorBrush.Color)"
-            To="#0F80D6"
-            Duration="0:0:0.2"/>
+        <ColorAnimation Storyboard.TargetProperty="(hc:DashedBorder.Background).(SolidColorBrush.Color)"
+                        To="{StaticResource DragEnterBackgroundColor}"
+                        Duration="0:0:0.2" />
+        <ColorAnimation Storyboard.TargetProperty="(hc:DashedBorder.BorderBrush).(SolidColorBrush.Color)"
+                        To="{StaticResource DragEnterBorderColor}"
+                        Duration="0:0:0.2" />
     </Storyboard>
 
     <Storyboard x:Key="DragLeaveColorStoryboard">
-        <ColorAnimation
-            Storyboard.TargetProperty="(hc:DashedBorder.Background).(SolidColorBrush.Color)"
-            To="White"
-            Duration="0:0:0.2"/>
-        <ColorAnimation
-            Storyboard.TargetProperty="(hc:DashedBorder.BorderBrush).(SolidColorBrush.Color)"
-            To="#CCCCCC"
-            Duration="0:0:0.2"/>
+        <ColorAnimation Storyboard.TargetProperty="(hc:DashedBorder.Background).(SolidColorBrush.Color)"
+                        To="{StaticResource DragLeaveBackgroundColor}"
+                        Duration="0:0:0.2" />
+        <ColorAnimation Storyboard.TargetProperty="(hc:DashedBorder.BorderBrush).(SolidColorBrush.Color)"
+                        To="{StaticResource DragLeaveBorderColor}"
+                        Duration="0:0:0.2" />
     </Storyboard>
 
     <Storyboard x:Key="DropColorStoryboard">
         <!-- Background animation -->
         <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(hc:DashedBorder.Background).(SolidColorBrush.Color)">
-            <DiscreteColorKeyFrame Value="#E6FFED" KeyTime="0:0:0"/>
-            <LinearColorKeyFrame Value="White" KeyTime="0:0:1"/>
+            <DiscreteColorKeyFrame Value="{StaticResource DropSuccessBackgroundStartColor}"
+                                   KeyTime="0:0:0" />
+            <LinearColorKeyFrame Value="{StaticResource DropSuccessBackgroundEndColor}"
+                                 KeyTime="0:0:1" />
         </ColorAnimationUsingKeyFrames>
         <!-- BorderBrush animation -->
         <ColorAnimationUsingKeyFrames Storyboard.TargetProperty="(hc:DashedBorder.BorderBrush).(SolidColorBrush.Color)">
-            <DiscreteColorKeyFrame Value="#28A745" KeyTime="0:0:0"/>
-            <LinearColorKeyFrame Value="#CCCCCC" KeyTime="0:0:1"/>
+            <DiscreteColorKeyFrame Value="{StaticResource DropSuccessBorderStartColor}"
+                                   KeyTime="0:0:0" />
+            <LinearColorKeyFrame Value="{StaticResource DropSuccessBorderEndColor}"
+                                 KeyTime="0:0:1" />
         </ColorAnimationUsingKeyFrames>
     </Storyboard>
 
     <Style x:Key="AnimatedDashedDropZone" TargetType="hc:DashedBorder">
         <!-- Базовые визуальные настройки -->
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        <Setter Property="Background"
+                Value="{StaticResource DashedDropZoneBackgroundBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{StaticResource DashedDropZoneBorderBrush}" />
         <Setter Property="BorderThickness" Value="2"/>
         <Setter Property="BorderDashArray" Value="3,1"/>
         <Setter Property="BorderDashThickness" Value="2"/>
@@ -739,8 +779,8 @@ CommandParameter="{Binding PlacementTarget.DataContext,
     <DataTemplate x:Key="FileItemTemplate">
         <!-- Обёртка для тени/фонового цвета -->
         <Border Style="{StaticResource FileBorderStyle}"
-    Background="White"
-    CornerRadius="6"
+                Background="{DynamicResource ItemBackgroundBrush}"
+                CornerRadius="6"
     Padding="12"
     Margin="0,8,0,0">
             <Grid>

@@ -30,12 +30,12 @@
                     <iconPacks:PackIconMaterial Kind="FolderZipOutline"
                                                 Width="60"
                                                 Height="50"
-                                                Foreground="#0f80d6"
+                                                Foreground="{DynamicResource PrimaryButtonBackgroundBrush}"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center" />
                     <TextBlock Text="Drag &amp; Drop папку или нажмите, чтобы выбрать"
                                FontSize="20"
-                               Foreground="#888888"
+                               Foreground="{DynamicResource PlaceholderBrush}"
                                TextAlignment="Center"
                                Margin="0,12,0,0" />
                     <Button Content="Выбрать папку"
@@ -49,7 +49,7 @@
             <!-- Список выбранной папки -->
             <Border Margin="10,20,10,10"
                     CornerRadius="6"
-                    Background="#FFF1F1F1"
+                    Background="{DynamicResource ItemHolderBackgroundBrush}"
                     Grid.Row="1">
                 <Border.Style>
                     <Style TargetType="Border"
@@ -112,8 +112,8 @@
                     <!-- Прогресс-бар -->
                     <ProgressBar Margin="20,31,20,32"
                                  IsIndeterminate="True"
-                                 Background="#FFD6D6D6"
-                                 Foreground="#FF48AAFF">
+                                 Background="{DynamicResource ProgressBarBackgroundBrush}"
+                                 Foreground="{DynamicResource ProgressBarFillBrush}">
                         <ProgressBar.Style>
                             <Style TargetType="ProgressBar"
                                    BasedOn="{StaticResource ProgressBarSuccess}">
