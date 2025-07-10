@@ -118,6 +118,7 @@
                     <TextBlock Text="Пусто"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
                                FontSize="20">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">

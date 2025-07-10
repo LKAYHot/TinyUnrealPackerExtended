@@ -15,12 +15,12 @@
         Title="TinyMadnessPacker"
         x:Name="RootWindow"
         Height="750"
-        Width="800"
+        Width="850"
         MinHeight="750"
-        MinWidth="800"
+        MinWidth="850"
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanResize"
-        Background="#F5F5F5"
+        Background="{DynamicResource WindowBackgroundBrush}"
         AllowsTransparency="True"
         FontFamily="Bahnschrift"
         FontSize="14"
@@ -34,7 +34,7 @@
 
         <DataTemplate x:Key="AutoInjectItemTemplate">
             <Border x:Name="Bd"
-                    Background="White"
+                    Background="{DynamicResource AutoInjectItemBackgroundBrush}"
                     CornerRadius="6"
                     Padding="12"
                     Margin="0,8,0,0"
@@ -78,12 +78,60 @@
                          Value="True">
                     <Setter TargetName="Bd"
                             Property="Background"
-                            Value="#e6f2ff" />
+                            Value="{DynamicResource AutoInjectItemBackgroundBrush}" />
                 </Trigger>
             </DataTemplate.Triggers>
         </DataTemplate>
 
-
+        <Style x:Key="CustomHC_TabItemStyle"
+               TargetType="TabItem"
+               BasedOn="{StaticResource {x:Type TabItem}}">
+            <!-- дефолтный цвет текста -->
+            <Setter Property="Foreground"
+                    Value="{DynamicResource TextSecondaryBrush}" />
+            <!-- свободный фон, чтобы было видно только текст+underline -->
+            <Setter Property="Background"
+                    Value="Transparent" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Grid>
+                            <!-- заголовок -->
+                            <ContentPresenter x:Name="HeaderContent"
+                                              ContentSource="Header"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="16,8" />
+                            <!-- линия под ним -->
+                            <Border x:Name="Underline"
+                                    Height="2"
+                                    Background="{DynamicResource PrimaryButtonBackgroundBrush}"
+                                    VerticalAlignment="Bottom"
+                                    Visibility="Collapsed"
+                                    CornerRadius="1" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <!-- когда вкладка активна -->
+                            <Trigger Property="IsSelected"
+                                     Value="True">
+                                <!-- цвет текста активного таба -->
+                                <Setter TargetName="HeaderContent"
+                                        Property="TextElement.Foreground"
+                                        Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
+                                <!-- (опционально) можете менять и размер/вес шрифта -->
+                                <Setter TargetName="HeaderContent"
+                                        Property="TextElement.FontWeight"
+                                        Value="SemiBold" />
+                                <!-- показать линию -->
+                                <Setter TargetName="Underline"
+                                        Property="Visibility"
+                                        Value="Visible" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -97,39 +145,54 @@
                     Margin="24"
                     VerticalContentAlignment="Stretch"
                     HorizontalContentAlignment="Stretch">
+            <TabControl.Resources>
+                <Style x:Key="CustomTabItemStyle"
+                       TargetType="TabItem">
+                    <Setter Property="Foreground"
+                            Value="{DynamicResource TextPrimaryBrush}" />
+                    <Setter Property="Background"
+                            Value="Transparent" />
+                </Style>
+            </TabControl.Resources>
 
             <!-- ===== LOCRES TOOLKIT ===== -->
             <TabItem Header="Locres Toolkit"
+                     Style="{StaticResource CustomHC_TabItemStyle}"
                      DataContext="{Binding LocresVM}">
                 <views:LocresToolkitView />
             </TabItem>
 
             <!-- ===== EXCEL TOOLKIT ===== -->
             <TabItem Header="Excel Toolkit"
-                     DataContext="{Binding ExcelVM}">
+                     DataContext="{Binding ExcelVM}"
+                     Style="{StaticResource CustomHC_TabItemStyle}">
                 <views:ExcelToolkitView />
             </TabItem>
 
             <!-- ===== PAK TOOLKIT ===== -->
             <TabItem Header="Pak Toolkit"
-                     DataContext="{Binding PakVM}">
+                     DataContext="{Binding PakVM}"
+                     Style="{StaticResource CustomHC_TabItemStyle}">
                 <views:PakToolkitView />
             </TabItem>
 
             <!-- ===== UASSET TOOLKIT ===== -->
 
-            <TabItem Header="DDS Injector">
+            <TabItem Header="DDS Injector"
+                     Style="{StaticResource CustomHC_TabItemStyle}">
                 <views:PngToDdsConverterView />
             </TabItem>
 
             <!-- ===== AUTOINJECTOR UASSET TOOLKIT ===== -->
-            <TabItem Header="Auto Injector">
+            <TabItem Header="Auto Injector"
+                     Style="{StaticResource CustomHC_TabItemStyle}">
                 <views:AutoInjectorView />
             </TabItem>
 
             <!-- ===== FOLDEREDITOR ===== -->
             <TabItem Header="Folder Editor"
                      IsEnabled="{Binding CanEditFolderEditor}"
+                     Style="{StaticResource CustomHC_TabItemStyle}"
                      DataContext="{Binding FolderEditorVM}">
                 <views:FolderEditorView />
             </TabItem>
@@ -151,7 +214,7 @@
                 <iconPacks:PackIconMaterial Kind="WindowMinimize"
                                             Width="16"
                                             Height="16"
-                                            Foreground="#333" />
+                                            Foreground="{DynamicResource TextPrimaryBrush}" />
             </Button>
 
             <Button Width="37"
@@ -166,7 +229,7 @@
                 <iconPacks:PackIconMaterial Kind="Fullscreen"
                                             Width="16"
                                             Height="16"
-                                            Foreground="#333" />
+                                            Foreground="{DynamicResource TextPrimaryBrush}" />
             </Button>
 
             <Button Width="37"
@@ -181,7 +244,7 @@
                 <iconPacks:PackIconMaterial Kind="Close"
                                             Width="16"
                                             Height="16"
-                                            Foreground="#333" />
+                                            Foreground="{DynamicResource TextPrimaryBrush}" />
             </Button>
         </StackPanel>
 

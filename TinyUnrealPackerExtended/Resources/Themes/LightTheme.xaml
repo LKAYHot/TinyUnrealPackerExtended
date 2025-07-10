@@ -141,4 +141,18 @@
 
     <SolidColorBrush  x:Key="ItemHolderBackgroundBrush"
                       Color="#FFF1F1F1" />
+
+    <SolidColorBrush  x:Key="ProgressBarFillBrush"
+                      Color="#FF48AAFF" />
+    <SolidColorBrush  x:Key="ProgressBarBackgroundBrush"
+                      Color="#FFD6D6D6" />
+
+    <SolidColorBrush x:Key="ToolbarBackgroundBrush"
+                     Color="#FFECECEC" />
+    <SolidColorBrush x:Key="TreeViewBackgroundBrush"
+                     Color="#FFE8E8E8" />
+    <SolidColorBrush x:Key="TreeItemBorderBrush"
+                     Color="#E5E5E5" />
+    <SolidColorBrush x:Key="TreeItemHoverBrush"
+                     Color="{StaticResource AutoInjectItemHoverBackgroundColor}" />
 </ResourceDictionary>

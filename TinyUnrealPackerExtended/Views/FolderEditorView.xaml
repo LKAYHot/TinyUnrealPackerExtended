@@ -26,7 +26,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Border Background="#FFECECEC"
+            <Border Background="{DynamicResource ToolbarBackgroundBrush}"
                     Padding="4"
                     Margin="0,0,0,8"
                     CornerRadius="4"
@@ -55,7 +55,7 @@
                         </Button>
                         <Border Width="1"
                                 CornerRadius="1"
-                                Background="#CCCCCC"
+                                Background="{DynamicResource BorderDefaultBrush}"
                                 Margin="8,0"
                                 VerticalAlignment="Stretch" />
                         <Button Command="{Binding RefreshFolderCommand}"
@@ -114,11 +114,13 @@
                             <StackPanel Orientation="Horizontal"
                                         VerticalAlignment="Center">
                                 <Button x:Name="BtnNormal"
+                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                         Style="{StaticResource BreadcrumbButtonStyle}"
                                         Content="{Binding Name}"
                                         Command="{Binding Path=DataContext.NavigateToCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding FullPath}" />
                                 <Button x:Name="BtnOverflow"
+                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                         Style="{StaticResource BreadcrumbButtonStyle}"
                                         Content="…"
                                         Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
@@ -189,7 +191,8 @@
                           VirtualizingStackPanel.VirtualizationMode="Recycling"
                           VirtualizingStackPanel.IsVirtualizingWhenGrouping="True"
                           VirtualizingStackPanel.CacheLength="2"
-                          Background="#FFE8E8E8">
+                          BorderBrush="{DynamicResource TreeItemBorderBrush}"
+                          Background="{DynamicResource TreeViewBackgroundBrush}">
 
                     <i:Interaction.Triggers>
 
@@ -240,8 +243,8 @@
                                                   ItemsSource="{Binding Children}">
                             <!-- Обёртка для тени/фонового цвета -->
                             <Border x:Name="Bd"
-                                    Background="White"
-                                    BorderBrush="#E5E5E5"
+                                    Background="{DynamicResource ItemBackgroundBrush}"
+                                    BorderBrush="{DynamicResource TreeItemBorderBrush}"
                                     BorderThickness="1"
                                     CornerRadius="6"
                                     Padding="8"
@@ -301,6 +304,7 @@
                                                                 Kind="{Binding IconKind}"
                                                                 Width="20"
                                                                 Height="20"
+                                                                Foreground="{DynamicResource TextPrimaryBrush}"
                                                                 VerticalAlignment="Center"
                                                                 Margin="4,0" />
 
@@ -309,6 +313,7 @@
                                                Grid.Column="1"
                                                Text="{Binding Name}"
                                                FontSize="14"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
                                                VerticalAlignment="Center"
                                                Margin="8,0" />
 
@@ -316,13 +321,14 @@
                                     <Button Grid.Column="2"
                                             Command="{Binding DataContext.RemoveFolderItemCommand, ElementName=FolderTree}"
                                             CommandParameter="{Binding}"
+                                            Foreground="{DynamicResource TextPrimaryBrush}"
                                             Style="{StaticResource DeleteIconButtonStyle}"
                                             ToolTip="Удалить">
                                         <iconPacks:PackIconMaterial x:Name="DeleteIcon"
                                                                     Kind="Close"
                                                                     Width="16"
                                                                     Height="16"
-                                                                    Foreground="#888888" />
+                                                                    Foreground="{DynamicResource TextSecondaryBrush}" />
                                     </Button>
                                 </Grid>
                             </Border>
@@ -333,25 +339,25 @@
                                          Value="True">
                                     <Setter TargetName="Bd"
                                             Property="Background"
-                                            Value="#e6f2ff" />
+                                            Value="{DynamicResource TreeItemHoverBrush}" />
                                 </Trigger>
                                 <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=TreeViewItem}}"
                                              Value="True">
                                     <Setter TargetName="Bd"
                                             Property="Background"
-                                            Value="#0f80d6" />
+                                            Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
                                     <Setter TargetName="Bd"
                                             Property="BorderBrush"
-                                            Value="#0f80d6" />
+                                            Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
                                     <Setter TargetName="ItemIcon"
                                             Property="Foreground"
-                                            Value="White" />
+                                            Value="{DynamicResource PrimaryButtonForegroundBrush}" />
                                     <Setter TargetName="ItemName"
                                             Property="Foreground"
-                                            Value="White" />
+                                            Value="{DynamicResource PrimaryButtonForegroundBrush}" />
                                     <Setter TargetName="DeleteIcon"
                                             Property="Foreground"
-                                            Value="White" />
+                                            Value="{DynamicResource PrimaryButtonForegroundBrush}" />
                                 </DataTrigger>
                             </HierarchicalDataTemplate.Triggers>
                         </HierarchicalDataTemplate>
@@ -511,7 +517,11 @@
                           VirtualizingPanel.VirtualizationMode="Recycling"
                           VirtualizingPanel.IsVirtualizingWhenGrouping="True"
                           SnapsToDevicePixels="True"
-                          ItemContainerStyle="{StaticResource ListViewItemWithMenu}">
+                          Foreground="{DynamicResource TextPrimaryBrush}"
+                          Background="{DynamicResource TreeViewBackgroundBrush}"
+                          BorderBrush="{DynamicResource TreeItemBorderBrush}"
+                          ItemContainerStyle="{StaticResource ListViewItemWithMenu}"
+                          Cursor="">
                     <i:Interaction.Triggers>
                         <!-- Перетаскивание файлов -->
                         <i:EventTrigger EventName="DragOver">
@@ -530,34 +540,51 @@
                                                    CommandParameter="{Binding SelectedItem, ElementName=FolderListView}" />
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
+
+                
                     <!-- Существующий GridView -->
                     <ListView.View>
                         <GridView>
                             <!-- Имя + иконка -->
-                            <GridViewColumn Header="Name"
+                            <GridViewColumn
                                             Width="270">
+                                <GridViewColumn.Header>
+                                    <TextBlock Text="Name"
+                                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                                </GridViewColumn.Header>
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
                                             <iconPacks:PackIconMaterial Kind="{Binding IconKind}"
                                                                         Width="16"
                                                                         Height="16"
+                                                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                                                         Margin="0,0,8,0" />
-                                            <TextBlock Text="{Binding Name}" />
+                                            <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextPrimaryBrush}"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <!-- Дата изменения -->
-                            <GridViewColumn Header="Date Modified"
-                                            Width="150"
-                                            DisplayMemberBinding="{Binding DateModified}" />
+                            <GridViewColumn Width="150">
+                                <GridViewColumn.Header>
+                                    <TextBlock Text="Date Modified"
+                                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                                </GridViewColumn.Header>
+                                <GridViewColumn.DisplayMemberBinding>
+                                    <Binding Path="DateModified" />
+                                </GridViewColumn.DisplayMemberBinding>
+                            </GridViewColumn>
 
-                            <!-- Размер -->
-                            <GridViewColumn Header="Size"
-                                            Width="100"
-                                            DisplayMemberBinding="{Binding Size}" />
+                            <GridViewColumn Width="100">
+                                <GridViewColumn.Header>
+                                    <TextBlock Text="Size"
+                                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                                </GridViewColumn.Header>
+                                <GridViewColumn.DisplayMemberBinding>
+                                    <Binding Path="Size" />
+                                </GridViewColumn.DisplayMemberBinding>
+                            </GridViewColumn>
                         </GridView>
                     </ListView.View>
                 </ListView>
@@ -630,7 +657,7 @@
                             <iconPacks:PackIconMaterial Kind="Close"
                                                         Width="15"
                                                         Height="15"
-                                                        Foreground="#333"
+                                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center" />
                         </Button>

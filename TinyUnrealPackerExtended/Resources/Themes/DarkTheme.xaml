@@ -1,4 +1,149 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
+
+    <!-- Основные фоны и текст -->
+    <SolidColorBrush x:Key="WindowBackgroundBrush"
+                     Color="#1E1E1E" />
+    <SolidColorBrush x:Key="CardBackgroundBrush"
+                     Color="#2D2D30" />
+    <Color           x:Key="ItemBackgroundBrushColor">#2D2D30</Color>
+    <SolidColorBrush x:Key="ItemBackgroundBrush"
+                     Color="{StaticResource ItemBackgroundBrushColor}" />
+    <SolidColorBrush x:Key="TextPrimaryBrush"
+                     Color="#F1F1F1" />
+    <SolidColorBrush x:Key="TextSecondaryBrush"
+                     Color="#C9C9C9" />
+    <SolidColorBrush x:Key="PlaceholderBrush"
+                     Color="#6A6A6A" />
+
+    <!-- Границы -->
+    <SolidColorBrush x:Key="BorderDefaultBrush"
+                     Color="#3F3F46" />
+    <Color           x:Key="SearchTextBoxDefaultBorderColor">#3F3F46</Color>
+    <SolidColorBrush x:Key="SearchTextBoxBorderBrush"
+                     Color="{StaticResource SearchTextBoxDefaultBorderColor}" />
+    <SolidColorBrush x:Key="BreadcrumbHoverBorderBrush"
+                     Color="#5A5A5A" />
+    <SolidColorBrush x:Key="DropSuccessBorderBrush"
+                     Color="#28A745" />
+
+    <!-- Поисковая строка -->
+    <Color           x:Key="SearchTextBoxBackgroundColor">#3A3A3D</Color>
+    <SolidColorBrush x:Key="SearchTextBoxBackgroundBrush"
+                     Color="{StaticResource SearchTextBoxBackgroundColor}" />
+    <Color           x:Key="SearchTextBoxHoverBackgroundColor">#454548</Color>
+    <SolidColorBrush x:Key="SearchTextBoxHoverBackgroundBrush"
+                     Color="{StaticResource SearchTextBoxHoverBackgroundColor}" />
+    <Color           x:Key="SearchTextBoxFocusBorderColor">#5A9BD5</Color>
+    <SolidColorBrush x:Key="SearchTextBoxFocusBorderBrush"
+                     Color="{StaticResource SearchTextBoxFocusBorderColor}" />
+    <Color           x:Key="SearchTextBoxShadowColor">#5A9BD5</Color>
+
+    <!-- Expander toggle -->
+    <SolidColorBrush x:Key="ExpanderArrowBrush"
+                     Color="#C9C9C9" />
+
+    <!-- ListViewItem -->
+    <SolidColorBrush x:Key="ListViewItemHoverBrush"
+                     Color="#383838" />
+
+    <!-- Навигационные кнопки -->
+    <SolidColorBrush x:Key="NavigationButtonHoverBackgroundBrush"
+                     Color="#3A3A3D" />
+    <SolidColorBrush x:Key="NavigationButtonPressedBackgroundBrush"
+                     Color="#2E2E30" />
+    <SolidColorBrush x:Key="NavigationButtonDisabledForegroundBrush"
+                     Color="#6A6A6A" />
+
+    <!-- Кнопка удаления (иконка) -->
+    <SolidColorBrush x:Key="DeleteIconHoverBackgroundBrush"
+                     Color="#3A3A3D" />
+    <SolidColorBrush x:Key="DeleteIconPressedBackgroundBrush"
+                     Color="#2E2E30" />
+
+    <!-- Breadcrumb -->
+    <SolidColorBrush x:Key="BreadcrumbHoverBackgroundBrush"
+                     Color="#3A3A3D" />
+    <SolidColorBrush x:Key="BreadcrumbPressedBackgroundBrush"
+                     Color="#2E2E30" />
+
+    <!-- SecondaryButton -->
+    <SolidColorBrush x:Key="SecondaryButtonBackgroundBrush"
+                     Color="#3A3A3D" />
+    <SolidColorBrush x:Key="SecondaryButtonHoverBrush"
+                     Color="#454548" />
+    <SolidColorBrush x:Key="SecondaryButtonPressedBrush"
+                     Color="#2E2E30" />
+
+    <!-- AnimatedDashedDropZone -->
+    <SolidColorBrush x:Key="DashedDropZoneBackgroundBrush"
+                     Color="#2D2D30" />
+    <SolidColorBrush x:Key="DashedDropZoneBorderBrush"
+                     Color="#3F3F46" />
+
+    <!-- Drag-and-Drop -->
+    <SolidColorBrush x:Key="DragEnterBackgroundBrush"
+                     Color="#383844" />
+    <SolidColorBrush x:Key="DragEnterBorderBrush"
+                     Color="#5A9BD5" />
+    <SolidColorBrush x:Key="DragLeaveBackgroundBrush"
+                     Color="#2D2D30" />
+    <SolidColorBrush x:Key="DragLeaveBorderBrush"
+                     Color="#3F3F46" />
+
+    <!-- Drop success animation -->
+    <SolidColorBrush x:Key="DropSuccessBackgroundBrush"
+                     Color="#253B2F" />
+
+    <Color x:Key="DragEnterBackgroundColor">#383844</Color>
+    <Color x:Key="DragEnterBorderColor">#5A9BD5</Color>
+    <Color x:Key="DragLeaveBackgroundColor">#2D2D30</Color>
+    <Color x:Key="DragLeaveBorderColor">#3F3F46</Color>
+    <Color x:Key="DropSuccessBackgroundStartColor">#253B2F</Color>
+    <Color x:Key="DropSuccessBorderStartColor">#28A745</Color>
+    <Color x:Key="DropSuccessBackgroundEndColor">#2D2D30</Color>
+    <Color x:Key="DropSuccessBorderEndColor">#3F3F46</Color>
+
+    <!-- AutoInject -->
+    <SolidColorBrush x:Key="AutoInjectItemBackgroundBrush"
+                     Color="{StaticResource ItemBackgroundBrushColor}" />
+    <Color           x:Key="AutoInjectItemHoverBackgroundColor">#383844</Color>
+    <SolidColorBrush x:Key="AutoInjectItemHoverBackgroundBrush"
+                     Color="{StaticResource AutoInjectItemHoverBackgroundColor}" />
+
+    <!-- Breadcrumb separator -->
+    <SolidColorBrush x:Key="BreadcrumbSeparatorBrush"
+                     Color="#C9C9C9" />
+
+    <!-- PrimaryButton (акцент) -->
+    <Color           x:Key="PrimaryButtonBackgroundColor">#0F80D6</Color>
+    <SolidColorBrush x:Key="PrimaryButtonBackgroundBrush"
+                     Color="{StaticResource PrimaryButtonBackgroundColor}" />
+    <Color           x:Key="PrimaryButtonHoverColor">#4A8CC4</Color>
+    <SolidColorBrush x:Key="PrimaryButtonHoverBrush"
+                     Color="{StaticResource PrimaryButtonHoverColor}" />
+    <Color           x:Key="PrimaryButtonPressedColor">#3675A3</Color>
+    <SolidColorBrush x:Key="PrimaryButtonPressedBrush"
+                     Color="{StaticResource PrimaryButtonPressedColor}" />
+    <SolidColorBrush x:Key="PrimaryButtonForegroundBrush"
+                     Color="#FFFFFF" />
+
+    <!-- ItemHolder and ProgressBar -->
+    <SolidColorBrush x:Key="ItemHolderBackgroundBrush"
+                     Color="#333337" />
+    <SolidColorBrush x:Key="ProgressBarFillBrush"
+                     Color="#5A9BD5" />
+    <SolidColorBrush x:Key="ProgressBarBackgroundBrush"
+                     Color="#3A3A3D" />
+
+    <!-- Toolbar & TreeView -->
+    <SolidColorBrush x:Key="ToolbarBackgroundBrush"
+                     Color="#3F3F46" />
+    <SolidColorBrush x:Key="TreeViewBackgroundBrush"
+                     Color="#2D2D30" />
+    <SolidColorBrush x:Key="TreeItemBorderBrush"
+                     Color="#3A3A3D" />
+    <SolidColorBrush x:Key="TreeItemHoverBrush"
+                     Color="{StaticResource AutoInjectItemHoverBackgroundColor}" />
+
 </ResourceDictionary>

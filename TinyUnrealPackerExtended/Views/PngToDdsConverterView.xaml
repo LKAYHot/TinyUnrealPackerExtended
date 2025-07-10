@@ -141,6 +141,7 @@
             </Grid>
             <!-- Loaded items list -->
             <Border Style="{StaticResource CardStyle}"
+                    Background="{DynamicResource ItemHolderBackgroundBrush}"
                     Grid.Row="5" Margin="5">
                 <Grid Margin="-12,-14,-12,-14">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
