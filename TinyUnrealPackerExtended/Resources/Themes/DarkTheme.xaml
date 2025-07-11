@@ -162,4 +162,16 @@
                      Color="#FFABABAB" />
     <SolidColorBrush x:Key="IconCloseGeowlBrush"
                      Color="#FFABABAB" />
+
+    <SolidColorBrush x:Key="PrimaryTextBrush"
+                     Color="#F1F1F1" />
+    <SolidColorBrush x:Key="SecondaryTextBrush"
+                     Color="#C9C9C9" />
+
+    <SolidColorBrush x:Key="BorderBrush"
+                     Color="Transparent" />
+    <SolidColorBrush x:Key="RegionBrush"
+                     Color="{DynamicResource ItemBackgroundBrushColor}" />
+    <SolidColorBrush x:Key="SecondaryRegionBrush"
+                     Color="{DynamicResource ItemBackgroundBrushHoverColor}" />
 </ResourceDictionary>

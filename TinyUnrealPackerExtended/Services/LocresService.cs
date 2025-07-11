@@ -43,27 +43,55 @@ namespace TinyUnrealPackerExtended.Services
         public void Import(string inputCsv, string outputLocres)
         {
             var original = Path.ChangeExtension(inputCsv, ".locres");
-            if (!File.Exists(original)) throw new FileNotFoundException("Original .locres not found", original);
+            if (!File.Exists(original))
+                throw new FileNotFoundException("Original .locres not found", original);
 
             var locres = new LocresFile();
-            using (var inStream = File.OpenRead(original)) locres.Load(inStream);
+            using (var inStream = File.OpenRead(original))
+                locres.Load(inStream);
 
             using var reader = new StreamReader(inputCsv, Encoding.UTF8);
-            using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-            var records = csv.GetRecords<TranslationRecord>().ToList();
+            using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                Delimiter = ",",
+                HasHeaderRecord = true,
+            });
+            var records = csv.GetRecords<TranslationRecord>();
 
             foreach (var rec in records)
             {
-                var ns = locres.FirstOrDefault(x => x.Name == rec.Namespace);
-                if (ns == null) continue;
+                var tableName = string.IsNullOrWhiteSpace(rec.Namespace)
+                    ? "NewStringTable"
+                    : rec.Namespace;
+
+                var ns = locres.FirstOrDefault(x => x.Name == tableName);
+                if (ns == null)
+                    continue;  
+
                 var entry = ns.FirstOrDefault(e => e.Key == rec.Key);
-                if (entry == null) continue;
-                var unescaped = rec.Translation.Replace("\\r\\n", Environment.NewLine).Replace("\\n", "\n");
+                if (entry == null)
+                    continue; 
+
+                var unescaped = rec.Translation
+                    .Replace("\\r\\n", Environment.NewLine)
+                    .Replace("\\n", "\n");
+
                 entry.Value = unescaped;
             }
 
             using var outStream = File.Create(outputLocres);
             locres.Save(outStream, LocresVersion.Optimized);
         }
+
     }
+    public sealed class TranslationRecordMap : ClassMap<TranslationRecord>
+    {
+        public TranslationRecordMap()
+        {
+            Map(m => m.Namespace).Name("Namespace").Default(string.Empty);
+            Map(m => m.Key).Name("Key");
+            Map(m => m.Translation).Name("Translation");
+        }
+    }
+
 }

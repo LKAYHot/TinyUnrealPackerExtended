@@ -122,12 +122,6 @@
                                   MinWidth="100">
 
                             <ComboBox.Resources>
-                                <SolidColorBrush x:Key="BorderBrush"
-                                                 Color="Transparent" />
-                                <SolidColorBrush x:Key="RegionBrush"
-                                                 Color="{DynamicResource ItemBackgroundBrushColor}" />
-                                <SolidColorBrush x:Key="SecondaryRegionBrush"
-                                                 Color="{DynamicResource ItemBackgroundBrushHoverColor}" />
                                 <Style TargetType="Border">
                                     <Setter Property="BorderThickness"
                                             Value="0" />

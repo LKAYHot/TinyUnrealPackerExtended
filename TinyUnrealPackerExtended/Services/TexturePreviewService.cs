@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using TinyUnrealPackerExtended.Extensions;
 using TinyUnrealPackerExtended.Interfaces;
 
 namespace TinyUnrealPackerExtended.Services
@@ -27,80 +28,123 @@ namespace TinyUnrealPackerExtended.Services
         public Task<BitmapImage> ExtractAsync(string uassetPath, CancellationToken ct = default)
           => ExtractInternalAsync(uassetPath, skipResize: true, ct);
 
-        // 2) публичный для полного разрешения
         public Task<BitmapImage> ExtractFullResolutionAsync(string uassetPath, CancellationToken ct = default)
             => ExtractInternalAsync(uassetPath, skipResize: false, ct);
 
-        // 3) общий приватный метод
-        private async Task<BitmapImage> ExtractInternalAsync(
+        public async Task<BitmapImage?> ExtractInternalAsync(
+        string uassetPath,
+        bool skipResize,
+        CancellationToken ct = default)
+        {
+            return await Task.Run(() => PerformExtraction(uassetPath, skipResize, ct), ct);
+        }
+
+        private BitmapImage PerformExtraction(
             string uassetPath,
             bool skipResize,
-            CancellationToken ct = default)
+            CancellationToken ct)
         {
-            return await Task.Run(() =>
+            ct.ThrowIfCancellationRequested();
+
+            string fullPath = ResolveAndValidatePath(uassetPath);
+            string directory = Path.GetDirectoryName(fullPath)!;
+            string fileName = Path.GetFileName(fullPath);
+
+            using var provider = ProviderFactory.Create(
+    directory,
+    SearchOption.TopDirectoryOnly,
+    _gameVersion);
+
+            ct.ThrowIfCancellationRequested();
+            string key = FindPackageKey(provider, fileName);
+
+            ct.ThrowIfCancellationRequested();
+            var texture = LoadFirstTexture(provider, key);
+
+            ct.ThrowIfCancellationRequested();
+            using SKBitmap skBitmap = DecodeTexture(texture);
+
+            ct.ThrowIfCancellationRequested();
+            SKBitmap finalBitmap = skipResize
+                ? ResizeIfNeeded(skBitmap)
+                : skBitmap;
+
+            ct.ThrowIfCancellationRequested();
+            return ConvertToBitmapImage(finalBitmap);
+        }
+
+        private string ResolveAndValidatePath(string uassetPath)
+        {
+            string fullPath = Path.GetFullPath(uassetPath);
+            if (!File.Exists(fullPath))
+                throw new FileNotFoundException(".uasset file not found", fullPath);
+
+            if (!Path.GetExtension(fullPath)
+                    .Equals(".uasset", StringComparison.OrdinalIgnoreCase))
             {
-                ct.ThrowIfCancellationRequested();
-                var fullPath = Path.GetFullPath(uassetPath);
-                if (!File.Exists(fullPath))
-                    throw new FileNotFoundException("Файл .uasset не найден", fullPath);
+                throw new NotSupportedException(
+                    $"File extension '{Path.GetExtension(fullPath)}' is not supported.");
+            }
 
-                var directory = Path.GetDirectoryName(fullPath)!;
-                var fileName = Path.GetFileName(fullPath);
+            return fullPath;
+        }
 
-                using var provider = new DefaultFileProvider(
-                    directory,
-                    SearchOption.TopDirectoryOnly,
-                    new VersionContainer(_gameVersion));
-                provider.Initialize();
+        private string FindPackageKey(DefaultFileProvider provider, string fileName)
+        {
+            return provider.Files.Keys
+                .FirstOrDefault(k => k.EndsWith(fileName, StringComparison.OrdinalIgnoreCase))
+                ?? throw new FileNotFoundException(
+                    "Package not found in provider.", fileName);
+        }
 
-                var key = provider.Files.Keys
-                    .FirstOrDefault(k => k.EndsWith(fileName, StringComparison.OrdinalIgnoreCase))
-                    ?? throw new FileNotFoundException("Не удалось найти пакет в провайдере", fileName);
+        private UTexture2D LoadFirstTexture(DefaultFileProvider provider, string key)
+        {
+            var package = provider.LoadPackage(key);
+            return package.ExportsLazy
+                .Select(e => e.Value)
+                .OfType<UTexture2D>()
+                .FirstOrDefault()
+                ?? throw new NotSupportedException(
+                    "No UTexture2D found in package.");
+        }
 
-                ct.ThrowIfCancellationRequested();
+        private SKBitmap DecodeTexture(UTexture2D texture)
+        {
+            return texture.Decode(ETexturePlatform.DesktopMobile)
+                ?? throw new InvalidOperationException(
+                    "Failed to decode texture from package.");
+        }
 
-                var package = provider.LoadPackage(key);
-                var textureExport = package.ExportsLazy
-                    .Select(e => e.Value)
-                    .OfType<UTexture2D>()
-                    .FirstOrDefault()
-                    ?? throw new InvalidDataException("Текстура не найдена в пакете");
+        private SKBitmap ResizeIfNeeded(SKBitmap source)
+        {
+            if (source.Width <= MAX_DIMENSION && source.Height <= MAX_DIMENSION)
+                return source;
 
-                using var skBitmap = textureExport.Decode(ETexturePlatform.DesktopMobile)
-                    ?? throw new InvalidOperationException("Не удалось декодировать текстуру");
+            float scale = Math.Min(
+                (float)MAX_DIMENSION / source.Width,
+                (float)MAX_DIMENSION / source.Height
+            );
+            var info = new SKImageInfo(
+                (int)(source.Width * scale),
+                (int)(source.Height * scale)
+            );
+            return source.Resize(info, SKFilterQuality.Medium) ?? source;
+        }
 
-                ct.ThrowIfCancellationRequested();
+        private BitmapImage ConvertToBitmapImage(SKBitmap bitmap)
+        {
+            using var imageData = bitmap.Encode(SKEncodedImageFormat.Png, 100);
+            using var ms = new MemoryStream(imageData.ToArray());
 
-                SKBitmap output = skBitmap;
-                if (skipResize
-                    && (skBitmap.Width > MAX_DIMENSION || skBitmap.Height > MAX_DIMENSION))
-                {
-                    var scale = Math.Min(
-                        (float)MAX_DIMENSION / skBitmap.Width,
-                        (float)MAX_DIMENSION / skBitmap.Height);
-                    var info = new SKImageInfo(
-                        (int)(skBitmap.Width * scale),
-                        (int)(skBitmap.Height * scale)
-                    );
-                    output = skBitmap.Resize(info, SKFilterQuality.Medium)
-                             ?? skBitmap;
-                }
+            var bmpImage = new BitmapImage();
+            bmpImage.BeginInit();
+            bmpImage.StreamSource = ms;
+            bmpImage.CacheOption = BitmapCacheOption.OnLoad;
+            bmpImage.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
+            bmpImage.EndInit();
+            bmpImage.Freeze();
 
-                ct.ThrowIfCancellationRequested();
-
-                using var imageData = output.Encode(SKEncodedImageFormat.Png, 100);
-                using var ms = new MemoryStream(imageData.ToArray());
-
-                var bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.StreamSource = ms;
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.CreateOptions = BitmapCreateOptions.PreservePixelFormat;
-                bitmap.EndInit();
-                bitmap.Freeze();
-
-                return bitmap;
-            }, ct);
+            return bmpImage;
         }
     }
 }

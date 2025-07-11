@@ -30,11 +30,11 @@
     </Window.Resources>
 
     <Border CornerRadius="9"
-            BorderBrush="#AAAAAA"
+            BorderBrush="{DynamicResource WindowBackgroundBrush}"
             BorderThickness="1">
 
         <Border CornerRadius="8"
-                Background="White"
+                Background="{DynamicResource CardBackgroundBrush}"
                 Padding="24">
             <StackPanel>
                 <!-- Иконка состояния -->
@@ -48,17 +48,20 @@
                 <TextBlock Text="{Binding Title}"
                            FontSize="18"
                            FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
                            Margin="0,12,0,4"
                            TextAlignment="Center" />
 
                 <TextBlock Text="{Binding Message}"
                            FontSize="14"
                            TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
                            Margin="0,0,0,16"
                            TextAlignment="Center" />
 
                 <TextBox Text="{Binding ResponseText, UpdateSourceTrigger=PropertyChanged}"
                          Visibility="{Binding IsInputDialog, Converter={StaticResource BoolToVis}}"
+                         Background="{DynamicResource SecondaryButtonBackgroundBrush}"
                          Margin="0,8"
                          MinWidth="200" />
 

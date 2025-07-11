@@ -634,14 +634,6 @@
                             <Image.ContextMenu>
                                 <!-- контекстное меню наследует DataContext окна (MainWindowViewModel) -->
                                 <ContextMenu>
-                                    <ContextMenu.Resources>
-                                        <SolidColorBrush x:Key="BorderBrush"
-                                                         Color="Transparent" />
-                                        <SolidColorBrush x:Key="RegionBrush"
-                                                         Color="{DynamicResource ItemBackgroundBrushColor}" />
-                                        <SolidColorBrush x:Key="SecondaryRegionBrush"
-                                                         Color="{DynamicResource ItemBackgroundBrushHoverColor}" />
-                                    </ContextMenu.Resources>
                                     <!-- Открыть в проводнике -->
                                     <MenuItem Header="Открыть в проводнике" Foreground="{DynamicResource TextPrimaryBrush}"
                                               Command="{Binding PlacementTarget.DataContext.OpenInExplorerCommand,

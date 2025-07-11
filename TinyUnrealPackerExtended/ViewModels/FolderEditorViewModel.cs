@@ -19,21 +19,30 @@ using CUE4Parse.FileProvider;
 using CUE4Parse.UE4.Versions;
 using Newtonsoft.Json;
 using TinyUnrealPackerExtended.Extensions;
+using CUE4Parse.UE4.Localization;
+using CUE4Parse.UE4.Readers;
+using CUE4Parse.Encryption.Aes;
+using CUE4Parse.UE4.Objects.Core.Misc;
+using System.Globalization;
+using TinyUnrealPackerExtended.Services.FolderEditorVisualServices;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
-    
+
     public partial class FolderEditorViewModel : ViewModelBase
     {
         private readonly IDialogService _dialog;
         private readonly IBreadcrumbService _breadcrumbs = new BreadcrumbService();
         private readonly ITexturePreviewService _textureService;
         private readonly IFileSystemService _fileSystem;
+        private readonly ICue4ParseService _cue4Parse;
+
+
+        private DragDropManager _dragDropManager;
+        private ItemDoubleClickService _doubleClickService;
 
         private readonly Stack<string> _backStack = new();
         private readonly Stack<string> _forwardStack = new();
-
-
 
         [ObservableProperty] private string rootFolder;
         [ObservableProperty] private string folderEditorRootPath;
@@ -115,6 +124,25 @@ namespace TinyUnrealPackerExtended.ViewModels
             _dialog = dialogService;
             _fileSystem = new FileSystemService();
             _textureService = new TexturePreviewService();
+            _cue4Parse = new Cue4ParseService();
+
+            _dragDropManager = new DragDropManager(
+        _fileSystem,
+        msg => _growlService.ShowError(msg),
+        item => FindParentCollection(item, FolderItems),
+        (source, dest, index) => ReparentVisualAt(source, dest, index),
+        (parent, path) => AddFileIntoFolder(parent, path)
+    );
+
+            HandleItemDoubleClickFormats();
+        }
+
+        private void HandleItemDoubleClickFormats()
+        {
+            _doubleClickService = new ItemDoubleClickService();
+
+            _doubleClickService.RegisterHandler("uasset", PreviewTextureAsync);
+            _doubleClickService.RegisterHandler("locres", PreviewLocresAsync);
         }
 
         [RelayCommand]
@@ -362,7 +390,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             _breadcrumbs.Update(FolderEditorRootPath);
         }
 
-       
+
         private void DoNavigateInternal(string path, bool addToHistory)
         {
             if (addToHistory && !string.IsNullOrEmpty(FolderEditorRootPath))
@@ -425,7 +453,6 @@ namespace TinyUnrealPackerExtended.ViewModels
             }
             catch (OperationCanceledException)
             {
-                // Предпросмотр отменён
             }
             catch (Exception ex)
             {
@@ -667,15 +694,7 @@ int insertIndex)
 
         [RelayCommand]
         private void BeginDrag(MouseButtonEventArgs args)
-        {
-            _dragStartPoint = args.GetPosition(null);
-            if (args.OriginalSource is FrameworkElement fe
-                && fe.DataContext is FolderItem fi)
-            {
-                _draggedFolderItem = fi;
-                _lastTargetFolderItem = null;
-            }
-        }
+    => _dragDropManager.BeginDrag(args);
 
         [RelayCommand]
         private void PreviewMouseDown(MouseButtonEventArgs args)
@@ -689,122 +708,15 @@ int insertIndex)
 
         [RelayCommand]
         private void OnMouseMove(MouseEventArgs args)
-        {
-            if (_draggedFolderItem == null || args.LeftButton != MouseButtonState.Pressed)
-                return;
+     => _dragDropManager.OnMouseMove(args);
 
-            var current = args.GetPosition(null);
-            if (Math.Abs(current.X - _dragStartPoint.X) < SystemParameters.MinimumHorizontalDragDistance &&
-                Math.Abs(current.Y - _dragStartPoint.Y) < SystemParameters.MinimumVerticalDragDistance)
-                return;
-
-            // Запускаем нативный DragDrop
-            var data = new DataObject("FolderItem", _draggedFolderItem);
-            DragDrop.DoDragDrop(Application.Current.MainWindow, data, DragDropEffects.Move);
-
-            // Сброс состояния
-            _draggedFolderItem = null;
-            _lastTargetFolderItem = null;
-        }
-
-        // 2.3. Перетаскивание над элементом — аналог FolderItem_DragOver
         [RelayCommand]
         private void OnDragOver(DragEventArgs args)
-        {
-            // 1) Устанавливаем эффект
-            if (args.Data.GetDataPresent("FolderItem"))
-                args.Effects = DragDropEffects.Move;
-            else if (args.Data.GetDataPresent(DataFormats.FileDrop))
-                args.Effects = DragDropEffects.Copy;
-            else
-                args.Effects = DragDropEffects.None;
-            args.Handled = true;
-
-            if (_draggedFolderItem == null) return;
-
-            // 2) Находим target
-            if (!(args.OriginalSource is DependencyObject src)) return;
-            var container = VisualTreeHelperExtensions.GetAncestor<TreeViewItem>(src);
-            if (container?.DataContext is not FolderItem target) return;
-            if (target == _draggedFolderItem || target == _lastTargetFolderItem) return;
-
-            var dest = target.IsDirectory
-                       ? target.Children
-                       : FindParentCollection(target, FolderItems);
-
-            if (dest == null) return;
-
-            int insertIndex = dest.Count;
-
-            ReparentVisualAt(_draggedFolderItem, dest, insertIndex);
-
-            _lastTargetFolderItem = target;
-        }
+     => _dragDropManager.OnDragOver(args);
 
         [RelayCommand]
         private async Task OnDropAsync(DragEventArgs args)
-        {
-            // 1) Перетаскивание своих узлов
-            if (args.Data.GetDataPresent("FolderItem") &&
-                args.OriginalSource is DependencyObject src &&
-                VisualTreeHelperExtensions.GetAncestor<TreeViewItem>(src) is TreeViewItem tvi &&
-                tvi.DataContext is FolderItem target)
-            {
-                var source = args.Data.GetData("FolderItem") as FolderItem;
-                if (source != null)
-                {
-                    var oldPath = source.FullPath;
-                    var newPath = Path.Combine(target.FullPath, source.Name);
-
-                    try
-                    {
-                        await _fileSystem.MoveAsync(oldPath, newPath, CancellationToken.None);
-
-                        RemoveFromParent(FolderItems, source);
-                        source.FullPath = newPath;
-                        if (source.IsDirectory)
-                            UpdateChildrenPaths(source, oldPath, newPath);
-                        target.Children.Add(source);
-
-                        _draggedFolderItem = null;
-                        _lastTargetFolderItem = null;
-                    }
-                    catch (Exception ex)
-                    {
-                        _growlService.ShowError($"Не удалось переместить элемент: {ex.Message}");
-                    }
-
-                    args.Handled = true;
-                    return;
-                }
-            }
-
-            if (args.Data.GetDataPresent(DataFormats.FileDrop) &&
-                args.OriginalSource is DependencyObject src2 &&
-                VisualTreeHelperExtensions.GetAncestor<TreeViewItem>(src2)?.DataContext is FolderItem targetExt)
-            {
-                var files = (string[])args.Data.GetData(DataFormats.FileDrop);
-                try
-                {
-                    foreach (var srcPath in files)
-                    {
-                        var fileName = Path.GetFileName(srcPath);
-                        var destPath = Path.Combine(targetExt.FullPath, fileName);
-
-                        bool isDir = _fileSystem.DirectoryExists(srcPath);
-                        await _fileSystem.CopyAsync(srcPath, destPath, recursive: isDir, CancellationToken.None);
-
-                        AddFileIntoFolder(targetExt, destPath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _growlService.ShowError($"Ошибка при вставке файлов: {ex.Message}");
-                }
-
-                args.Handled = true;
-            }
-        }
+     => await _dragDropManager.OnDropAsync(args);
 
         private ObservableCollection<FolderItem> FindParentCollection(
     FolderItem item,
@@ -825,68 +737,22 @@ int insertIndex)
 
         [RelayCommand]
         private void FileDropOver(DragEventArgs args)
-        {
-            args.Effects = args.Data.GetDataPresent(DataFormats.FileDrop)
-                ? DragDropEffects.Copy
-                : DragDropEffects.None;
-            args.Handled = true;
-        }
+     => _dragDropManager.FileDropOver(args);
+
         [RelayCommand]
         private async Task FileDropAsync(DragEventArgs args)
-        {
-            if (!args.Data.GetDataPresent(DataFormats.FileDrop))
-                return;
-
-            var paths = (string[])args.Data.GetData(DataFormats.FileDrop);
-            if (SelectedFolderItem == null || !SelectedFolderItem.IsDirectory)
-                return;
-
-            try
-            {
-                foreach (var srcPath in paths)
-                {
-                    var fileName = Path.GetFileName(srcPath);
-                    var destPath = Path.Combine(SelectedFolderItem.FullPath, fileName);
-
-                    bool isDir = _fileSystem.DirectoryExists(srcPath);
-                    await _fileSystem.CopyAsync(srcPath, destPath, recursive: isDir, ct: CancellationToken.None);
-
-                    AddFileIntoFolder(SelectedFolderItem, destPath);
-                }
-            }
-            catch (Exception ex)
-            {
-                ShowError($"Ошибка при добавлении файлов: {ex.Message}");
-            }
-            finally
-            {
-                args.Handled = true;
-            }
-        }
+     => await _dragDropManager.FileDropAsync(args, SelectedFolderItem);
 
         [RelayCommand]
-        private void ItemDoubleClick(FolderItem item)
+        private Task ItemDoubleClickAsync(FolderItem item)
         {
-            if (item == null) return;
-
-            if (item.IsDirectory)
-            {
-                _suppressTreeNav = true;
-                DoNavigateInternal(item.FullPath, addToHistory: true);
-                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    _suppressTreeNav = false;
-                }), DispatcherPriority.Background);
-            }
-            else if (Path.GetExtension(item.FullPath)
-                             .Equals(".uasset", StringComparison.OrdinalIgnoreCase))
-            {
-                PreviewTextureCommand.Execute(item);
-            }
-            else
-            {
-                OpenFolderCommand.Execute(item);
-            }
+            return _doubleClickService.HandleAsync(
+                item,
+                CancellationToken.None,
+                DoNavigateInternal,
+                Application.Current.Dispatcher,
+                i => OpenFolderCommand.Execute(i)
+            );
         }
 
         partial void OnSelectedFolderItemChanged(FolderItem oldItem, FolderItem newItem)
@@ -981,7 +847,7 @@ int insertIndex)
             }
 
             if (_searchResults.Count == 0)
-            { 
+            {
                 ShowWarning("Не найдено результатов");
                 return;
             }
@@ -1024,28 +890,6 @@ int insertIndex)
             return null;
         }
 
-        private async Task<string> LoadJsonFromAssetAsync(string uassetPath, string rootDir, CancellationToken ct)
-        {
-            // 1) создаём провайдера и инициализируем
-            var provider = new DefaultFileProvider(rootDir, SearchOption.AllDirectories,
-                                                   new VersionContainer(EGame.GAME_UE4_LATEST));
-            provider.Initialize();
-
-            // 2) находим нужный asset по пути
-            var fileName = Path.GetFileName(uassetPath);
-            var assetFile = provider.Files.Values
-                                  .First(f => f.Path.EndsWith(fileName, StringComparison.OrdinalIgnoreCase));
-
-            // 3) грузим пакет и получаем DisplayData
-            var result = provider.GetLoadPackageResult(assetFile);
-            var displayData = result.GetDisplayData(save: false);
-
-            // 4) сериализуем в форматированный JSON
-            return JsonConvert.SerializeObject(displayData,
-                                               Formatting.Indented,
-                                               new JsonSerializerSettings { NullValueHandling = NullValueHandling.Include });
-        }
-
         [RelayCommand]
         private async Task PreviewAssetAsync(FolderItem item, CancellationToken ct)
         {
@@ -1054,27 +898,38 @@ int insertIndex)
 
             try
             {
-                var json = await LoadJsonFromAssetAsync(item.FullPath, FolderEditorRootPath, ct);
-
-                var previewWindow = new CodePreviewWindow
-                {
-                    Owner = Application.Current.MainWindow
-                };
-
-                var previewVm = new CodePreviewViewModel(json, previewWindow);
-
-                previewWindow.DataContext = previewVm;
-
-                // 4) Показываем
-                previewWindow.Show();
+                var json = await _cue4Parse.ParseAssetAsync(item.FullPath, FolderEditorRootPath, ct);
+                var preview = new CodePreviewWindow { Owner = Application.Current.MainWindow };
+                preview.DataContext = new CodePreviewViewModel(json, preview);
+                preview.Show();
             }
             catch (Exception ex)
             {
                 ShowError($"Не удалось загрузить asset: {ex.Message}");
             }
         }
+        [RelayCommand]
+        private async Task PreviewLocresAsync(FolderItem item, CancellationToken ct)
+        {
+            if (item == null || !item.FullPath.EndsWith(".locres", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            try
+            {
+                var json = await _cue4Parse.ParseLocresAsync(item.FullPath, FolderEditorRootPath, ct);
+                var preview = new CodePreviewWindow { Owner = Application.Current.MainWindow };
+                preview.DataContext = new CodePreviewViewModel(json, preview);
+                preview.Show();
+            }
+            catch (Exception ex)
+            {
+                ShowError($"Не удалось загрузить locres: {ex.Message}");
+            }
+        }
 
     }
+
+
 
 
     public static class VisualTreeHelperExtensions
