@@ -38,6 +38,8 @@
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Background"
                 Value="{DynamicResource SearchTextBoxBackgroundBrush}"/>
+        <Setter Property="Foreground"
+                Value="{DynamicResource TextPrimaryBrush}" />
         <Setter Property="BorderBrush"
                 Value="{DynamicResource SearchTextBoxBorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
@@ -71,7 +73,7 @@
                                Text="Поиск…"
                                FontSize="13"
                                Margin="12,0"
-                               Foreground="{DynamicResource PlaceholderBrush}"
+                                           Foreground="{DynamicResource PlaceholderMainBrush}"
                                IsHitTestVisible="False"
                                VerticalAlignment="Center"
                                Opacity="0"/>
@@ -221,21 +223,30 @@
             <Setter.Value>
                 <!-- Устанавливаем DataContext самого ContextMenu на ваш VM -->
                 <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                    <ContextMenu.Resources>
+                        <SolidColorBrush x:Key="BorderBrush"
+                                         Color="Transparent" />
+                        <SolidColorBrush x:Key="RegionBrush"
+                                         Color="{DynamicResource ItemBackgroundBrushColor}" />
+                        <SolidColorBrush x:Key="SecondaryRegionBrush"
+                                         Color="{DynamicResource ItemBackgroundBrushHoverColor}" />
+                    </ContextMenu.Resources>
 
                     <!-- Открыть -->
                     <MenuItem
-    Header="Открыть"
+    Header="Открыть" Foreground="{DynamicResource TextPrimaryBrush}"
     Command="{Binding OpenFolderCommand}"
     CommandParameter="{Binding PlacementTarget.DataContext,
                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
 
                     <MenuItem
 Header="Открыть картинку"
+                        Foreground="{DynamicResource TextPrimaryBrush}"
 Command="{Binding PreviewTextureCommand}"
 CommandParameter="{Binding PlacementTarget.DataContext,
                   RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>   
-                    <MenuItem
-Header="Открыть .JSON"
+                    <MenuItem Foreground="{DynamicResource TextPrimaryBrush}"
+                              Header="Открыть .JSON"
 Command="{Binding PreviewAssetCommand}"
 CommandParameter="{Binding PlacementTarget.DataContext,
                   RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
@@ -243,22 +254,22 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                     <Separator/>
 
                     <!-- Копировать -->
-                    <MenuItem
-    Header="Копировать"
+                    <MenuItem Foreground="{DynamicResource TextPrimaryBrush}"
+                              Header="Копировать"
     Command="{Binding CopyFolderItemCommand}"
     CommandParameter="{Binding PlacementTarget.DataContext,
                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
 
                     <!-- Вырезать -->
-                    <MenuItem
-    Header="Вырезать"
+                    <MenuItem Foreground="{DynamicResource TextPrimaryBrush}"
+                              Header="Вырезать"
     Command="{Binding CutFolderItemCommand}"
     CommandParameter="{Binding PlacementTarget.DataContext,
                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
 
                     <!-- Вставить -->
-                    <MenuItem
-    Header="Вставить"
+                    <MenuItem Foreground="{DynamicResource TextPrimaryBrush}"
+                              Header="Вставить"
     Command="{Binding PasteIntoFolderCommand}"
     CommandParameter="{Binding PlacementTarget.DataContext,
                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"
@@ -267,15 +278,15 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                     <Separator/>
 
                     <!-- Переименовать -->
-                    <MenuItem
-    Header="Переименовать"
+                    <MenuItem Foreground="{DynamicResource TextPrimaryBrush}"
+                              Header="Переименовать"
     Command="{Binding RenameFolderItemCommand}"
     CommandParameter="{Binding PlacementTarget.DataContext,
                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
 
                     <!-- Удалить -->
-                    <MenuItem
-    Header="Удалить"
+                    <MenuItem Foreground="{DynamicResource TextPrimaryBrush}"
+                              Header="Удалить"
     Command="{Binding RemoveFolderItemCommand}"
     CommandParameter="{Binding PlacementTarget.DataContext,
                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
@@ -283,8 +294,8 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                     <Separator/>
 
                     <!-- Свойства -->
-                    <MenuItem
-    Header="Свойства"
+                    <MenuItem Foreground="{DynamicResource TextPrimaryBrush}"
+                              Header="Свойства"
     Command="{Binding ShowPropertiesCommand}"
     CommandParameter="{Binding PlacementTarget.DataContext,
                               RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
@@ -352,7 +363,15 @@ CommandParameter="{Binding PlacementTarget.DataContext,
 
             <Border.ContextMenu>
                 <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                    <MenuItem Header="Удалить"
+                    <ContextMenu.Resources>
+                    <SolidColorBrush x:Key="BorderBrush"
+                                     Color="Transparent" />
+                    <SolidColorBrush x:Key="RegionBrush"
+                                     Color="{DynamicResource ItemBackgroundBrushColor}" />
+                    <SolidColorBrush x:Key="SecondaryRegionBrush"
+                                     Color="{DynamicResource ItemBackgroundBrushHoverColor}" />
+                    </ContextMenu.Resources>
+                    <MenuItem Header="Удалить" Foreground="{DynamicResource TextPrimaryBrush}"
                               Command="{Binding RemoveAutoInjectItemCommand}"
                               CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                 </ContextMenu>
@@ -819,5 +838,63 @@ CommandParameter="{Binding PlacementTarget.DataContext,
             </Grid>
         </Border>
     </DataTemplate>
+
+
+    <Style x:Key="CustomHC_TabItemStyle"
+           TargetType="TabItem"
+           BasedOn="{StaticResource {x:Type TabItem}}">
+        <!-- дефолтный цвет текста -->
+        <Setter Property="Foreground"
+                Value="{DynamicResource TextSecondaryBrush}" />
+        <!-- свободный фон, чтобы было видно только текст+underline -->
+        <Setter Property="Background"
+                Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Grid>
+                        <!-- заголовок -->
+                        <ContentPresenter x:Name="HeaderContent"
+                                          ContentSource="Header"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="16,8" />
+                        <!-- линия под ним -->
+                        <Border x:Name="Underline"
+                                Height="2"
+                                Background="{DynamicResource PrimaryButtonBackgroundBrush}"
+                                VerticalAlignment="Bottom"
+                                Visibility="Collapsed"
+                                CornerRadius="1" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- когда вкладка активна -->
+                        <Trigger Property="IsSelected"
+                                 Value="True">
+                            <!-- цвет текста активного таба -->
+                            <Setter TargetName="HeaderContent"
+                                    Property="TextElement.Foreground"
+                                    Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
+                            <!-- (опционально) можете менять и размер/вес шрифта -->
+                            <Setter TargetName="HeaderContent"
+                                    Property="TextElement.FontWeight"
+                                    Value="SemiBold" />
+                            <!-- показать линию -->
+                            <Setter TargetName="Underline"
+                                    Property="Visibility"
+                                    Value="Visible" />
+                        </Trigger>
+
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter TargetName="HeaderContent"
+                                    Property="TextElement.Foreground"
+                                    Value="{DynamicResource TextDisabledBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
 </ResourceDictionary>

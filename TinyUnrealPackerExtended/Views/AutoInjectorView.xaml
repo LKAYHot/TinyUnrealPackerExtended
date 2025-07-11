@@ -67,6 +67,7 @@
 
             <Border Margin="0, 0, 0, 0"
                     Style="{StaticResource CardStyle}"
+                    Background="{DynamicResource ItemHolderBackgroundBrush}"
                     Grid.Row="4">
                 <Grid Margin="-12,-14,-12,-14">
 
@@ -81,6 +82,7 @@
                     <TextBlock Text="Пусто"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
                                FontSize="20">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">

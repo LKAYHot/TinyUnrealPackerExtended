@@ -6,15 +6,23 @@
                      Color="#1E1E1E" />
     <SolidColorBrush x:Key="CardBackgroundBrush"
                      Color="#2D2D30" />
+    
     <Color           x:Key="ItemBackgroundBrushColor">#2D2D30</Color>
     <SolidColorBrush x:Key="ItemBackgroundBrush"
                      Color="{StaticResource ItemBackgroundBrushColor}" />
+    <Color           x:Key="ItemBackgroundBrushHoverColor">#FF242427</Color>
+    <SolidColorBrush x:Key="ItemBackgroundBrushHover"
+                     Color="{StaticResource ItemBackgroundBrushHoverColor}" />
     <SolidColorBrush x:Key="TextPrimaryBrush"
                      Color="#F1F1F1" />
     <SolidColorBrush x:Key="TextSecondaryBrush"
                      Color="#C9C9C9" />
+    <Color x:Key="PlaceHolderColor">#6A6A6A</Color>
+
     <SolidColorBrush x:Key="PlaceholderBrush"
-                     Color="#6A6A6A" />
+                     Color="{StaticResource PlaceHolderColor}" />
+    <SolidColorBrush x:Key="PlaceholderMainBrush"
+                     Color="#FFC8C6C6" />
 
     <!-- Границы -->
     <SolidColorBrush x:Key="BorderDefaultBrush"
@@ -146,4 +154,12 @@
     <SolidColorBrush x:Key="TreeItemHoverBrush"
                      Color="{StaticResource AutoInjectItemHoverBackgroundColor}" />
 
+    <SolidColorBrush x:Key="TabItemBrush"
+                     Color="#0F80D6" />
+    <SolidColorBrush x:Key="TextDisabledBrush"
+                     Color="#80737272" />
+    <SolidColorBrush x:Key="TextSubBrush"
+                     Color="#FFABABAB" />
+    <SolidColorBrush x:Key="IconCloseGeowlBrush"
+                     Color="#FFABABAB" />
 </ResourceDictionary>

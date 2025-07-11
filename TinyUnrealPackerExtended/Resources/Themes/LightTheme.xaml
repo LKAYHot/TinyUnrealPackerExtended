@@ -8,11 +8,18 @@
     <Color x:Key="ItemBackgroundBrushColor">White</Color>
     <SolidColorBrush x:Key="ItemBackgroundBrush"
                      Color="{StaticResource ItemBackgroundBrushColor}" />
+    <Color           x:Key="ItemBackgroundBrushHoverColor">#FFC8C6C6</Color>
+    <SolidColorBrush x:Key="ItemBackgroundBrushHover"
+                     Color="{StaticResource ItemBackgroundBrushHoverColor}" />
     <SolidColorBrush x:Key="TextPrimaryBrush"
                      Color="#333333" />
     <SolidColorBrush x:Key="TextSecondaryBrush"
                      Color="#666666" />
+    <Color x:Key="PlaceHolderColor">#888888</Color>
+
     <SolidColorBrush x:Key="PlaceholderBrush"
+                     Color="{StaticResource PlaceHolderColor}" /> 
+    <SolidColorBrush x:Key="PlaceholderMainBrush"
                      Color="#888888" />
 
     <!-- Границы -->
@@ -95,7 +102,7 @@
 
     <!-- Drop success animation (фон возвращается к White через секунду) -->
     <SolidColorBrush x:Key="DropSuccessBackgroundBrush"
-                     Color="#E6FFED" />
+                     Color="#E6FFED" /> 
 
     <Color x:Key="DragEnterBackgroundColor">#EFF8FF</Color>
     <Color x:Key="DragEnterBorderColor">#0F80D6</Color>
@@ -155,4 +162,13 @@
                      Color="#E5E5E5" />
     <SolidColorBrush x:Key="TreeItemHoverBrush"
                      Color="{StaticResource AutoInjectItemHoverBackgroundColor}" />
+    
+    <SolidColorBrush x:Key="TabItemBrush"
+                     Color="#0F80D6" />
+    <SolidColorBrush x:Key="TextDisabledBrush"
+                     Color="#80737272" />
+    <SolidColorBrush x:Key="TextSubBrush"
+                     Color="#FF8E8E8E" />
+    <SolidColorBrush x:Key="IconCloseGeowlBrush"
+                     Color="#FFABABAB" />
 </ResourceDictionary>

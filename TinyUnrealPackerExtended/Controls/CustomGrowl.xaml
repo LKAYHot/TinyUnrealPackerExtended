@@ -16,7 +16,7 @@
             </Setter>
         </Style>
     </UserControl.Resources>
-    <Border Background="White"
+    <Border Background="{DynamicResource ItemBackgroundBrush}"
          CornerRadius="5"
          Padding="10"
          Margin="5"
@@ -47,12 +47,12 @@
             <StackPanel Grid.Column="1">
                 <TextBlock Text="{Binding Title}"
                         FontWeight="Bold"
-                        Foreground="Black"
+                        Foreground="{DynamicResource TextPrimaryBrush}"
                         FontSize="16"
                         Margin="0, 15, 0, 0"
                         FontFamily="Bahnschrift SemiBold" />
                 <TextBlock x:Name="MessageTextBlock"
-                        Foreground="#FF8E8E8E"
+                           Foreground="{DynamicResource TextSubBrush}"
                         FontSize="14"
                         TextWrapping="Wrap"
                         FontFamily="Bahnschrift Light" Padding="0,0,0,10"/>
@@ -73,7 +73,7 @@
                                          Margin="0" 
                                          HorizontalAlignment="Center" 
                                          VerticalAlignment="Center" 
-                                         Foreground="#FFABABAB"/>
+                                         Foreground="{DynamicResource IconCloseGeowlBrush}"/>
             </Button>
         </Grid>
     </Border>

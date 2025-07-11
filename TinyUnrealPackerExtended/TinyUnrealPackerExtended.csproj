@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <None Remove="Resources\Json.xshd" />
+    <None Remove="Resources\JsonDark.xshd" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,6 +43,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\Json.xshd" />
+    <EmbeddedResource Include="Resources\JsonDark.xshd" />
   </ItemGroup>
 
 </Project>

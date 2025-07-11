@@ -29,7 +29,7 @@ namespace TinyUnrealPackerExtended
             InitializeComponent();
 
             using var stream = Assembly.GetExecutingAssembly()
-        .GetManifestResourceStream("TinyUnrealPackerExtended.Resources.Json.xshd");
+        .GetManifestResourceStream("TinyUnrealPackerExtended.Resources.JsonDark.xshd");
             using var reader = new XmlTextReader(stream);
             EditorMain.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
         }

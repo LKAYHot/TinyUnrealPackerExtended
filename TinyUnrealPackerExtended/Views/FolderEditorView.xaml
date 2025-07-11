@@ -55,7 +55,7 @@
                         </Button>
                         <Border Width="1"
                                 CornerRadius="1"
-                                Background="{DynamicResource BorderDefaultBrush}"
+                                Background="{DynamicResource NavigationButtonDisabledForegroundBrush}"
                                 Margin="8,0"
                                 VerticalAlignment="Stretch" />
                         <Button Command="{Binding RefreshFolderCommand}"
@@ -263,30 +263,44 @@
                                 <!-- Контекстное меню -->
                                 <Border.ContextMenu>
                                     <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                        <MenuItem Header="Открыть расположение"
+                                        <ContextMenu.Resources>
+                                            <SolidColorBrush x:Key="BorderBrush"
+                                                             Color="Transparent" />
+                                            <SolidColorBrush x:Key="RegionBrush"
+                                                             Color="{DynamicResource ItemBackgroundBrushColor}" />
+                                            <SolidColorBrush x:Key="SecondaryRegionBrush"
+                                                             Color="{DynamicResource ItemBackgroundBrushHoverColor}" />
+                                        </ContextMenu.Resources>
+                                        <MenuItem Header="Открыть расположение" Foreground="{DynamicResource TextPrimaryBrush}"
                                                   Command="{Binding OpenFolderCommand}"
                                                   CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                         <Separator />
                                         <MenuItem Header="Копировать"
+                                                  Foreground="{DynamicResource TextPrimaryBrush}"
                                                   Command="{Binding CopyFolderItemCommand}"
                                                   CommandParameter="{Binding PlacementTarget.DataContext,
                                             RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                         <MenuItem Header="Вырезать"
+                                                  Foreground="{DynamicResource TextPrimaryBrush}"
                                                   Command="{Binding CutFolderItemCommand}"
                                                   CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                         <MenuItem Header="Вставить"
+                                                  Foreground="{DynamicResource TextPrimaryBrush}"
                                                   Command="{Binding PasteIntoFolderCommand}"
                                                   CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                                   IsEnabled="{Binding CanPaste}" />
-                                        <Separator />
+                                        <Separator/>
                                         <MenuItem Header="Переименовать"
+                                                  Foreground="{DynamicResource TextPrimaryBrush}"
                                                   Command="{Binding RenameFolderItemCommand}"
                                                   CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                         <MenuItem Header="Удалить"
+                                                  Foreground="{DynamicResource TextPrimaryBrush}"
                                                   Command="{Binding RemoveFolderItemCommand}"
                                                   CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                         <Separator />
                                         <MenuItem Header="Свойства"
+                                                  Foreground="{DynamicResource TextPrimaryBrush}"
                                                   Command="{Binding ShowPropertiesCommand}"
                                                   CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                     </ContextMenu>
@@ -620,26 +634,37 @@
                             <Image.ContextMenu>
                                 <!-- контекстное меню наследует DataContext окна (MainWindowViewModel) -->
                                 <ContextMenu>
+                                    <ContextMenu.Resources>
+                                        <SolidColorBrush x:Key="BorderBrush"
+                                                         Color="Transparent" />
+                                        <SolidColorBrush x:Key="RegionBrush"
+                                                         Color="{DynamicResource ItemBackgroundBrushColor}" />
+                                        <SolidColorBrush x:Key="SecondaryRegionBrush"
+                                                         Color="{DynamicResource ItemBackgroundBrushHoverColor}" />
+                                    </ContextMenu.Resources>
                                     <!-- Открыть в проводнике -->
-                                    <MenuItem Header="Открыть в проводнике"
+                                    <MenuItem Header="Открыть в проводнике" Foreground="{DynamicResource TextPrimaryBrush}"
                                               Command="{Binding PlacementTarget.DataContext.OpenInExplorerCommand,
                           RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                               CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath,
                                    RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                     <!-- Скопировать путь -->
                                     <MenuItem Header="Скопировать путь"
+                                              Foreground="{DynamicResource TextPrimaryBrush}"
                                               Command="{Binding PlacementTarget.DataContext.CopyPathCommand,
                           RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                               CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath,
                                    RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                     <!-- Сохранить как… -->
                                     <MenuItem Header="Сохранить как…"
+                                              Foreground="{DynamicResource TextPrimaryBrush}"
                                               Command="{Binding PlacementTarget.DataContext.SaveTextureCommand,
                           RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                               CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath,
                                    RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
 
                                     <MenuItem Header="Переключить альфа-канал"
+                                              Foreground="{DynamicResource TextPrimaryBrush}"
                                               Command="{Binding PlacementTarget.DataContext.ToggleAlphaChannelCommand,
                                 RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                                 </ContextMenu>

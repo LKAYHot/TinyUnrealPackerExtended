@@ -66,6 +66,7 @@
 
 
                     <TextBlock Text="Пусто"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
                                FontSize="20" />
