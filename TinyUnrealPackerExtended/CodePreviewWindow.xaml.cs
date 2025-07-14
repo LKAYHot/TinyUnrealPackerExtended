@@ -1,35 +1,35 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
+﻿using System;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Input;
+using System.Xml;
+using DocumentFormat.OpenXml.Bibliography;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
-using System.Xml;
-using System.Reflection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using TinyUnrealPackerExtended.Properties;
 
 namespace TinyUnrealPackerExtended
 {
-    /// <summary>
-    /// Логика взаимодействия для CodePreviewWindow.xaml
-    /// </summary>
+   
     public partial class CodePreviewWindow : Window
     {
         public CodePreviewWindow()
         {
             InitializeComponent();
 
+            string theme = Settings.Default.AppTheme;
+            string resourceName = theme.Equals("Dark", StringComparison.OrdinalIgnoreCase)
+                ? "TinyUnrealPackerExtended.Resources.JsonDark.xshd"
+                : "TinyUnrealPackerExtended.Resources.Json.xshd";
+
             using var stream = Assembly.GetExecutingAssembly()
-        .GetManifestResourceStream("TinyUnrealPackerExtended.Resources.JsonDark.xshd");
+                .GetManifestResourceStream(resourceName);
+            if (stream == null)
+            {
+                MessageBox.Show($"Не удалось найти ресурс '{resourceName}'", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             using var reader = new XmlTextReader(stream);
             EditorMain.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
         }
