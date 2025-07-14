@@ -30,7 +30,16 @@ namespace TinyUnrealPackerExtended
             DataContext = mainWindowViewModel;
         }
 
-       
+        private void OpenShell_Click(object sender, RoutedEventArgs e)
+        {
+            var shell = new ShellWindow
+            {
+                Owner = this
+            };
+            shell.Show();
+        }
+
+
 
         private void DragArea_MouseDown(object sender, MouseButtonEventArgs e)
         {

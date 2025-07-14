@@ -11,6 +11,7 @@
                 <hc:Theme />
 
                 <ResourceDictionary Source="/Resources/Themes/DarkTheme.xaml" />
+
                 <ResourceDictionary Source="/TinyUnrealPackerExtended;component/Resources/Styles.xaml" />
                 <ResourceDictionary Source="/TinyUnrealPackerExtended;component/Resources/Animations.xaml" />
 

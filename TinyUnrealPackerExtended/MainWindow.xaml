@@ -171,6 +171,19 @@
 
             <Button Width="37"
                     Height="32"
+                    Margin="0,12,8,0"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Click="OpenShell_Click">
+                <iconPacks:PackIconMaterial Kind="Cog"
+                                            Width="16"
+                                            Height="16"
+                                            Foreground="{DynamicResource TextPrimaryBrush}" />
+            </Button>
+
+            <Button Width="37"
+                    Height="32"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
                     Margin="0,12,0,0"

@@ -5,6 +5,17 @@
                      Color="#F5F5F5" />
     <SolidColorBrush x:Key="CardBackgroundBrush"
                      Color="White" />
+    <!-- для заливки «Light» -->
+    <SolidColorBrush x:Key="ThemeOptionLightFillBrush"
+                     Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="ThemeOptionLightTextBrush"
+                     Color="#000000" />
+    <SolidColorBrush x:Key="ThemeOptionDarkFillBrush"
+                     Color="#FF262629" />
+    <SolidColorBrush x:Key="BorderBrushTheme"
+                     Color="#FF9A9A9A" />
+    <SolidColorBrush x:Key="SettingsCardBackgroundBrush"
+                     Color="#FFDADADA" />
     <Color x:Key="ItemBackgroundBrushColor">White</Color>
     <SolidColorBrush x:Key="ItemBackgroundBrush"
                      Color="{StaticResource ItemBackgroundBrushColor}" />
@@ -130,6 +141,10 @@
 
     <SolidColorBrush x:Key="BreadcrumbSeparatorBrush"
                      Color="#666666" />
+
+    <Color            x:Key="PrimaryButtonBackgroundDisabledColor">#FF7D7D7D</Color>
+    <SolidColorBrush  x:Key="PrimaryButtonBackgroundDisabledBrush"
+                      Color="{StaticResource PrimaryButtonBackgroundDisabledColor}" />
 
     <Color            x:Key="PrimaryButtonBackgroundColor">#0F80D6</Color>
     <SolidColorBrush  x:Key="PrimaryButtonBackgroundBrush"

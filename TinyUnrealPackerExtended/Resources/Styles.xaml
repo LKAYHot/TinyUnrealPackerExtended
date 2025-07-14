@@ -609,6 +609,16 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                                     Property="Background"
                                     Value="{DynamicResource PrimaryButtonPressedBrush}" />
                         </Trigger>
+
+                        <Trigger Property="IsEnabled"
+                                 Value="False">
+                            <Setter TargetName="border"
+                                    Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource PrimaryButtonBackgroundDisabledColor}" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -853,5 +863,147 @@ CommandParameter="{Binding PlacementTarget.DataContext,
             </Setter.Value>
         </Setter>
     </Style>
+
+    <!-- Новый стиль для пунктов Sidebar -->
+    <Style x:Key="SidebarItemStyle"
+           TargetType="ToggleButton">
+        <!-- чуть поменьше, чем было -->
+        <Setter Property="FontSize"
+                Value="14" />
+        <Setter Property="Padding"
+                Value="12,8" />
+        <Setter Property="Margin"
+                Value="0,6" />
+        <Setter Property="Background"
+                Value="Transparent" />
+        <Setter Property="Foreground"
+                Value="{DynamicResource TextSecondaryBrush}" />
+        <Setter Property="Cursor"
+                Value="Hand" />
+        <Setter Property="BorderThickness"
+                Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Grid>
+                        <!-- индикатор слева -->
+                        <Border x:Name="Indicator"
+                                Width="4"
+                                Background="Transparent"
+                                HorizontalAlignment="Left"
+                                CornerRadius="2" />
+                        <ContentPresenter Margin="12,0,0,0"
+                                          VerticalAlignment="Center" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- при наведении -->
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter Property="Background"
+                                    Value="{DynamicResource ListViewItemHoverBrush}" />
+                            <Setter Property="Foreground"
+                                    Value="{DynamicResource TextPrimaryBrush}" />
+                            <!-- показываем цветной бар слева -->
+                            <Setter TargetName="Indicator"
+                                    Property="Background"
+                                    Value="{DynamicResource SecondaryButtonHoverBrush}" />
+                        </Trigger>
+                        <!-- когда выбран -->
+                        <Trigger Property="IsChecked"
+                                 Value="True">
+                            <Setter TargetName="Indicator"
+                                    Property="Background"
+                                    Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
+                            <Setter Property="Foreground"
+                                    Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
+                            <Setter Property="FontWeight"
+                                    Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ThemeOptionToggleStyle"
+           TargetType="ToggleButton">
+        <Setter Property="Margin"
+                Value="8" />
+        <Setter Property="Padding"
+                Value="12,8" />
+        <Setter Property="MinWidth"
+                Value="100" />
+        <Setter Property="MinHeight"
+                Value="60" />
+        <Setter Property="Cursor"
+                Value="Hand" />
+        <!-- default background — серый карточный -->
+        <Setter Property="Background"
+                Value="{DynamicResource CardBackgroundBrush}" />
+        <!-- default border — второстепенный текстовый цвет -->
+        <Setter Property="BorderBrush"
+                Value="{DynamicResource BorderBrushTheme}" />
+        <Setter Property="BorderThickness"
+                Value="2" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="6"
+                            SnapsToDevicePixels="True">
+                        <TextBlock x:Name="Txt"
+                                   Text="{TemplateBinding Content}"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextPrimaryBrush}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Light theme -->
+                        <Trigger Property="Content"
+                                 Value="Light">
+                            <Setter TargetName="Bd"
+                                    Property="Background"
+                                    Value="{StaticResource ThemeOptionLightFillBrush}" />
+                            <Setter TargetName="Txt"
+                                    Property="Foreground"
+                                    Value="Transparent" />
+                        </Trigger>
+                        <!-- Dark theme -->
+                        <Trigger Property="Content"
+                                 Value="Dark">
+                            <Setter TargetName="Bd"
+                                    Property="Background"
+                                    Value="{DynamicResource ThemeOptionDarkFillBrush}" />
+                            <Setter TargetName="Txt"
+                                    Property="Foreground"
+                                    Value="Transparent" />
+                        </Trigger>
+
+                        <!-- Hover меняет только рамку -->
+                        <Trigger Property="IsMouseOver"
+                                 Value="True">
+                            <Setter TargetName="Bd"
+                                    Property="BorderBrush"
+                                    Value="{DynamicResource SecondaryButtonHoverBrush}" />
+                        </Trigger>
+                        <!-- Checked — рамка акцентного цвета -->
+                        <Trigger Property="IsChecked"
+                                 Value="True">
+                            <Setter TargetName="Bd"
+                                    Property="BorderBrush"
+                                    Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
 
 </ResourceDictionary>
