@@ -900,7 +900,17 @@ int insertIndex)
             {
                 var json = await _cue4Parse.ParseAssetAsync(item.FullPath, FolderEditorRootPath, ct);
                 var preview = new CodePreviewWindow { Owner = Application.Current.MainWindow };
-                preview.DataContext = new CodePreviewViewModel(json, preview);
+
+                // Передаём все четыре параметра
+                var vm = new CodePreviewViewModel(
+                    json,
+                    item.FullPath,
+                    preview,
+                    new LocresService(),
+                    preview.GrowlService
+                );
+
+                preview.DataContext = vm;
                 preview.Show();
             }
             catch (Exception ex)
@@ -918,7 +928,16 @@ int insertIndex)
             {
                 var json = await _cue4Parse.ParseLocresAsync(item.FullPath, FolderEditorRootPath, ct);
                 var preview = new CodePreviewWindow { Owner = Application.Current.MainWindow };
-                preview.DataContext = new CodePreviewViewModel(json, preview);
+
+                var vm = new CodePreviewViewModel(
+                    json,
+                    item.FullPath,
+                    preview,
+                    new LocresService(),
+                    preview.GrowlService
+                );
+
+                preview.DataContext = vm;
                 preview.Show();
             }
             catch (Exception ex)

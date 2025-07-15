@@ -112,6 +112,7 @@
                 <Border Grid.Column="0"
                         Background="{DynamicResource SettingsCardBackgroundBrush}"
                         CornerRadius="8"
+                        Style="{StaticResource CardStyle}"
                         Padding="10"
                         Margin="12,12,0,12">
                     <StackPanel>
@@ -159,6 +160,7 @@
             <!-- BOTTOM BAR -->
             <Border Grid.Row="2"
                     Background="{DynamicResource CardBackgroundBrush}"
+                    Style="{StaticResource CardStyle}"
                     CornerRadius="6"
                     Padding="8,8"
                     Margin="12,0,12,12">

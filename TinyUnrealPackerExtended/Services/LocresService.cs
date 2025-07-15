@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -83,6 +84,35 @@ namespace TinyUnrealPackerExtended.Services
             locres.Save(outStream, LocresVersion.Optimized);
         }
 
+
+        public void ImportFromJson(string json, string originalLocresPath, string outputLocresPath)
+        {
+            // Загрузка исходного .locres
+            var locres = new LocresFile();
+            using var inStream = File.OpenRead(originalLocresPath);
+            locres.Load(inStream);
+
+            // Десериализация JSON в словарь
+            var tables = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(json)
+                         ?? new Dictionary<string, Dictionary<string, string>>();
+
+            foreach (var tablePair in tables)
+            {
+                // Обновляем только существующие таблицы
+                var ns = locres.FirstOrDefault(x => x.Name == tablePair.Key);
+                if (ns == null) continue;
+
+                foreach (var entryPair in tablePair.Value)
+                {
+                    var entry = ns.FirstOrDefault(e => e.Key == entryPair.Key);
+                    if (entry == null) continue;
+                    entry.Value = entryPair.Value;
+                }
+            }
+
+            using var outStream = File.Create(outputLocresPath);
+            locres.Save(outStream, LocresVersion.Optimized);
+        }
     }
     public sealed class TranslationRecordMap : ClassMap<TranslationRecord>
     {

@@ -954,13 +954,41 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                             BorderThickness="{TemplateBinding BorderThickness}"
                             CornerRadius="6"
                             SnapsToDevicePixels="True">
-                        <TextBlock x:Name="Txt"
-                                   Text="{TemplateBinding Content}"
-                                   FontSize="16"
-                                   FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Foreground="{DynamicResource TextPrimaryBrush}" />
+                        <Grid>
+                            <!-- Основной текст -->
+                            <TextBlock x:Name="Txt"
+                                       Text="{TemplateBinding Content}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" />
+
+                            <!-- Скрытая по умолчанию галочка -->
+                            <Border x:Name="Chk"
+                                    Width="24"
+                                    Height="24"
+                                    Background="{DynamicResource PrimaryButtonBackgroundBrush}"
+                                    CornerRadius="4"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Top"
+                                    Margin="4"
+                                    Visibility="Collapsed">
+                                <iconPacks:PackIconMaterial x:Name="ChkIcon"
+                                                            Kind="Check"
+                                                            Width="16"
+                                                            Height="16"
+                                                            Foreground="White"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            RenderTransformOrigin="0.5,0.5">
+                                    <iconPacks:PackIconMaterial.RenderTransform>
+                                        <ScaleTransform ScaleX="0"
+                                                        ScaleY="0" />
+                                    </iconPacks:PackIconMaterial.RenderTransform>
+                                </iconPacks:PackIconMaterial>
+                            </Border>
+                        </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <!-- Light theme -->
@@ -991,18 +1019,88 @@ CommandParameter="{Binding PlacementTarget.DataContext,
                                     Property="BorderBrush"
                                     Value="{DynamicResource SecondaryButtonHoverBrush}" />
                         </Trigger>
-                        <!-- Checked — рамка акцентного цвета -->
                         <Trigger Property="IsChecked"
                                  Value="True">
+                            <!-- рамка -->
                             <Setter TargetName="Bd"
                                     Property="BorderBrush"
                                     Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
+
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Chk"
+                                                                       Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0:0:0"
+                                                                    Value="{x:Static Visibility.Visible}" />
+                                        </ObjectAnimationUsingKeyFrames>
+
+                                        <DoubleAnimation Storyboard.TargetName="Chk"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="0"
+                                                         To="1"
+                                                         Duration="0:0:0.2" />
+
+                                        <DoubleAnimation Storyboard.TargetName="ChkIcon"
+                                                         Storyboard.TargetProperty="RenderTransform.ScaleX"
+                                                         From="0"
+                                                         To="1"
+                                                         BeginTime="0:0:0.1"
+                                                         Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="ChkIcon"
+                                                         Storyboard.TargetProperty="RenderTransform.ScaleY"
+                                                         From="0"
+                                                         To="1"
+                                                         BeginTime="0:0:0.1"
+                                                         Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction>
+                                                <CubicEase EasingMode="EaseOut" />
+                                            </DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="ChkIcon"
+                                                         Storyboard.TargetProperty="RenderTransform.ScaleX"
+                                                         From="1"
+                                                         To="0"
+                                                         Duration="0:0:0.15" />
+                                        <DoubleAnimation Storyboard.TargetName="ChkIcon"
+                                                         Storyboard.TargetProperty="RenderTransform.ScaleY"
+                                                         From="1"
+                                                         To="0"
+                                                         Duration="0:0:0.15" />
+
+                                        <DoubleAnimation Storyboard.TargetName="Chk"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="1"
+                                                         To="0"
+                                                         BeginTime="0:0:0.15"
+                                                         Duration="0:0:0.2" />
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Chk"
+                                                                       Storyboard.TargetProperty="Visibility"
+                                                                       BeginTime="0:0:0.35">
+                                            <DiscreteObjectKeyFrame KeyTime="0:0:0"
+                                                                    Value="{x:Static Visibility.Collapsed}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
+
 
 
 

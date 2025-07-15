@@ -49,7 +49,7 @@ namespace TinyUnrealPackerExtended
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Close();
+            Application.Current.Shutdown();
         }
     }
 }
