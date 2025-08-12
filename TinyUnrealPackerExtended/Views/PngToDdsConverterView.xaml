@@ -116,7 +116,7 @@
                         <ComboBox ItemsSource="{Binding FilteredFormats}"
                                   SelectedItem="{Binding SelectedFormat}"
                                   HorizontalAlignment="Stretch"
-                                  Background="{DynamicResource ItemBackgroundBrush}"
+                                  Background="{DynamicResource ItemHolderBackgroundBrush}"
                                   BorderThickness="0"
                                   Foreground="{DynamicResource TextPrimaryBrush}"
                                   MinWidth="100">

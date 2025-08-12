@@ -27,7 +27,7 @@
                      Color="#F1F1F1" />
     <SolidColorBrush x:Key="TextSecondaryBrush"
                      Color="#C9C9C9" />
-    <Color x:Key="PlaceHolderColor">#6A6A6A</Color>
+    <Color x:Key="PlaceHolderColor">#FFC3C3C3</Color>
 
     <SolidColorBrush x:Key="PlaceholderBrush"
                      Color="{StaticResource PlaceHolderColor}" />

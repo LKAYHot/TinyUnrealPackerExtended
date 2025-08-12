@@ -35,6 +35,8 @@ namespace TinyUnrealPackerExtended.ViewModels
         private readonly LocresService _locresService = new();
         private readonly ExcelService _excelService = new();
 
+        private System.Windows.Window _window;
+
 
         private readonly IDialogService _dialog;
 
@@ -48,7 +50,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             _fileDialogService = fileDialogService;
             _processRunner = processRunner;
             _fileSystemService = fileSystemService;
-
+            _window = window;
             LocresVM = new LocresViewModel(_locresService, growlService, fileDialogService);
             ExcelVM = new ExcelViewModel(_excelService, growlService, fileDialogService);
             PakVM = new PakViewModel(_fileDialogService, growlService, _processRunner);
@@ -75,6 +77,16 @@ namespace TinyUnrealPackerExtended.ViewModels
             _fullscreenHelper = new FullscreenHelper(window);
 
 
+        }
+
+        [RelayCommand]
+        private void OpenShell()
+        {
+            var shell = new ShellWindow
+            {
+                Owner = _window
+            };
+            shell.Show();
         }
 
         [RelayCommand] 

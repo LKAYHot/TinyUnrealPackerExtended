@@ -35,9 +35,9 @@
                                                 VerticalAlignment="Center" />
                     <TextBlock Text="Drag &amp; Drop папку или нажмите, чтобы выбрать"
                                FontSize="20"
-                               Foreground="{DynamicResource PlaceholderBrush}"
                                TextAlignment="Center"
-                               Margin="0,12,0,0" />
+                               Margin="0,12,0,0"
+                               Foreground="{DynamicResource PlaceholderBrush}" />
                     <Button Content="Выбрать папку"
                             Command="{Binding BrowsePakFolderCommand}"
                             Style="{StaticResource SecondaryButtonStyle}"
@@ -63,6 +63,7 @@
                     <TextBlock Text="Папка не выбрана"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
                                FontSize="20">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">

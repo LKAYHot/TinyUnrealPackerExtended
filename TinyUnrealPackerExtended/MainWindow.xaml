@@ -83,7 +83,7 @@
             </DataTemplate.Triggers>
         </DataTemplate>
 
-       
+
     </Window.Resources>
 
     <Grid>
@@ -92,9 +92,26 @@
                 Background="Transparent"
                 VerticalAlignment="Top"
                 MouseDown="DragArea_MouseDown" />
+        <StackPanel Orientation="Horizontal"
+                    Margin="6,8,24,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top">
+            <Button Width="39"
+                    Height="32"
+                    VerticalAlignment="Top"
+                    Command="{Binding OpenShellCommand}"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Cursor="Hand">
+                <iconPacks:PackIconMaterial Kind="Cog"
+                                            Width="20"
+                                            Height="20"
+                                            Foreground="{DynamicResource TextPrimaryBrush}" />
+            </Button>
+        </StackPanel>
         <TabControl Background="Transparent"
                     BorderThickness="0"
-                    Margin="24"
+                    Margin="24,56,24,24"
                     VerticalContentAlignment="Stretch"
                     HorizontalContentAlignment="Stretch">
             <TabControl.Resources>
@@ -169,18 +186,7 @@
                                             Foreground="{DynamicResource TextPrimaryBrush}" />
             </Button>
 
-            <Button Width="37"
-                    Height="32"
-                    Margin="0,12,8,0"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Cursor="Hand"
-                    Click="OpenShell_Click">
-                <iconPacks:PackIconMaterial Kind="Cog"
-                                            Width="16"
-                                            Height="16"
-                                            Foreground="{DynamicResource TextPrimaryBrush}" />
-            </Button>
+
 
             <Button Width="37"
                     Height="32"

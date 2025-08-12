@@ -10,7 +10,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition MinHeight="250" />
 
-                <RowDefinition MinHeight="180"
+                <RowDefinition MinHeight="220"
                                Height="*"
                                MaxHeight="180" />
 
@@ -91,9 +91,7 @@
             </hc:DashedBorder>
 
 
-            <!-- Список загруженных файлов -->
 
-            <!-- Кнопки внизу -->
             <Border Margin="10, 20, 10, 10"
                     CornerRadius="6"
                     Background="{DynamicResource ItemHolderBackgroundBrush}"

@@ -17,11 +17,8 @@
         FontSize="14"
         WindowStyle="None">
 
-    <!-- перекопировали из MainWindow: конвертеры, общие ресурсы -->
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
-       
-        <!-- наши коды цвета для редактора -->
         <SolidColorBrush x:Key="CodeBackgroundBrush"
                          Color="#1E1E1E" />
         <SolidColorBrush x:Key="CodeForegroundBrush"
@@ -30,8 +27,6 @@
                          Color="#FF656565" />
     </Window.Resources>
 
-
-
     <Window.InputBindings>
         <KeyBinding Key="F"
                     Modifiers="Control"
@@ -39,7 +34,6 @@
     </Window.InputBindings>
 
     <Grid>
-        <!-- полоса «хвата» для перетаскивания окна -->
         <Border x:Name="DragArea"
                 Height="32"
                 Background="Transparent"
@@ -50,9 +44,24 @@
                 CornerRadius="4"
                 Background="{DynamicResource CardBackgroundBrush}"
                 Padding="4"
-                VerticalAlignment="Top" Style="{StaticResource CardStyle}">
-            <!-- prevent last child filling, so docked StackPanel sticks right -->
+                VerticalAlignment="Top"
+                Style="{StaticResource CardStyle}">
             <DockPanel LastChildFill="False">
+                <!-- Save button on the left -->
+                <StackPanel Orientation="Horizontal"
+                            DockPanel.Dock="Left"
+                            HorizontalAlignment="Left">
+                    <Button Command="{Binding SaveCommand}"
+                            Style="{StaticResource NavigationButtonStyle}"
+                            ToolTip="Сохранить"
+                            Margin="0,0,8,0">
+                        <iconPacks:PackIconMaterial Kind="ContentSave"
+                                                    Width="16"
+                                                    Height="16" />
+                    </Button>
+                </StackPanel>
+
+                <!-- Search controls on the right -->
                 <StackPanel Orientation="Horizontal"
                             DockPanel.Dock="Right"
                             HorizontalAlignment="Right">
@@ -73,20 +82,10 @@
                                                     Width="16"
                                                     Height="16" />
                     </Button>
-                    <Button Command="{Binding SaveCommand}"
-                            Style="{StaticResource NavigationButtonStyle}"
-                            ToolTip="Сохранить"
-                            Margin="4,0,0,0">
-                        <iconPacks:PackIconMaterial Kind="ContentSave"
-                                                    Width="16"
-                                                    Height="16" />
-                    </Button>
                 </StackPanel>
             </DockPanel>
         </Border>
 
-
-        <!-- кнопки сворачивания/макса/закрытия -->
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
@@ -122,12 +121,10 @@
                 <iconPacks:PackIconMaterial Kind="Close"
                                             Width="16"
                                             Height="16"
-                                            Foreground="{DynamicResource TextPrimaryBrush}"
-                                            Cursor="" />
+                                            Foreground="{DynamicResource TextPrimaryBrush}" />
             </Button>
         </StackPanel>
 
-        <!-- сам редактор кода -->
         <Border Margin="16,100,16,16"
                 CornerRadius="6"
                 SnapsToDevicePixels="True"
@@ -143,15 +140,15 @@
                                Document="{Binding CodeDocument}"
                                HorizontalScrollBarVisibility="Auto"
                                VerticalScrollBarVisibility="Auto"
-                               Margin="0">
-            </avalon:TextEditor>
+                               Margin="0" />
         </Border>
+
         <Grid Visibility="Visible">
             <Canvas x:Name="GrowlContainer"
                     IsHitTestVisible="True"
                     VerticalAlignment="Top"
                     HorizontalAlignment="Right"
-                    Margin="10, 75, 10, 10" />
+                    Margin="10,75,10,10" />
         </Grid>
     </Grid>
 </Window>
