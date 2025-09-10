@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ICSharpCode.AvalonEdit.Document;
 using TinyUnrealPackerExtended.Helpers;
+using TinyUnrealPackerExtended.Interfaces;
 using TinyUnrealPackerExtended.Services;
 
 namespace TinyUnrealPackerExtended.ViewModels
@@ -17,27 +18,24 @@ namespace TinyUnrealPackerExtended.ViewModels
 
         private readonly string _sourcePath;
         private readonly LocresService _locresService;
-        private readonly FullscreenHelper _fullscreenHelper;
         private readonly CodePreviewWindow _window;
         private int _lastSearchOffset = -1;
+
+        private readonly IWindowActions _windowActions;
+
 
         private readonly GrowlService _growlService;
 
         [ObservableProperty]
         private string searchQuery;
 
-        public CodePreviewViewModel(
-            string json,
-            string sourcePath,
-            CodePreviewWindow window,
-            LocresService locresService, GrowlService growlService)
+        public CodePreviewViewModel(string json, IWindowActions windowActions, string sourcePath, LocresService locresService, GrowlService growlService)
         {
             CodeDocument = new TextDocument(json);
             _sourcePath = sourcePath;
             _locresService = locresService;
-            _window = window;
+            _windowActions = windowActions;
             _growlService = growlService;
-            _fullscreenHelper = new FullscreenHelper(window);
 
             IsEditable = Path.GetExtension(sourcePath)
                              .Equals(".locres", StringComparison.OrdinalIgnoreCase);
@@ -81,10 +79,10 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private void MaximizeWindow() => _fullscreenHelper.ToggleFullscreen();
+        private void MaximizeWindow() => _windowActions.ToggleMaximizeRestore();
 
         [RelayCommand]
-        private void MinimizeWindow() => _fullscreenHelper.ToggleMinimizeScreen();
+        private void MinimizeWindow() => _windowActions.Minimize();
 
         [RelayCommand(CanExecute = nameof(IsEditable))]
         private async Task SaveAsync()

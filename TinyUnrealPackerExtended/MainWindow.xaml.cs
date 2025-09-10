@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HandyControl.Controls;
+using MahApps.Metro.IconPacks;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -8,8 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using HandyControl.Controls;
-using MahApps.Metro.IconPacks;
+using TinyUnrealPackerExtended.Helpers;
 using TinyUnrealPackerExtended.Services;
 using TinyUnrealPackerExtended.ViewModels;
 
@@ -26,7 +27,8 @@ namespace TinyUnrealPackerExtended
             var fileDialog = new FileDialogService();
             var proccessRunner = new ProcessRunner();
             var fileSystem = new FileSystemService();
-            mainWindowViewModel = new MainWindowViewModel(new DialogService(), growlService, fileDialog, proccessRunner, fileSystem, this);
+            var actions = new WindowActions(this);   
+            mainWindowViewModel = new MainWindowViewModel(new DialogService(), growlService, fileDialog, proccessRunner, fileSystem, actions, this);
             DataContext = mainWindowViewModel;
         }
 

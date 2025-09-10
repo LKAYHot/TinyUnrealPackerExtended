@@ -1,30 +1,32 @@
-﻿<Window x:Class="TinyUnrealPackerExtended.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-        xmlns:behaviors="clr-namespace:TinyUnrealPackerExtended.Behaviors"
-        xmlns:local="clr-namespace:TinyUnrealPackerExtended"
-        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-        xmlns:hc="https://handyorg.github.io/handycontrol"
-        xmlns:views="clr-namespace:TinyUnrealPackerExtended.Views"
-        xmlns:local1="clr-namespace:TinyUnrealPackerExtended.ViewModels"
-        xmlns:local2="clr-namespace:TinyUnrealPackerExtended.Converters"
-        mc:Ignorable="d"
-        Title="TinyMadnessPacker"
-        x:Name="RootWindow"
-        Height="750"
-        Width="850"
-        MinHeight="750"
-        MinWidth="850"
-        WindowStartupLocation="CenterScreen"
-        ResizeMode="CanResize"
-        Background="{DynamicResource WindowBackgroundBrush}"
-        AllowsTransparency="True"
-        FontFamily="Bahnschrift"
-        FontSize="14"
-        WindowStyle="None">
+﻿<Window
+    x:Class="TinyUnrealPackerExtended.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="clr-namespace:TinyUnrealPackerExtended.Behaviors"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:local="clr-namespace:TinyUnrealPackerExtended"
+    xmlns:local1="clr-namespace:TinyUnrealPackerExtended.ViewModels"
+    xmlns:local2="clr-namespace:TinyUnrealPackerExtended.Converters"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+    xmlns:views="clr-namespace:TinyUnrealPackerExtended.Views"
+    x:Name="RootWindow"
+    Title="TinyMadnessPacker"
+    Width="850"
+    Height="750"
+    MinWidth="850"
+    MinHeight="750"
+    Background="{DynamicResource WindowBackgroundBrush}"
+    Cursor=""
+    FontFamily="Bahnschrift"
+    FontSize="14"
+    ResizeMode="CanResize"
+    WindowStartupLocation="CenterScreen"
+    WindowStyle="None"
+    mc:Ignorable="d">
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
@@ -33,18 +35,19 @@
         <local2:NullToVisibilityConverter x:Key="NullToVis" />
 
         <DataTemplate x:Key="AutoInjectItemTemplate">
-            <Border x:Name="Bd"
-                    Background="{DynamicResource AutoInjectItemBackgroundBrush}"
-                    CornerRadius="6"
-                    Padding="12"
-                    Margin="0,8,0,0"
-                    Style="{StaticResource FileBorderStyle}">
+            <Border
+                x:Name="Bd"
+                Margin="0,8,0,0"
+                Padding="12"
+                Background="{DynamicResource AutoInjectItemBackgroundBrush}"
+                CornerRadius="6"
+                Style="{StaticResource FileBorderStyle}">
                 <Border.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Удалить"
-                                  Command="{Binding DataContext.RemoveAutoInjectItemCommand,
-                                    Source={x:Reference AutoInjectItemsControl}}"
-                                  CommandParameter="{Binding}" />
+                        <MenuItem
+                            Command="{Binding DataContext.RemoveAutoInjectItemCommand, Source={x:Reference AutoInjectItemsControl}}"
+                            CommandParameter="{Binding}"
+                            Header="Удалить" />
                     </ContextMenu>
                 </Border.ContextMenu>
                 <Grid>
@@ -53,32 +56,31 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <iconPacks:PackIconMaterial Kind="FileDocumentOutline"
-                                                Width="24"
-                                                Height="24"
-                                                VerticalAlignment="Center"
-                                                Grid.Column="0" />
-                    <TextBlock Text="{Binding Name}"
-                               VerticalAlignment="Center"
-                               Margin="12,0,0,0"
-                               Grid.Column="1"
-                               FontSize="14"
-                               TextTrimming="CharacterEllipsis" />
-                    <TextBlock Text="{Binding Status}"
-                               VerticalAlignment="Center"
-                               Margin="12,0,0,0"
-                               Grid.Column="2"
-                               FontSize="14" />
+                    <iconPacks:PackIconMaterial
+                        Grid.Column="0"
+                        Width="24"
+                        Height="24"
+                        VerticalAlignment="Center"
+                        Kind="FileDocumentOutline" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Margin="12,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        Text="{Binding Name}"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        Grid.Column="2"
+                        Margin="12,0,0,0"
+                        VerticalAlignment="Center"
+                        FontSize="14"
+                        Text="{Binding Status}" />
                 </Grid>
             </Border>
 
             <DataTemplate.Triggers>
-                <Trigger SourceName="Bd"
-                         Property="IsMouseOver"
-                         Value="True">
-                    <Setter TargetName="Bd"
-                            Property="Background"
-                            Value="{DynamicResource TabItemBrush}" />
+                <Trigger SourceName="Bd" Property="IsMouseOver" Value="True">
+                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource TabItemBrush}" />
                 </Trigger>
             </DataTemplate.Triggers>
         </DataTemplate>
@@ -86,145 +88,165 @@
 
     </Window.Resources>
 
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome
+            CaptionHeight="0"
+            CornerRadius="0"
+            ResizeBorderThickness="8"
+            UseAeroCaptionButtons="False" />
+    </shell:WindowChrome.WindowChrome>
+
     <Grid>
-        <Border x:Name="DragArea"
+        <Border
+            x:Name="DragArea"
+            Height="32"
+            VerticalAlignment="Top"
+            Background="Transparent"
+            MouseDown="DragArea_MouseDown" />
+        <StackPanel
+            Margin="6,8,24,0"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Top"
+            Orientation="Horizontal">
+            <Button
+                Width="39"
                 Height="32"
-                Background="Transparent"
                 VerticalAlignment="Top"
-                MouseDown="DragArea_MouseDown" />
-        <StackPanel Orientation="Horizontal"
-                    Margin="6,8,24,0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top">
-            <Button Width="39"
-                    Height="32"
-                    VerticalAlignment="Top"
-                    Command="{Binding OpenShellCommand}"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Cursor="Hand">
-                <iconPacks:PackIconMaterial Kind="Cog"
-                                            Width="20"
-                                            Height="20"
-                                            Foreground="{DynamicResource TextPrimaryBrush}" />
+                Background="Transparent"
+                BorderThickness="0"
+                Command="{Binding OpenShellCommand}"
+                Cursor="Hand">
+                <iconPacks:PackIconMaterial
+                    Width="20"
+                    Height="20"
+                    Foreground="{DynamicResource TextPrimaryBrush}"
+                    Kind="Cog" />
             </Button>
         </StackPanel>
-        <TabControl Background="Transparent"
-                    BorderThickness="0"
-                    Margin="24,56,24,24"
-                    VerticalContentAlignment="Stretch"
-                    HorizontalContentAlignment="Stretch">
+        <TabControl
+            Margin="24,56,24,24"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"
+            Background="Transparent"
+            BorderThickness="0">
             <TabControl.Resources>
-                <Style x:Key="CustomTabItemStyle"
-                       TargetType="TabItem">
-                    <Setter Property="Foreground"
-                            Value="{DynamicResource TextPrimaryBrush}" />
-                    <Setter Property="Background"
-                            Value="Transparent" />
+                <Style x:Key="CustomTabItemStyle" TargetType="TabItem">
+                    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+                    <Setter Property="Background" Value="Transparent" />
                 </Style>
             </TabControl.Resources>
 
-            <!-- ===== LOCRES TOOLKIT ===== -->
-            <TabItem Header="Locres Toolkit"
-                     Style="{StaticResource CustomHC_TabItemStyle}"
-                     DataContext="{Binding LocresVM}">
+            <!--  ===== LOCRES TOOLKIT =====  -->
+            <TabItem
+                DataContext="{Binding LocresVM}"
+                Header="Locres Toolkit"
+                Style="{StaticResource CustomHC_TabItemStyle}">
                 <views:LocresToolkitView />
             </TabItem>
 
-            <!-- ===== EXCEL TOOLKIT ===== -->
-            <TabItem Header="Excel Toolkit"
-                     DataContext="{Binding ExcelVM}"
-                     Style="{StaticResource CustomHC_TabItemStyle}">
+            <!--  ===== EXCEL TOOLKIT =====  -->
+            <TabItem
+                DataContext="{Binding ExcelVM}"
+                Header="Excel Toolkit"
+                Style="{StaticResource CustomHC_TabItemStyle}">
                 <views:ExcelToolkitView />
             </TabItem>
 
-            <!-- ===== PAK TOOLKIT ===== -->
-            <TabItem Header="Pak Toolkit"
-                     DataContext="{Binding PakVM}"
-                     Style="{StaticResource CustomHC_TabItemStyle}">
+            <!--  ===== PAK TOOLKIT =====  -->
+            <TabItem
+                DataContext="{Binding PakVM}"
+                Header="Pak Toolkit"
+                Style="{StaticResource CustomHC_TabItemStyle}">
                 <views:PakToolkitView />
             </TabItem>
 
-            <!-- ===== UASSET TOOLKIT ===== -->
+            <!--  ===== UASSET TOOLKIT =====  -->
 
-            <TabItem Header="DDS Injector"
-                     Style="{StaticResource CustomHC_TabItemStyle}">
+            <TabItem Header="DDS Injector" Style="{StaticResource CustomHC_TabItemStyle}">
                 <views:PngToDdsConverterView />
             </TabItem>
 
-            <!-- ===== AUTOINJECTOR UASSET TOOLKIT ===== -->
-            <TabItem Header="Auto Injector"
-                     Style="{StaticResource CustomHC_TabItemStyle}">
+            <!--  ===== AUTOINJECTOR UASSET TOOLKIT =====  -->
+            <TabItem Header="Auto Injector" Style="{StaticResource CustomHC_TabItemStyle}">
                 <views:AutoInjectorView />
             </TabItem>
 
-            <!-- ===== FOLDEREDITOR ===== -->
-            <TabItem Header="Folder Editor"
-                     IsEnabled="{Binding CanEditFolderEditor}"
-                     Style="{StaticResource CustomHC_TabItemStyle}"
-                     DataContext="{Binding FolderEditorVM}">
+            <!--  ===== FOLDEREDITOR =====  -->
+            <TabItem
+                DataContext="{Binding FolderEditorVM}"
+                Header="Folder Editor"
+                IsEnabled="{Binding CanEditFolderEditor}"
+                Style="{StaticResource CustomHC_TabItemStyle}">
                 <views:FolderEditorView />
             </TabItem>
         </TabControl>
 
-        <StackPanel Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top">
+        <StackPanel
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            Orientation="Horizontal">
 
-            <Button Width="37"
-                    Height="32"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    Margin="0,12,0,0"
-                    Command="{Binding MinimizeWindowCommand}"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Cursor="Hand">
-                <iconPacks:PackIconMaterial Kind="WindowMinimize"
-                                            Width="16"
-                                            Height="16"
-                                            Foreground="{DynamicResource TextPrimaryBrush}" />
+            <Button
+                Width="37"
+                Height="32"
+                Margin="0,12,0,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Background="Transparent"
+                BorderThickness="0"
+                Command="{Binding MinimizeWindowCommand}"
+                Cursor="Hand">
+                <iconPacks:PackIconMaterial
+                    Width="16"
+                    Height="16"
+                    Foreground="{DynamicResource TextPrimaryBrush}"
+                    Kind="WindowMinimize" />
             </Button>
 
 
 
-            <Button Width="37"
-                    Height="32"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    Margin="0,12,0,0"
-                    Command="{Binding MaximizeWindowCommand}"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Cursor="Hand">
-                <iconPacks:PackIconMaterial Kind="Fullscreen"
-                                            Width="16"
-                                            Height="16"
-                                            Foreground="{DynamicResource TextPrimaryBrush}" />
+            <Button
+                Width="37"
+                Height="32"
+                Margin="0,12,0,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Background="Transparent"
+                BorderThickness="0"
+                Command="{Binding MaximizeWindowCommand}"
+                Cursor="Hand">
+                <iconPacks:PackIconMaterial
+                    Width="16"
+                    Height="16"
+                    Foreground="{DynamicResource TextPrimaryBrush}"
+                    Kind="Fullscreen" />
             </Button>
 
-            <Button Width="37"
-                    Height="32"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    Margin="0,12,12,0"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Cursor="Hand"
-                    Click="Button_Click">
-                <iconPacks:PackIconMaterial Kind="Close"
-                                            Width="16"
-                                            Height="16"
-                                            Foreground="{DynamicResource TextPrimaryBrush}" />
+            <Button
+                Width="37"
+                Height="32"
+                Margin="0,12,12,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Background="Transparent"
+                BorderThickness="0"
+                Command="{Binding CloseWindowCommand}"
+                Cursor="Hand">
+                <iconPacks:PackIconMaterial
+                    Width="16"
+                    Height="16"
+                    Foreground="{DynamicResource TextPrimaryBrush}"
+                    Kind="Close" />
             </Button>
         </StackPanel>
 
         <Grid Visibility="Visible">
-            <Canvas x:Name="GrowlContainer"
-                    IsHitTestVisible="True"
-                    VerticalAlignment="Top"
-                    HorizontalAlignment="Right"
-                    Margin="10, 75, 10, 10" />
+            <Canvas
+                x:Name="GrowlContainer"
+                Margin="10,75,10,10"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                IsHitTestVisible="True" />
         </Grid>
     </Grid>
 </Window>

@@ -7,6 +7,7 @@ using MahApps.Metro.IconPacks;
 using TinyUnrealPackerExtended.Interfaces;
 using TinyUnrealPackerExtended.Services;
 using TinyUnrealPackerExtended.Helpers;
+using System.Windows;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
@@ -16,8 +17,10 @@ namespace TinyUnrealPackerExtended.ViewModels
         private readonly IFileDialogService _fileDialogService;
         private readonly IProcessRunner _processRunner;
         private readonly IFileSystemService _fileSystemService;
+        private readonly IWindowActions _windowActions;
 
-        private readonly FullscreenHelper _fullscreenHelper;
+
+        private readonly Window _window;
 
 
         public LocresViewModel LocresVM { get; }
@@ -35,7 +38,6 @@ namespace TinyUnrealPackerExtended.ViewModels
         private readonly LocresService _locresService = new();
         private readonly ExcelService _excelService = new();
 
-        private System.Windows.Window _window;
 
 
         private readonly IDialogService _dialog;
@@ -43,13 +45,14 @@ namespace TinyUnrealPackerExtended.ViewModels
 
 
         public MainWindowViewModel(IDialogService dialogService, GrowlService growlService, IFileDialogService fileDialogService,
-            IProcessRunner processRunner, IFileSystemService fileSystemService, System.Windows.Window window)
+            IProcessRunner processRunner, IFileSystemService fileSystemService, IWindowActions windowActions, Window window)
         {
             _growlService = growlService;
             _dialog = dialogService;
             _fileDialogService = fileDialogService;
             _processRunner = processRunner;
             _fileSystemService = fileSystemService;
+            _windowActions = windowActions;
             _window = window;
             LocresVM = new LocresViewModel(_locresService, growlService, fileDialogService);
             ExcelVM = new ExcelViewModel(_excelService, growlService, fileDialogService);
@@ -74,7 +77,6 @@ namespace TinyUnrealPackerExtended.ViewModels
                 }
             };
 
-            _fullscreenHelper = new FullscreenHelper(window);
 
 
         }
@@ -92,15 +94,21 @@ namespace TinyUnrealPackerExtended.ViewModels
         [RelayCommand] 
         private void MaximizeWindow()
         {
-            _fullscreenHelper.ToggleFullscreen();
+            _windowActions.ToggleMaximizeRestore();
         }
 
         [RelayCommand] 
         private void MinimizeWindow()
         {
-            _fullscreenHelper.ToggleMinimizeScreen();
+            _windowActions.Minimize();
         }
-       
+
+        [RelayCommand]
+        private void CloseWindow()
+        {
+            _windowActions.Close();
+        }
+
 
     }
 

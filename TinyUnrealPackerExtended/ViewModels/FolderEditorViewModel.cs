@@ -1,29 +1,30 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CUE4Parse.Encryption.Aes;
+using CUE4Parse.FileProvider;
+using CUE4Parse.UE4.Localization;
+using CUE4Parse.UE4.Objects.Core.Misc;
+using CUE4Parse.UE4.Readers;
+using CUE4Parse.UE4.Versions;
+using ICSharpCode.AvalonEdit.Document;
 using MahApps.Metro.IconPacks;
 using Microsoft.Win32;
+using Newtonsoft.Json;
+using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using TinyUnrealPackerExtended.Extensions;
+using TinyUnrealPackerExtended.Helpers;
 using TinyUnrealPackerExtended.Interfaces;
 using TinyUnrealPackerExtended.Services;
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Controls;
-using System.Windows.Threading;
-using ICSharpCode.AvalonEdit.Document;
-using CUE4Parse.FileProvider;
-using CUE4Parse.UE4.Versions;
-using Newtonsoft.Json;
-using TinyUnrealPackerExtended.Extensions;
-using CUE4Parse.UE4.Localization;
-using CUE4Parse.UE4.Readers;
-using CUE4Parse.Encryption.Aes;
-using CUE4Parse.UE4.Objects.Core.Misc;
-using System.Globalization;
 using TinyUnrealPackerExtended.Services.FolderEditorVisualServices;
 
 namespace TinyUnrealPackerExtended.ViewModels
@@ -900,12 +901,13 @@ int insertIndex)
             {
                 var json = await _cue4Parse.ParseAssetAsync(item.FullPath, FolderEditorRootPath, ct);
                 var preview = new CodePreviewWindow { Owner = Application.Current.MainWindow };
+                var actions = new WindowActions(preview);
 
                 // Передаём все четыре параметра
                 var vm = new CodePreviewViewModel(
                     json,
+                    actions,
                     item.FullPath,
-                    preview,
                     new LocresService(),
                     preview.GrowlService
                 );
@@ -928,11 +930,11 @@ int insertIndex)
             {
                 var json = await _cue4Parse.ParseLocresAsync(item.FullPath, FolderEditorRootPath, ct);
                 var preview = new CodePreviewWindow { Owner = Application.Current.MainWindow };
-
+                var actions = new WindowActions(preview);
                 var vm = new CodePreviewViewModel(
                     json,
+                    actions,
                     item.FullPath,
-                    preview,
                     new LocresService(),
                     preview.GrowlService
                 );
