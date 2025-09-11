@@ -2,40 +2,53 @@
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using TinyUnrealPackerExtended.ViewModels;
 
 namespace TinyUnrealPackerExtended.ViewModels.Pages
 {
     public partial class ThemesViewModel : ObservableObject, ISettingsViewModel
     {
-        private readonly string _originalTheme;
-        private bool _hasApplied;
+        private string _originalTheme;
+        private string _originalLanguage;
 
-        [ObservableProperty]
-        private ObservableCollection<string> availableThemes;
+        [ObservableProperty] private ObservableCollection<string> availableThemes;
+        [ObservableProperty] private string selectedTheme;
 
-        [ObservableProperty]
-        private string selectedTheme;
+        [ObservableProperty] private ObservableCollection<LanguageOption> availableLanguages;
+        [ObservableProperty] private LanguageOption selectedLanguage;
 
-        public ThemesViewModel(ObservableCollection<string> themes, string current)
+        [ObservableProperty] private bool isPendingRestart;
+
+        public ThemesViewModel(ObservableCollection<string> themes, string currentTheme,
+                               ObservableCollection<LanguageOption> languages, LanguageOption currentLang)
         {
             AvailableThemes = themes;
-            _originalTheme = current;
-            SelectedTheme = current;
-            _hasApplied = false;
+            _originalTheme = currentTheme;
+            SelectedTheme = currentTheme;
+
+            AvailableLanguages = languages;
+            SelectedLanguage = currentLang;
+            _originalLanguage = currentLang?.Code ?? "en";
+
+            IsPendingRestart = false;
         }
 
-        [RelayCommand]
-        private void SelectTheme(string theme)
-        {
-            SelectedTheme = theme;
-        }
+        [RelayCommand] private void SelectTheme(string theme) => SelectedTheme = theme;
+        [RelayCommand] private void SelectLanguage(LanguageOption lang) => SelectedLanguage = lang;
 
-        public bool HasChanges => _hasApplied;
+        public bool HasChanges =>
+            SelectedTheme != _originalTheme ||
+            (SelectedLanguage?.Code ?? "en") != _originalLanguage;
 
         partial void OnSelectedThemeChanged(string oldValue, string newValue)
         {
-            _hasApplied = false;
+            IsPendingRestart = false;
+            OnPropertyChanged(nameof(HasChanges));
+            ApplyThemeCommand.NotifyCanExecuteChanged();
+        }
+
+        partial void OnSelectedLanguageChanged(LanguageOption oldValue, LanguageOption newValue)
+        {
+            IsPendingRestart = false;
             OnPropertyChanged(nameof(HasChanges));
             ApplyThemeCommand.NotifyCanExecuteChanged();
         }
@@ -43,6 +56,7 @@ namespace TinyUnrealPackerExtended.ViewModels.Pages
         public void Save()
         {
             Properties.Settings.Default.AppTheme = SelectedTheme;
+            Properties.Settings.Default.AppLanguage = SelectedLanguage?.Code ?? "en";
             Properties.Settings.Default.Save();
         }
 
@@ -50,18 +64,37 @@ namespace TinyUnrealPackerExtended.ViewModels.Pages
         private void ApplyTheme()
         {
             Save();
-            _hasApplied = true;
+
+            _originalTheme = SelectedTheme;
+            _originalLanguage = SelectedLanguage?.Code ?? "en";
+
+            IsPendingRestart = true;
+
             OnPropertyChanged(nameof(HasChanges));
             ApplyThemeCommand.NotifyCanExecuteChanged();
         }
 
-        private bool CanApplyTheme()
-            => !_hasApplied && SelectedTheme != _originalTheme;
+        private bool CanApplyTheme() => HasChanges;
+    }
+
+    public sealed class LanguageOption
+    {
+        public string Code { get; }  
+        public string DisplayName { get; }
+
+        public LanguageOption(string code, string name)
+        {
+            Code = code;
+            DisplayName = name;
+        }
+
+        public override string ToString() => DisplayName;
     }
 
     public interface ISettingsViewModel : INotifyPropertyChanged
     {
         bool HasChanges { get; }
+        bool IsPendingRestart { get; }  
         void Save();
     }
 }

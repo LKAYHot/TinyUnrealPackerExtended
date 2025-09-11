@@ -1,0 +1,39 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:String x:Key="App.Title">TinyMadnessPacker</sys:String>
+    <sys:String x:Key="Common.Apply">Применить</sys:String>
+    <sys:String x:Key="Common.Confirm">Подтвердить</sys:String>
+    <sys:String x:Key="Common.Delete">Удалить</sys:String>
+    <sys:String x:Key="Common.RestartHint">Для применения изменений перезапустите программу.</sys:String>
+
+    <!--  Settings/Shell  -->
+    <sys:String x:Key="Settings.Title">Настройки</sys:String>
+    <sys:String x:Key="Settings.Sidebar.Themes">Темы</sys:String>
+    <sys:String x:Key="Settings.Themes.Header">Выберите тему</sys:String>
+    <sys:String x:Key="Settings.Language.Header">Язык интерфейса</sys:String>
+
+    <!--  Tabs  -->
+    <sys:String x:Key="Tab.Locres">Locres Toolkit</sys:String>
+    <sys:String x:Key="Tab.Excel">Excel Toolkit</sys:String>
+    <sys:String x:Key="Tab.Pak">Pak Toolkit</sys:String>
+    <sys:String x:Key="Tab.DDS">DDS Injector</sys:String>
+    <sys:String x:Key="Tab.AutoInjector">Auto Injector</sys:String>
+    <sys:String x:Key="Tab.FolderEditor">Редактор папок</sys:String>
+
+    <!--  Uploader / AutoInjector / Spreadsheet  -->
+    <sys:String x:Key="Uploader.Assets.DropHint">Перетащите файлы .uasset и .png, чтобы загрузить (файлы будут сгруппированы по имени)</sys:String>
+    <sys:String x:Key="Uploader.SelectFiles">Выбрать файлы</sys:String>
+    <sys:String x:Key="Uploader.Empty">Пусто</sys:String>
+    <sys:String x:Key="AutoInjector.Start">Запустить автоинжект</sys:String>
+
+    <sys:String x:Key="Spreadsheet.DropHint">Перетащите файлы или нажмите, чтобы загрузить</sys:String>
+    <sys:String x:Key="Spreadsheet.SelectFile">Выбрать файл</sys:String>
+    <sys:String x:Key="Spreadsheet.FileTypes">.csv или .xlsx</sys:String>
+
+    <!--  Common actions  -->
+    <sys:String x:Key="Common.Import">Импорт</sys:String>
+    <sys:String x:Key="Common.Cancel">Отмена</sys:String>
+</ResourceDictionary>

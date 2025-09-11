@@ -1,6 +1,7 @@
 ﻿using System.Configuration;
 using System.Data;
 using System.Windows;
+using TinyUnrealPackerExtended.Helpers;
 using TinyUnrealPackerExtended.Properties;
 
 namespace TinyUnrealPackerExtended
@@ -40,6 +41,7 @@ namespace TinyUnrealPackerExtended
             merged.Add(animDict);
 
             base.OnStartup(e);
+            LocalizationManager.ApplyOnStartup();
         }
     }
 

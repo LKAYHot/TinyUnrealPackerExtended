@@ -23,16 +23,22 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <!--  заголовок  -->
-                <RowDefinition Height="*" />
-                <!--  список  -->
+                <!--  Заголовок Темы  -->
                 <RowDefinition Height="Auto" />
-                <!--  разделитель  -->
+                <!--  Список Тем  -->
+                <RowDefinition Height="16" />
+                <!--  отступ  -->
                 <RowDefinition Height="Auto" />
-                <!--  кнопка  -->
+                <!--  Локализация  -->
+                <RowDefinition Height="16" />
+                <!--  отступ  -->
+                <RowDefinition Height="Auto" />
+                <!--  Разделитель  -->
+                <RowDefinition Height="Auto" />
+                <!--  Кнопка  -->
             </Grid.RowDefinitions>
 
-            <!--  1. Заголовок с иконкой  -->
+            <!--  1. Заголовок темы  -->
             <StackPanel
                 Grid.Row="0"
                 VerticalAlignment="Center"
@@ -47,13 +53,13 @@
                     FontSize="20"
                     FontWeight="SemiBold"
                     Foreground="{DynamicResource TextPrimaryBrush}"
-                    Text="Выберите тему" />
+                    Text="{DynamicResource Settings.Themes.Header}" />
             </StackPanel>
 
-            <!--  2. Список карточек  -->
+            <!--  2. Список тем  -->
             <ScrollViewer
                 Grid.Row="1"
-                Margin="0,16,0,16"
+                Margin="0,12,0,0"
                 HorizontalScrollBarVisibility="Auto"
                 VerticalScrollBarVisibility="Disabled">
                 <ItemsControl ItemsSource="{Binding AvailableThemes}">
@@ -62,22 +68,16 @@
                             <StackPanel Orientation="Horizontal" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
-
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <!--  One ToggleButton per theme name  -->
                             <ToggleButton
                                 Command="{Binding DataContext.SelectThemeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                 CommandParameter="{Binding}"
                                 Content="{Binding}"
                                 Style="{StaticResource ThemeOptionToggleStyle}">
-
-                                <!--  Compare SelectedTheme vs this item via a MultiBinding  -->
                                 <ToggleButton.IsChecked>
                                     <MultiBinding Converter="{StaticResource EqualsMultiConverter}" Mode="OneWay">
-                                        <!--  1st value: the VM’s SelectedTheme  -->
                                         <Binding Path="DataContext.SelectedTheme" RelativeSource="{RelativeSource AncestorType=UserControl}" />
-                                        <!--  2nd value: the current item (e.g. "Light" or "Dark")  -->
                                         <Binding Path="." />
                                     </MultiBinding>
                                 </ToggleButton.IsChecked>
@@ -87,19 +87,45 @@
                 </ItemsControl>
             </ScrollViewer>
 
-            <!--  3. Разделитель  -->
+            <!--  3. Секция языка  -->
+            <StackPanel Grid.Row="3" Margin="0,0,0,0">
+                <TextBlock
+                    Margin="0,0,0,6"
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Foreground="{DynamicResource TextPrimaryBrush}"
+                    Text="{DynamicResource Settings.Language.Header}" />
+
+                <ComboBox
+                    MinWidth="160"
+                    Background="{DynamicResource ItemHolderBackgroundBrush}"
+                    BorderThickness="0"
+                    DisplayMemberPath="DisplayName"
+                    Foreground="{DynamicResource TextPrimaryBrush}"
+                    ItemsSource="{Binding AvailableLanguages}"
+                    SelectedItem="{Binding SelectedLanguage}">
+                    <ComboBox.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="BorderBrush" Value="Transparent" />
+                        </Style>
+                    </ComboBox.Resources>
+                </ComboBox>
+            </StackPanel>
+
+            <!--  4. Разделитель  -->
             <Rectangle
-                Grid.Row="2"
+                Grid.Row="5"
                 Height="1"
-                Margin="0,0,0,16"
+                Margin="0,8,0,12"
                 Fill="{DynamicResource BorderDefaultBrush}" />
 
-            <!--  4. Apply справа  -->
-            <Grid Grid.Row="3">
+            <!--  5. Кнопка применить  -->
+            <Grid Grid.Row="6">
                 <Button
                     HorizontalAlignment="Right"
                     Command="{Binding ApplyThemeCommand}"
-                    Content="Применить"
+                    Content="{DynamicResource Common.Apply}"
                     Style="{StaticResource PrimaryButtonStyle}" />
             </Grid>
         </Grid>

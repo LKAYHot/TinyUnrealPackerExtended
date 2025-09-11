@@ -204,7 +204,7 @@
                         HorizontalAlignment="Right"
                         VerticalAlignment="Center"
                         Command="{Binding SaveSettingsCommand}"
-                        Content="Подтвердить"
+                        Content="{DynamicResource Common.Confirm}"
                         Style="{StaticResource PrimaryButtonStyle}" />
                 </Grid>
             </Border>
