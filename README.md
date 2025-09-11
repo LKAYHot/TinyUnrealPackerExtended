@@ -8,9 +8,9 @@
 
 ## 📖 Описание / Description
 
-**RU:** TinyPackerExtended — универсальный инструмент для обратной упаковки ассетов из игровых пакетов Unreal Engine. Вместо распаковки он позволяет собрать и упаковать ресурсы обратно.
+**RU:** TinyPackerExtended — универсальный инструмент для обратной упаковки ассетов из игровых пакетов Unreal Engine 4 последней версии. Вместо распаковки он позволяет собрать и упаковать ресурсы обратно.
 
-**EN:** TinyPackerExtended is a universal tool for reverse packaging of assets from Unreal Engine game packages. Instead of unpacking, it allows you to assemble and pack resources back.
+**EN:** TinyPackerExtended is a universal tool for reverse packaging of assets from Unreal Engine 4 latest version game packages. Instead of unpacking, it allows you to assemble and pack resources back.
 
 ---
 
@@ -81,6 +81,17 @@
 
 **EN:**
 - In progress
+---
+
+---
+
+## 💻⚙️ Поддержка версий / Version support
+
+**RU:**
+- Unreal Engine 4 (последняя версия)
+
+**EN:**
+- Unreal Engine 4 (latest version)
 ---
 
 ---

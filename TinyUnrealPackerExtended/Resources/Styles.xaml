@@ -447,19 +447,32 @@
                         Height="{TemplateBinding Height}"
                         Background="{TemplateBinding Background}"
                         CornerRadius="4">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <ContentPresenter
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            RecognizesAccessKey="True"
+                            TextElement.Foreground="{TemplateBinding Foreground}">
+                            <ContentPresenter.Resources>
+                                <Style TargetType="{x:Type Shape}">
+                                    <Setter Property="Fill" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                    <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                </Style>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
                     </Border>
+
                     <ControlTemplate.Triggers>
+
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource NavigationButtonHoverBackgroundBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource NavigationButtonPressedBackgroundBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
                         </Trigger>
 
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Bd" Property="Background" Value="Transparent" />
                             <Setter Property="Foreground" Value="{DynamicResource NavigationButtonDisabledForegroundBrush}" />
+                            <Setter TargetName="Bd" Property="Background" Value="Transparent" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
