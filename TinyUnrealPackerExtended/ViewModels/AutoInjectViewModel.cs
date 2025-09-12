@@ -11,8 +11,11 @@ namespace TinyUnrealPackerExtended.ViewModels
     public partial class AutoInjectViewModel : ViewModelBase
     {
         private readonly IProcessRunner _processRunner;
+        private readonly ILocalizationService _loc;
 
         private static readonly string[] TextureExtensions = new[] { ".png", ".jpg", ".jpeg", ".tga", ".dds" };
+
+
 
         public ObservableCollection<AutoInjectItem> AutoInjectItems { get; } = new();
 
@@ -23,13 +26,13 @@ namespace TinyUnrealPackerExtended.ViewModels
 
         public string AutoInjectOutputButtonText
             => string.IsNullOrEmpty(AutoInjectOutputPath)
-               ? "Выберите конечный путь"
+               ? _loc["AutoInject.SelectOutput"]
                : AutoInjectOutputPath;
 
         public AutoInjectViewModel(
             IFileDialogService fileDialogService,
             GrowlService growlService,
-            IProcessRunner processRunner)
+            IProcessRunner processRunner, ILocalizationService localization)
             : base(fileDialogService, growlService)
         {
             _processRunner = processRunner;
@@ -42,6 +45,8 @@ namespace TinyUnrealPackerExtended.ViewModels
 
             AutoInjectItems.CollectionChanged += (_, __)
                 => OnPropertyChanged(nameof(HasAutoInjectItems));
+
+            _loc = localization;
         }
 
         public void LoadAutoFiles(string[] paths)
@@ -66,7 +71,7 @@ namespace TinyUnrealPackerExtended.ViewModels
                         Name = g.Key,
                         AssetFile = new FileItem { FileName = System.IO.Path.GetFileName(asset.Path), FilePath = asset.Path },
                         TextureFile = new FileItem { FileName = System.IO.Path.GetFileName(tex.Path), FilePath = tex.Path },
-                        Status = "Загружено"
+                        Status = _loc["AutoInject.Loaded"]
                     });
                 }
             }
@@ -95,7 +100,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             if (!HasAutoInjectItems)
             {
-                ShowWarning("Нет подготовленных пар для инжекта.");
+                ShowWarning(_loc["AutoInject.NoPairs"]);
                 return;
             }
 
@@ -111,7 +116,7 @@ namespace TinyUnrealPackerExtended.ViewModels
 
                 foreach (var item in AutoInjectItems)
                 {
-                    item.Status = "В процессе...";
+                    item.Status = _loc["AutoInject.InProgress"];
                     try
                     {
                         File.WriteAllText(
@@ -126,7 +131,7 @@ namespace TinyUnrealPackerExtended.ViewModels
                             cancellationToken: ct);
 
                         if (exitCode != 0)
-                            throw new InvalidOperationException($"Batch вернулся с кодом {exitCode}");
+                            throw new InvalidOperationException($"Batch get {exitCode}");
 
                         if (!string.IsNullOrEmpty(AutoInjectOutputPath))
                         {
@@ -134,16 +139,16 @@ namespace TinyUnrealPackerExtended.ViewModels
                                 File.Copy(file, Path.Combine(AutoInjectOutputPath, Path.GetFileName(file)!), true);
                         }
 
-                        item.Status = "Готово";
+                        item.Status = _loc["AutoInject.Done"];
                     }
                     catch (Exception ex)
                     {
-                        item.Status = "Ошибка";
+                        item.Status = _loc["AutoInject.Error"];
                         ShowError($"{item.Name}: {ex.Message}");
                     }
                 }
 
-                ShowSuccess("Автоинжект закончен.");
+                ShowSuccess(_loc["AutoInject.Completed"]);
             },
             setBusy: b => IsAutoInjectBusy = b,
             cancellationToken: CancellationToken.None);

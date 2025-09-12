@@ -1,14 +1,14 @@
-﻿<UserControl x:Class="TinyUnrealPackerExtended.Views.AutoInjectorView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-             xmlns:hc="https://handyorg.github.io/handycontrol"
-             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:behaviors="clr-namespace:TinyUnrealPackerExtended.Behaviors"
-             xmlns:vm="clr-namespace:TinyUnrealPackerExtended.ViewModels"
-             DataContext="{Binding AutoInjectVM}">
-    <Border Style="{StaticResource CardStyle}"
-            Padding="12">
+﻿<UserControl
+    x:Class="TinyUnrealPackerExtended.Views.AutoInjectorView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:behaviors="clr-namespace:TinyUnrealPackerExtended.Behaviors"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:vm="clr-namespace:TinyUnrealPackerExtended.ViewModels"
+    DataContext="{Binding AutoInjectVM}">
+    <Border Padding="12" Style="{StaticResource CardStyle}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition MinHeight="130" />
@@ -20,8 +20,7 @@
                 <RowDefinition Height="15" />
 
 
-                <RowDefinition MinHeight="130"
-                               MaxHeight="350" />
+                <RowDefinition MinHeight="130" MaxHeight="350" />
 
 
 
@@ -30,70 +29,75 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <hc:DashedBorder x:Name="AutoZone"
-                             Style="{StaticResource AnimatedDashedDropZone}"
-                             Grid.Row="0">
+            <hc:DashedBorder
+                x:Name="AutoZone"
+                Grid.Row="0"
+                Style="{StaticResource AnimatedDashedDropZone}">
                 <i:Interaction.Behaviors>
                     <behaviors:FileDropBehavior FileDropCommand="{Binding DropAutoFilesCommand}" />
                 </i:Interaction.Behaviors>
                 <Grid>
-                    <StackPanel HorizontalAlignment="Center"
-                                VerticalAlignment="Center">
-                        <!-- Экранирование амперсанда -->
-                        <TextBlock Text="Drag &amp; Drop .uasset + .png файлы, чтобы загрузить"
-                                   FontSize="16"
-                                   Foreground="{DynamicResource PlaceholderBrush}"
-                                   TextAlignment="Center" />
-                        <TextBlock Text="(файлы будут сгруппированы по имени)"
-                                   FontSize="12"
-                                   Foreground="{DynamicResource NavigationButtonDisabledForegroundBrush}"
-                                   TextAlignment="Center" />
-                        <Button Content="Выбрать файлы"
-                                Command="{Binding BrowseAutoFilesCommand}"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Margin="0,12,0,0" />
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <!--  Экранирование амперсанда  -->
+                        <TextBlock
+                            FontSize="16"
+                            Foreground="{DynamicResource PlaceholderBrush}"
+                            Text="{DynamicResource Uploader.Assets.DropHint}"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="{DynamicResource NavigationButtonDisabledForegroundBrush}"
+                            Text="{DynamicResource Uploader.Assets.DropSubHint}"
+                            TextAlignment="Center" />
+                        <Button
+                            Margin="0,12,0,0"
+                            Command="{Binding BrowseAutoFilesCommand}"
+                            Content="{DynamicResource Uploader.SelectFiles}"
+                            Style="{StaticResource SecondaryButtonStyle}" />
                     </StackPanel>
                 </Grid>
             </hc:DashedBorder>
 
 
-            <Button Content="{Binding AutoInjectOutputButtonText}"
-                    Command="{Binding BrowseAutoOutputCommand}"
-                    Style="{StaticResource TrimmedSecondaryButtonStyle}"
-                    MinWidth="640"
-                    Width="Auto"
-                    Grid.Row="2"
-                    VerticalAlignment="Stretch" />
+            <Button
+                Grid.Row="2"
+                Width="Auto"
+                MinWidth="640"
+                VerticalAlignment="Stretch"
+                Command="{Binding BrowseAutoOutputCommand}"
+                Content="{Binding AutoInjectOutputButtonText}"
+                Style="{StaticResource TrimmedSecondaryButtonStyle}" />
 
-            <Border Margin="0, 0, 0, 0"
-                    Style="{StaticResource CardStyle}"
-                    Background="{DynamicResource ItemHolderBackgroundBrush}"
-                    Grid.Row="4">
+            <Border
+                Grid.Row="4"
+                Margin="0,0,0,0"
+                Background="{DynamicResource ItemHolderBackgroundBrush}"
+                Style="{StaticResource CardStyle}">
                 <Grid Margin="-12,-14,-12,-14">
 
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  Margin="0,0,0,0">
-                        <ItemsControl x:Name="AutoInjectItemsControl"
-                                      ItemsSource="{Binding AutoInjectItems}"
-                                      ItemTemplate="{StaticResource AutoInjectItemTemplate}"
-                                      Margin="10" />
+                    <ScrollViewer
+                        Margin="0,0,0,0"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto">
+                        <ItemsControl
+                            x:Name="AutoInjectItemsControl"
+                            Margin="10"
+                            ItemTemplate="{StaticResource AutoInjectItemTemplate}"
+                            ItemsSource="{Binding AutoInjectItems}" />
                     </ScrollViewer>
-                    <TextBlock Text="Пусто"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               Foreground="{DynamicResource TextPrimaryBrush}"
-                               FontSize="20">
+                    <TextBlock
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontSize="20"
+                        Foreground="{DynamicResource TextPrimaryBrush}"
+                        Text="{DynamicResource Uploader.Empty}">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
-                                <Setter Property="Visibility"
-                                        Value="Visible" />
+                                <Setter Property="Visibility" Value="Visible" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasAutoInjectItems}"
-                                                 Value="True">
-                                        <!-- показываем, когда нет элементов -->
-                                        <Setter Property="Visibility"
-                                                Value="Collapsed" />
+                                    <DataTrigger Binding="{Binding HasAutoInjectItems}" Value="True">
+                                        <!--  показываем, когда нет элементов  -->
+                                        <Setter Property="Visibility" Value="Collapsed" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -101,14 +105,16 @@
                     </TextBlock>
                 </Grid>
             </Border>
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Right"
-                        Margin="0,15,0,0"
-                        Grid.Row="5"
-                        VerticalAlignment="Bottom">
-                <Button Content="Start Auto Inject"
-                        Command="{Binding ProcessAutoInjectCommand}"
-                        Style="{StaticResource PrimaryButtonStyle}" />
+            <StackPanel
+                Grid.Row="5"
+                Margin="0,15,0,0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Orientation="Horizontal">
+                <Button
+                    Command="{Binding ProcessAutoInjectCommand}"
+                    Content="{DynamicResource AutoInjector.Start}"
+                    Style="{StaticResource PrimaryButtonStyle}" />
             </StackPanel>
 
         </Grid>

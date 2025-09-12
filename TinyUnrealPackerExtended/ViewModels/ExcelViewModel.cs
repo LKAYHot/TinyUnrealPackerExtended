@@ -15,6 +15,7 @@ namespace TinyUnrealPackerExtended.ViewModels
     public partial class ExcelViewModel : ViewModelBase
     {
         private readonly ExcelService _excelService;
+        private readonly ILocalizationService _loc;
 
         public ObservableCollection<FileItem> ExcelFiles { get; } = new();
 
@@ -25,10 +26,12 @@ namespace TinyUnrealPackerExtended.ViewModels
         public ExcelViewModel(
             ExcelService excelService,
             GrowlService growlService,
-            IFileDialogService fileDialogService)
+            IFileDialogService fileDialogService,
+            ILocalizationService localizationService)
             : base(fileDialogService, growlService)
         {
             _excelService = excelService;
+            _loc = localizationService;
         }
 
         [RelayCommand]
@@ -36,13 +39,13 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             if (ExcelFiles.Count >= 1)
             {
-                ExcelStatusMessage = "Можно добавить только один файл.";
+                ExcelStatusMessage = _loc["Excel.BrowseInput.OnlyOne"];
                 return;
             }
 
             await TryPickSingleFileAsync(
-                filter: "XLSX or CSV|*.xlsx;*.csv",
-                title: "Выберите .xlsx или .csv файл",
+                filter: _loc["Excel.BrowseInput.Filter"], 
+                title: _loc["Excel.BrowseInput.Title"], 
                 target: ExcelFiles);
         }
 
@@ -51,7 +54,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             if (ExcelFiles.Count == 0)
             {
-                ExcelStatusMessage = "Ошибка: укажите файл для обработки.";
+                ExcelStatusMessage = _loc["Excel.Error.NoInput"];
                 ShowWarning(ExcelStatusMessage);
                 return Task.CompletedTask;
             }
@@ -66,17 +69,17 @@ namespace TinyUnrealPackerExtended.ViewModels
                 {
                     output = Path.ChangeExtension(input, ".csv");
                     await Task.Run(() => _excelService.ImportFromExcel(input, output), ct);
-                    ExcelStatusMessage = $"Импорт из Excel завершён: {output}";
+                    ExcelStatusMessage = string.Format(_loc["Excel.ImportFromExcel.Done"], output);
                 }
                 else if (ext == ".csv")
                 {
                     output = Path.ChangeExtension(input, ".xlsx");
                     await Task.Run(() => _excelService.ExportToExcel(input, output), ct);
-                    ExcelStatusMessage = $"Экспорт в Excel завершён: {output}";
+                    ExcelStatusMessage = string.Format(_loc["Excel.ExportToExcel.Done"], output);
                 }
                 else
                 {
-                    ExcelStatusMessage = "Неподдерживаемый формат. Поддерживаются .xlsx и .csv.";
+                    ExcelStatusMessage = _loc["Excel.Error.UnsupportedFormat"];
                     ShowWarning(ExcelStatusMessage);
                     return;
                 }
@@ -107,7 +110,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         private void DropExcelFiles(string[] paths)
         {
             if (paths == null || paths.Length == 0) return;
-            if (ExcelFiles.Count > 0) return; // можно только один
+            if (ExcelFiles.Count > 0) return; // only one
 
             foreach (var path in paths)
             {
@@ -122,7 +125,7 @@ namespace TinyUnrealPackerExtended.ViewModels
                             ? PackIconMaterialKind.FileExcelOutline
                             : PackIconMaterialKind.FileDocumentOutline
                     });
-                    break; // только первый подходящий
+                    break; // first matching only
                 }
             }
         }

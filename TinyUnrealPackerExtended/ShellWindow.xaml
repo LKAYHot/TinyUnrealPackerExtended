@@ -100,7 +100,7 @@
                         FontSize="16"
                         FontWeight="SemiBold"
                         Foreground="{DynamicResource TextPrimaryBrush}"
-                        Text="Настройки" />
+                        Text="{DynamicResource Settings.Title}" />
                 </StackPanel>
 
                 <!--  Close button  -->
@@ -150,7 +150,7 @@
                                 <TextBlock
                                     VerticalAlignment="Center"
                                     FontSize="15"
-                                    Text="Темы" />
+                                    Text="{DynamicResource Settings.Sidebar.Themes}" />
                             </StackPanel>
                         </ToggleButton>
                         <!--  другие пункты...  -->
@@ -196,7 +196,7 @@
                         VerticalAlignment="Center"
                         FontSize="14"
                         Foreground="{DynamicResource TextPrimaryBrush}"
-                        Text="Для применения изменений перезапустите программу." />
+                        Text="{DynamicResource Common.RestartHint}" />
 
                     <Button
                         Grid.Column="1"

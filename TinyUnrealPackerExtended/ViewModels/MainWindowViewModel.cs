@@ -8,6 +8,7 @@ using TinyUnrealPackerExtended.Interfaces;
 using TinyUnrealPackerExtended.Services;
 using TinyUnrealPackerExtended.Helpers;
 using System.Windows;
+using TinyUnrealPackerExtended.Services.AdditionalServices;
 
 namespace TinyUnrealPackerExtended.ViewModels
 {
@@ -38,6 +39,8 @@ namespace TinyUnrealPackerExtended.ViewModels
         private readonly LocresService _locresService = new();
         private readonly ExcelService _excelService = new();
 
+        private readonly LocalizationService localizationService;
+
 
 
         private readonly IDialogService _dialog;
@@ -54,13 +57,14 @@ namespace TinyUnrealPackerExtended.ViewModels
             _fileSystemService = fileSystemService;
             _windowActions = windowActions;
             _window = window;
-            LocresVM = new LocresViewModel(_locresService, growlService, fileDialogService);
-            ExcelVM = new ExcelViewModel(_excelService, growlService, fileDialogService);
-            PakVM = new PakViewModel(_fileDialogService, growlService, _processRunner);
+            localizationService = new LocalizationService();
+            LocresVM = new LocresViewModel(_locresService, growlService, fileDialogService, localizationService);
+            ExcelVM = new ExcelViewModel(_excelService, growlService, fileDialogService, localizationService);
+            PakVM = new PakViewModel(_fileDialogService, growlService, _processRunner, localizationService);
             UassetInjectorVM = new UassetInjectorViewModel(_fileDialogService, growlService, _processRunner);
-            AutoInjectVM = new AutoInjectViewModel(_fileDialogService, growlService, _processRunner);
-            FolderEditorVM = new FolderEditorViewModel(growlService, fileDialogService, dialogService);
-            PngToDdsConverterVM = new PngToDdsConverterViewModel(_fileDialogService, growlService, _processRunner);
+            AutoInjectVM = new AutoInjectViewModel(_fileDialogService, growlService, _processRunner, localizationService);
+            FolderEditorVM = new FolderEditorViewModel(growlService, fileDialogService, dialogService, localizationService);
+            PngToDdsConverterVM = new PngToDdsConverterViewModel(_fileDialogService, growlService, _processRunner, localizationService);
 
             PakVM.PakFiles.CollectionChanged += (_, __) =>
             {

@@ -4,11 +4,11 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using TinyUnrealPackerExtended.Interfaces;
 using TinyUnrealPackerExtended.Services;
-using CUE4Parse.FileProvider;
-using CUE4Parse.UE4.Versions;
-using CUE4Parse.UE4.Assets.Exports.Texture;
 using TinyUnrealPackerExtended.Models;
 
 namespace TinyUnrealPackerExtended.ViewModels
@@ -18,6 +18,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         private readonly IFileDialogService _fileDialogService;
         private readonly IProcessRunner _processRunner;
         private readonly IUassetInspectorService _inspector;
+        private readonly ILocalizationService _loc;
 
         [ObservableProperty] private string uassetFilePath;
         [ObservableProperty] private string uassetFormat;
@@ -25,7 +26,6 @@ namespace TinyUnrealPackerExtended.ViewModels
         private static readonly string[] ImageExtensions = new[] { ".png", ".jpg", ".jpeg" };
 
         public ObservableCollection<string> FilteredFormats { get; } = new();
-
         public ObservableCollection<ConversionItem> ConversionItems { get; } = new();
 
         [ObservableProperty] private string converterOutputPath;
@@ -33,27 +33,29 @@ namespace TinyUnrealPackerExtended.ViewModels
         [ObservableProperty] private bool isConverting;
 
         public bool HasConversionItems => ConversionItems.Any();
+
         public string ConverterOutputButtonText
             => string.IsNullOrEmpty(ConverterOutputPath)
-               ? "Select output folder"
+               ? _loc["PngToDds.Output.SelectFolderButton"]
                : ConverterOutputPath;
 
         public string UassetButtonText
-        => string.IsNullOrEmpty(UassetFilePath)
-           ? "Select .uasset file"
-           : Path.GetFileName(UassetFilePath);
+            => string.IsNullOrEmpty(UassetFilePath)
+               ? _loc["PngToDds.Uasset.SelectButton"]
+               : Path.GetFileName(UassetFilePath);
 
         public PngToDdsConverterViewModel(
             IFileDialogService fileDialogService,
             GrowlService growlService,
-            IProcessRunner processRunner)
+            IProcessRunner processRunner,
+            ILocalizationService loc)
             : base(fileDialogService, growlService)
         {
             _fileDialogService = fileDialogService;
             _processRunner = processRunner;
             _inspector = new UassetInspectorService();
+            _loc = loc;
 
-            SelectedFormat = PngDdsFormatDefinitions.AvailableFormats.First();
             PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(UassetFilePath))
@@ -62,21 +64,24 @@ namespace TinyUnrealPackerExtended.ViewModels
                     LoadUassetFormat();
                 }
                 if (e.PropertyName == nameof(ConverterOutputPath))
+                {
                     OnPropertyChanged(nameof(ConverterOutputButtonText));
+                }
             };
+
             ConversionItems.CollectionChanged += (_, __) => OnPropertyChanged(nameof(HasConversionItems));
 
             foreach (var fmt in PngDdsFormatDefinitions.AvailableFormats)
                 FilteredFormats.Add(fmt);
-            SelectedFormat = FilteredFormats.First();
+            SelectedFormat = FilteredFormats.FirstOrDefault();
         }
 
         [RelayCommand]
         private async Task BrowseUassetFileAsync()
         {
             var path = await _fileDialogService.PickFileAsync(
-                filter: "Unreal asset|*.uasset",
-                title: "Select a UAsset");
+                filter: _loc["PngToDds.BrowseUasset.Filter"],  
+                title: _loc["PngToDds.BrowseUasset.Title"]);  
             if (string.IsNullOrEmpty(path)) return;
             UassetFilePath = path;
         }
@@ -98,7 +103,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             }
             catch (Exception ex)
             {
-                UassetFormat = $"Error: {ex.Message}";
+                UassetFormat = string.Format(_loc["PngToDds.Error.WithMessage"], ex.Message);
                 UpdateFormatFilter(null);
             }
         }
@@ -119,7 +124,6 @@ namespace TinyUnrealPackerExtended.ViewModels
             SelectedFormat = list.FirstOrDefault();
         }
 
-
         public void LoadFiles(string[] paths)
         {
             if (paths == null || paths.Length == 0) return;
@@ -128,6 +132,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             {
                 var ext = Path.GetExtension(path).ToLowerInvariant();
                 if (!ImageExtensions.Contains(ext)) continue;
+
                 var name = Path.GetFileNameWithoutExtension(path);
                 if (ConversionItems.Any(i => i.Name == name)) continue;
 
@@ -135,7 +140,7 @@ namespace TinyUnrealPackerExtended.ViewModels
                 {
                     Name = name,
                     FilePath = path,
-                    Status = "Loaded"
+                    Status = _loc["PngToDds.Status.Loaded"]
                 });
             }
         }
@@ -144,8 +149,8 @@ namespace TinyUnrealPackerExtended.ViewModels
         private async Task BrowseFilesAsync()
         {
             var paths = await _fileDialogService.PickFilesAsync(
-                filter: "Image files|*.png;*.jpg;*.jpeg",
-                title: "Select image files");
+                filter: _loc["PngToDds.BrowseImages.Filter"],  
+                title: _loc["PngToDds.BrowseImages.Title"]);  
             LoadFiles(paths);
         }
 
@@ -153,7 +158,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         private async Task BrowseOutputFolderAsync()
         {
             var folder = await _fileDialogService.PickFolderAsync(
-                description: "Выбрать папку");
+                description: _loc["PngToDds.Output.Browse.Description"]); 
             if (string.IsNullOrEmpty(folder)) return;
             ConverterOutputPath = folder;
         }
@@ -163,7 +168,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             if (!HasConversionItems)
             {
-                ShowWarning("Нет файлов для конвертации");
+                ShowWarning(_loc["PngToDds.Error.NoFiles"]);
                 return;
             }
 
@@ -171,7 +176,7 @@ namespace TinyUnrealPackerExtended.ViewModels
             {
                 foreach (var item in ConversionItems)
                 {
-                    item.Status = "Конвертация...";
+                    item.Status = _loc["PngToDds.Status.Converting"];
                     try
                     {
                         var psi = new ProcessStartInfo
@@ -185,18 +190,18 @@ namespace TinyUnrealPackerExtended.ViewModels
                         await proc.WaitForExitAsync(ct);
 
                         if (proc.ExitCode != 0)
-                            throw new InvalidOperationException($"texconv вернулся с кодом {proc.ExitCode}");
+                            throw new InvalidOperationException(string.Format(_loc["PngToDds.Error.TexconvCode"], proc.ExitCode));
 
-                        item.Status = "Готово";
+                        item.Status = _loc["PngToDds.Status.Done"];
                     }
                     catch (Exception ex)
                     {
-                        item.Status = "Ошибка";
+                        item.Status = _loc["PngToDds.Status.Error"];
                         ShowError($"{item.Name}: {ex.Message}");
                     }
                 }
 
-                ShowSuccess($"Конвертор завершил работу. Файлы сохранились по пути:\n{ConverterOutputPath}");
+                ShowSuccess(string.Format(_loc["PngToDds.Success.Completed"], ConverterOutputPath));
             },
             setBusy: b => IsConverting = b,
             cancellationToken: CancellationToken.None);
@@ -210,10 +215,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private void DropFiles(string[] paths)
-        {
-            LoadFiles(paths);
-        }
+        private void DropFiles(string[] paths) => LoadFiles(paths);
     }
 
     public partial class ConversionItem : ObservableObject

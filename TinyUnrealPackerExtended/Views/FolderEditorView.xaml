@@ -1,20 +1,21 @@
-﻿<UserControl x:Class="TinyUnrealPackerExtended.Views.FolderEditorView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-             xmlns:hc="https://handyorg.github.io/handycontrol"
-             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:behaviors="clr-namespace:TinyUnrealPackerExtended.Behaviors"
-             xmlns:avalon="http://icsharpcode.net/sharpdevelop/avalonedit"
-             xmlns:conv="clr-namespace:TinyUnrealPackerExtended.Converters"
-             xmlns:local1="clr-namespace:TinyUnrealPackerExtended.ViewModels">
+﻿<UserControl
+    x:Class="TinyUnrealPackerExtended.Views.FolderEditorView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:avalon="http://icsharpcode.net/sharpdevelop/avalonedit"
+    xmlns:behaviors="clr-namespace:TinyUnrealPackerExtended.Behaviors"
+    xmlns:conv="clr-namespace:TinyUnrealPackerExtended.Converters"
+    xmlns:hc="https://handyorg.github.io/handycontrol"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+    xmlns:local1="clr-namespace:TinyUnrealPackerExtended.ViewModels">
     <UserControl.Resources>
-        <conv:StringNullOrEmptyToVisibilityConverter x:Key="StringNullOrEmptyToCollapsed"
-                                                     NullOrEmptyVisibility="Collapsed"
-                                                     NotNullOrEmptyVisibility="Visible" />
+        <conv:StringNullOrEmptyToVisibilityConverter
+            x:Key="StringNullOrEmptyToCollapsed"
+            NotNullOrEmptyVisibility="Visible"
+            NullOrEmptyVisibility="Collapsed" />
     </UserControl.Resources>
-    <Border Style="{StaticResource CardStyle}"
-            Padding="12">
+    <Border Padding="12" Style="{StaticResource CardStyle}">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition MinWidth="300" />
@@ -26,63 +27,72 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Border Background="{DynamicResource ToolbarBackgroundBrush}"
-                    Padding="4"
-                    Margin="0,0,0,8"
-                    CornerRadius="4"
-                    Grid.Row="0"
-                    Grid.ColumnSpan="2">
-                <DockPanel LastChildFill="False"
-                           HorizontalAlignment="Stretch"
-                           Cursor="">
+            <Border
+                Grid.Row="0"
+                Grid.ColumnSpan="2"
+                Margin="0,0,0,8"
+                Padding="4"
+                Background="{DynamicResource ToolbarBackgroundBrush}"
+                CornerRadius="4">
+                <DockPanel
+                    HorizontalAlignment="Stretch"
+                    Cursor=""
+                    LastChildFill="False">
 
-                    <StackPanel Orientation="Horizontal"
-                                DockPanel.Dock="Left"
-                                Margin="0,0,8,0">
-                        <Button Command="{Binding GoBackCommand}"
-                                Style="{StaticResource NavigationButtonStyle}"
-                                ToolTip="Назад">
-                            <iconPacks:PackIconMaterial Kind="ArrowLeft"
-                                                        Width="16"
-                                                        Height="16" />
+                    <StackPanel
+                        Margin="0,0,8,0"
+                        DockPanel.Dock="Left"
+                        Orientation="Horizontal">
+                        <Button
+                            Command="{Binding GoBackCommand}"
+                            Style="{StaticResource NavigationButtonStyle}"
+                            ToolTip="{DynamicResource FolderEditor.Toolbar.Back}">
+                            <iconPacks:PackIconMaterial
+                                Width="16"
+                                Height="16"
+                                Kind="ArrowLeft" />
                         </Button>
-                        <Button Command="{Binding GoForwardCommand}"
-                                Style="{StaticResource NavigationButtonStyle}"
-                                ToolTip="Вперед">
-                            <iconPacks:PackIconMaterial Kind="ArrowRight"
-                                                        Width="16"
-                                                        Height="16" />
+                        <Button
+                            Command="{Binding GoForwardCommand}"
+                            Style="{StaticResource NavigationButtonStyle}"
+                            ToolTip="{DynamicResource FolderEditor.Toolbar.Forward}">
+                            <iconPacks:PackIconMaterial
+                                Width="16"
+                                Height="16"
+                                Kind="ArrowRight" />
                         </Button>
-                        <Border Width="1"
-                                CornerRadius="1"
-                                Background="{DynamicResource NavigationButtonDisabledForegroundBrush}"
-                                Margin="8,0"
-                                VerticalAlignment="Stretch" />
-                        <Button Command="{Binding RefreshFolderCommand}"
-                                Style="{StaticResource NavigationButtonStyle}"
-                                ToolTip="Перезагрузить">
-                            <iconPacks:PackIconMaterial Kind="Refresh"
-                                                        Width="16"
-                                                        Height="16" />
+                        <Border
+                            Width="1"
+                            Margin="8,0"
+                            VerticalAlignment="Stretch"
+                            Background="{DynamicResource NavigationButtonDisabledForegroundBrush}"
+                            CornerRadius="1" />
+                        <Button
+                            Command="{Binding RefreshFolderCommand}"
+                            Style="{StaticResource NavigationButtonStyle}"
+                            ToolTip="{DynamicResource FolderEditor.Toolbar.Refresh}">
+                            <iconPacks:PackIconMaterial
+                                Width="16"
+                                Height="16"
+                                Kind="Refresh" />
                         </Button>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal"
-                                DockPanel.Dock="Right">
-                        <TextBox Style="{StaticResource SearchTextBoxStyle}"
-                                 Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <TextBox Style="{StaticResource SearchTextBoxStyle}" Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}">
                             <TextBox.InputBindings>
-                                <KeyBinding Key="Enter"
-                                            Command="{Binding SearchCommand}" />
+                                <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
                             </TextBox.InputBindings>
                         </TextBox>
-                        <Button Command="{Binding SearchCommand}"
-                                Style="{StaticResource NavigationButtonStyle}"
-                                ToolTip="Искать"
-                                Margin="4,0,0,0">
-                            <iconPacks:PackIconMaterial Kind="Magnify"
-                                                        Width="16"
-                                                        Height="16" />
+                        <Button
+                            Margin="4,0,0,0"
+                            Command="{Binding SearchCommand}"
+                            Style="{StaticResource NavigationButtonStyle}"
+                            ToolTip="{DynamicResource Common.Search}">
+                            <iconPacks:PackIconMaterial
+                                Width="16"
+                                Height="16"
+                                Kind="Magnify" />
                         </Button>
                     </StackPanel>
 
@@ -91,85 +101,69 @@
             </Border>
 
 
-            <!-- Breadcrumbs -->
-            <ScrollViewer Grid.Row="1"
-                          Grid.ColumnSpan="2"
-                          HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Disabled"
-                          ClipToBounds="True"
-                          Margin="0,0,0,8">
-                <ItemsControl x:Name="BreadcrumbsControl"
-                              ItemsSource="{Binding DisplayBreadcrumbs}">
+            <!--  Breadcrumbs  -->
+            <ScrollViewer
+                Grid.Row="1"
+                Grid.ColumnSpan="2"
+                Margin="0,0,0,8"
+                ClipToBounds="True"
+                HorizontalScrollBarVisibility="Auto"
+                VerticalScrollBarVisibility="Disabled">
+                <ItemsControl x:Name="BreadcrumbsControl" ItemsSource="{Binding DisplayBreadcrumbs}">
                     <i:Interaction.Behaviors>
                         <behaviors:BreadcrumbOverflowBehavior />
                     </i:Interaction.Behaviors>
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal"
-                                        VerticalAlignment="Center" />
+                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal" />
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal"
-                                        VerticalAlignment="Center">
-                                <Button x:Name="BtnNormal"
-                                        Foreground="{DynamicResource TextPrimaryBrush}"
-                                        Style="{StaticResource BreadcrumbButtonStyle}"
-                                        Content="{Binding Name}"
-                                        Command="{Binding Path=DataContext.NavigateToCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                        CommandParameter="{Binding FullPath}" />
-                                <Button x:Name="BtnOverflow"
-                                        Foreground="{DynamicResource TextPrimaryBrush}"
-                                        Style="{StaticResource BreadcrumbButtonStyle}"
-                                        Content="…"
-                                        Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                        Visibility="Collapsed">
+                            <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                <Button
+                                    x:Name="BtnNormal"
+                                    Command="{Binding Path=DataContext.NavigateToCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    CommandParameter="{Binding FullPath}"
+                                    Content="{Binding Name}"
+                                    Foreground="{DynamicResource TextPrimaryBrush}"
+                                    Style="{StaticResource BreadcrumbButtonStyle}" />
+                                <Button
+                                    x:Name="BtnOverflow"
+                                    Content="{DynamicResource FolderEditor.Breadcrumb.Ellipsis}"
+                                    Foreground="{DynamicResource TextPrimaryBrush}"
+                                    Style="{StaticResource BreadcrumbButtonStyle}"
+                                    Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    Visibility="Collapsed">
                                     <Button.ContextMenu>
-                                        <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}"
-                                                     ItemsSource="{Binding Overflow}">
+                                        <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}" ItemsSource="{Binding Overflow}">
                                             <ContextMenu.ItemContainerStyle>
                                                 <Style TargetType="MenuItem">
-                                                    <Setter Property="Header"
-                                                            Value="{Binding Name}" />
-                                                    <Setter Property="Command"
-                                                            Value="{Binding DataContext.NavigateToCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                                    <Setter Property="CommandParameter"
-                                                            Value="{Binding FullPath}" />
+                                                    <Setter Property="Header" Value="{Binding Name}" />
+                                                    <Setter Property="Command" Value="{Binding DataContext.NavigateToCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                                    <Setter Property="CommandParameter" Value="{Binding FullPath}" />
                                                 </Style>
                                             </ContextMenu.ItemContainerStyle>
                                         </ContextMenu>
                                     </Button.ContextMenu>
                                 </Button>
-                                <TextBlock Text="›"
-                                           Style="{StaticResource BreadcrumbSeparatorStyle}">
+                                <TextBlock Style="{StaticResource BreadcrumbSeparatorStyle}" Text="{DynamicResource FolderEditor.Breadcrumb.Separator}">
                                     <TextBlock.Visibility>
                                         <MultiBinding Converter="{StaticResource IsLastBreadcrumbConverter}">
                                             <Binding Path="." />
-                                            <Binding Path="ItemsSource"
-                                                     ElementName="BreadcrumbsControl" />
+                                            <Binding ElementName="BreadcrumbsControl" Path="ItemsSource" />
                                         </MultiBinding>
                                     </TextBlock.Visibility>
                                 </TextBlock>
                             </StackPanel>
                             <DataTemplate.Triggers>
-                                <DataTrigger Binding="{Binding IsOverflow}"
-                                             Value="True">
-                                    <Setter TargetName="BtnNormal"
-                                            Property="Visibility"
-                                            Value="Collapsed" />
-                                    <Setter TargetName="BtnOverflow"
-                                            Property="Visibility"
-                                            Value="Visible" />
+                                <DataTrigger Binding="{Binding IsOverflow}" Value="True">
+                                    <Setter TargetName="BtnNormal" Property="Visibility" Value="Collapsed" />
+                                    <Setter TargetName="BtnOverflow" Property="Visibility" Value="Visible" />
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding IsOverflow}"
-                                             Value="False">
-                                    <Setter TargetName="BtnNormal"
-                                            Property="Visibility"
-                                            Value="Visible" />
-                                    <Setter TargetName="BtnOverflow"
-                                            Property="Visibility"
-                                            Value="Collapsed" />
+                                <DataTrigger Binding="{Binding IsOverflow}" Value="False">
+                                    <Setter TargetName="BtnNormal" Property="Visibility" Value="Visible" />
+                                    <Setter TargetName="BtnOverflow" Property="Visibility" Value="Collapsed" />
                                 </DataTrigger>
                             </DataTemplate.Triggers>
                         </DataTemplate>
@@ -177,132 +171,127 @@
                 </ItemsControl>
             </ScrollViewer>
 
-            <!-- Левый столбец: TreeView -->
-            <ScrollViewer Grid.Row="2"
-                          Grid.Column="0"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled"
-                          behaviors:TreeViewMouseWheelBehavior.EnableMouseWheelScrolling="True"
-                          x:Name="FolderTreeScrollViewer">
-                <TreeView x:Name="FolderTree"
-                          ItemsSource="{Binding FolderItems}"
-                          ScrollViewer.CanContentScroll="True"
-                          VirtualizingStackPanel.IsVirtualizing="True"
-                          VirtualizingStackPanel.VirtualizationMode="Recycling"
-                          VirtualizingStackPanel.IsVirtualizingWhenGrouping="True"
-                          VirtualizingStackPanel.CacheLength="2"
-                          BorderBrush="{DynamicResource TreeItemBorderBrush}"
-                          Background="{DynamicResource TreeViewBackgroundBrush}">
+            <!--  Левый столбец: TreeView  -->
+            <ScrollViewer
+                x:Name="FolderTreeScrollViewer"
+                Grid.Row="2"
+                Grid.Column="0"
+                behaviors:TreeViewMouseWheelBehavior.EnableMouseWheelScrolling="True"
+                HorizontalScrollBarVisibility="Disabled"
+                VerticalScrollBarVisibility="Auto">
+                <TreeView
+                    x:Name="FolderTree"
+                    Background="{DynamicResource TreeViewBackgroundBrush}"
+                    BorderBrush="{DynamicResource TreeItemBorderBrush}"
+                    ItemsSource="{Binding FolderItems}"
+                    ScrollViewer.CanContentScroll="True"
+                    VirtualizingStackPanel.CacheLength="2"
+                    VirtualizingStackPanel.IsVirtualizing="True"
+                    VirtualizingStackPanel.IsVirtualizingWhenGrouping="True"
+                    VirtualizingStackPanel.VirtualizationMode="Recycling">
 
                     <i:Interaction.Triggers>
 
                         <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                            <i:InvokeCommandAction Command="{Binding BeginDragCommand}"
-                                                   PassEventArgsToCommand="True" />
+                            <i:InvokeCommandAction Command="{Binding BeginDragCommand}" PassEventArgsToCommand="True" />
                         </i:EventTrigger>
 
                         <i:EventTrigger EventName="MouseMove">
-                            <i:InvokeCommandAction Command="{Binding MouseMoveCommand}"
-                                                   PassEventArgsToCommand="True" />
+                            <i:InvokeCommandAction Command="{Binding MouseMoveCommand}" PassEventArgsToCommand="True" />
                         </i:EventTrigger>
 
                         <i:EventTrigger EventName="DragOver">
-                            <i:InvokeCommandAction Command="{Binding DragOverCommand}"
-                                                   PassEventArgsToCommand="True" />
+                            <i:InvokeCommandAction Command="{Binding DragOverCommand}" PassEventArgsToCommand="True" />
                         </i:EventTrigger>
 
                         <i:EventTrigger EventName="Drop">
-                            <i:InvokeCommandAction Command="{Binding DropCommand}"
-                                                   PassEventArgsToCommand="True" />
+                            <i:InvokeCommandAction Command="{Binding DropCommand}" PassEventArgsToCommand="True" />
                         </i:EventTrigger>
 
                         <i:EventTrigger EventName="SelectedItemChanged">
-                            <i:InvokeCommandAction Command="{Binding TreeSelectionChangedCommand}"
-                                                   PassEventArgsToCommand="True" />
+                            <i:InvokeCommandAction Command="{Binding TreeSelectionChangedCommand}" PassEventArgsToCommand="True" />
                         </i:EventTrigger>
 
                         <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                            <i:InvokeCommandAction Command="{Binding PreviewMouseDownCommand}"
-                                                   PassEventArgsToCommand="True" />
+                            <i:InvokeCommandAction Command="{Binding PreviewMouseDownCommand}" PassEventArgsToCommand="True" />
                         </i:EventTrigger>
 
 
                     </i:Interaction.Triggers>
 
                     <TreeView.Resources>
-                        <!-- Отключаем стандартные подсветки -->
-                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
-                                         Color="Transparent" />
-                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}"
-                                         Color="Transparent" />
-                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
-                                         Color="White" />
+                        <!--  Отключаем стандартные подсветки  -->
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="White" />
 
-                        <!-- Шаблон узла -->
-                        <HierarchicalDataTemplate DataType="{x:Type local1:FolderItem}"
-                                                  ItemsSource="{Binding Children}">
-                            <!-- Обёртка для тени/фонового цвета -->
-                            <Border x:Name="Bd"
-                                    Background="{DynamicResource ItemBackgroundBrush}"
-                                    BorderBrush="{DynamicResource TreeItemBorderBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="6"
-                                    Padding="8"
-                                    Margin="0,4"
-                                    MinHeight="36"
-                                    Effect="{StaticResource ItemShadowEffect}"
-                                    Tag="{Binding DataContext.FolderEditorVM, RelativeSource={RelativeSource AncestorType=Window}}">
+                        <!--  Шаблон узла  -->
+                        <HierarchicalDataTemplate DataType="{x:Type local1:FolderItem}" ItemsSource="{Binding Children}">
+                            <!--  Обёртка для тени/фонового цвета  -->
+                            <Border
+                                x:Name="Bd"
+                                MinHeight="36"
+                                Margin="0,4"
+                                Padding="8"
+                                Background="{DynamicResource ItemBackgroundBrush}"
+                                BorderBrush="{DynamicResource TreeItemBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Effect="{StaticResource ItemShadowEffect}"
+                                Tag="{Binding DataContext.FolderEditorVM, RelativeSource={RelativeSource AncestorType=Window}}">
 
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
-                                        <i:InvokeCommandAction Command="{Binding DataContext.PreviewMouseDownCommand, 
-               RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                               PassEventArgsToCommand="True" />
+                                        <i:InvokeCommandAction Command="{Binding DataContext.PreviewMouseDownCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" PassEventArgsToCommand="True" />
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
-                                <!-- Контекстное меню -->
+                                <!--  Контекстное меню  -->
                                 <Border.ContextMenu>
                                     <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                         <ContextMenu.Resources>
-                                            <SolidColorBrush x:Key="BorderBrush"
-                                                             Color="Transparent" />
-                                            <SolidColorBrush x:Key="RegionBrush"
-                                                             Color="{DynamicResource ItemBackgroundBrushColor}" />
-                                            <SolidColorBrush x:Key="SecondaryRegionBrush"
-                                                             Color="{DynamicResource ItemBackgroundBrushHoverColor}" />
+                                            <SolidColorBrush x:Key="BorderBrush" Color="Transparent" />
+                                            <SolidColorBrush x:Key="RegionBrush" Color="{DynamicResource ItemBackgroundBrushColor}" />
+                                            <SolidColorBrush x:Key="SecondaryRegionBrush" Color="{DynamicResource ItemBackgroundBrushHoverColor}" />
                                         </ContextMenu.Resources>
-                                        <MenuItem Header="Открыть расположение" Foreground="{DynamicResource TextPrimaryBrush}"
-                                                  Command="{Binding OpenFolderCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                        <MenuItem
+                                            Command="{Binding OpenFolderCommand}"
+                                            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                            Foreground="{DynamicResource TextPrimaryBrush}"
+                                            Header="{DynamicResource Common.OpenLocation}" />
                                         <Separator />
-                                        <MenuItem Header="Копировать"
-                                                  Foreground="{DynamicResource TextPrimaryBrush}"
-                                                  Command="{Binding CopyFolderItemCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext,
-                                            RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                        <MenuItem Header="Вырезать"
-                                                  Foreground="{DynamicResource TextPrimaryBrush}"
-                                                  Command="{Binding CutFolderItemCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                        <MenuItem Header="Вставить"
-                                                  Foreground="{DynamicResource TextPrimaryBrush}"
-                                                  Command="{Binding PasteIntoFolderCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                                  IsEnabled="{Binding CanPaste}" />
-                                        <Separator/>
-                                        <MenuItem Header="Переименовать"
-                                                  Foreground="{DynamicResource TextPrimaryBrush}"
-                                                  Command="{Binding RenameFolderItemCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                        <MenuItem Header="Удалить"
-                                                  Foreground="{DynamicResource TextPrimaryBrush}"
-                                                  Command="{Binding RemoveFolderItemCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                        <MenuItem
+                                            Command="{Binding CopyFolderItemCommand}"
+                                            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                            Foreground="{DynamicResource TextPrimaryBrush}"
+                                            Header="{DynamicResource Common.Copy}" />
+                                        <MenuItem
+                                            Command="{Binding CutFolderItemCommand}"
+                                            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                            Foreground="{DynamicResource TextPrimaryBrush}"
+                                            Header="{DynamicResource Common.Cut}" />
+                                        <MenuItem
+                                            Command="{Binding PasteIntoFolderCommand}"
+                                            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                            Foreground="{DynamicResource TextPrimaryBrush}"
+                                            Header="{DynamicResource Common.Paste}"
+                                            IsEnabled="{Binding CanPaste}" />
                                         <Separator />
-                                        <MenuItem Header="Свойства"
-                                                  Foreground="{DynamicResource TextPrimaryBrush}"
-                                                  Command="{Binding ShowPropertiesCommand}"
-                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                        <MenuItem
+                                            Command="{Binding RenameFolderItemCommand}"
+                                            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                            Foreground="{DynamicResource TextPrimaryBrush}"
+                                            Header="{DynamicResource Common.Rename}" />
+                                        <MenuItem
+                                            Command="{Binding RemoveFolderItemCommand}"
+                                            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                            Foreground="{DynamicResource TextPrimaryBrush}"
+                                            Header="{DynamicResource Common.Delete}" />
+                                        <Separator />
+                                        <MenuItem
+                                            Command="{Binding ShowPropertiesCommand}"
+                                            CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                            Foreground="{DynamicResource TextPrimaryBrush}"
+                                            Header="{DynamicResource Common.Properties}" />
                                     </ContextMenu>
                                 </Border.ContextMenu>
 
@@ -313,100 +302,89 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <!-- Иконка -->
-                                    <iconPacks:PackIconMaterial x:Name="ItemIcon"
-                                                                Kind="{Binding IconKind}"
-                                                                Width="20"
-                                                                Height="20"
-                                                                Foreground="{DynamicResource TextPrimaryBrush}"
-                                                                VerticalAlignment="Center"
-                                                                Margin="4,0" />
+                                    <!--  Иконка  -->
+                                    <iconPacks:PackIconMaterial
+                                        x:Name="ItemIcon"
+                                        Width="20"
+                                        Height="20"
+                                        Margin="4,0"
+                                        VerticalAlignment="Center"
+                                        Foreground="{DynamicResource TextPrimaryBrush}"
+                                        Kind="{Binding IconKind}" />
 
-                                    <!-- Название -->
-                                    <TextBlock x:Name="ItemName"
-                                               Grid.Column="1"
-                                               Text="{Binding Name}"
-                                               FontSize="14"
-                                               Foreground="{DynamicResource TextPrimaryBrush}"
-                                               VerticalAlignment="Center"
-                                               Margin="8,0" />
+                                    <!--  Название  -->
+                                    <TextBlock
+                                        x:Name="ItemName"
+                                        Grid.Column="1"
+                                        Margin="8,0"
+                                        VerticalAlignment="Center"
+                                        FontSize="14"
+                                        Foreground="{DynamicResource TextPrimaryBrush}"
+                                        Text="{Binding Name}" />
 
-                                    <!-- Кнопка удаления -->
-                                    <Button Grid.Column="2"
-                                            Command="{Binding DataContext.RemoveFolderItemCommand, ElementName=FolderTree}"
-                                            CommandParameter="{Binding}"
-                                            Foreground="{DynamicResource TextPrimaryBrush}"
-                                            Style="{StaticResource DeleteIconButtonStyle}"
-                                            ToolTip="Удалить">
-                                        <iconPacks:PackIconMaterial x:Name="DeleteIcon"
-                                                                    Kind="Close"
-                                                                    Width="16"
-                                                                    Height="16"
-                                                                    Foreground="{DynamicResource TextSecondaryBrush}" />
+                                    <!--  Кнопка удаления  -->
+                                    <Button
+                                        Grid.Column="2"
+                                        Command="{Binding DataContext.RemoveFolderItemCommand, ElementName=FolderTree}"
+                                        CommandParameter="{Binding}"
+                                        Foreground="{DynamicResource TextPrimaryBrush}"
+                                        Style="{StaticResource DeleteIconButtonStyle}"
+                                        ToolTip="{DynamicResource Common.Delete}">
+                                        <iconPacks:PackIconMaterial
+                                            x:Name="DeleteIcon"
+                                            Width="16"
+                                            Height="16"
+                                            Foreground="{DynamicResource TextSecondaryBrush}"
+                                            Kind="Close" />
                                     </Button>
                                 </Grid>
                             </Border>
 
                             <HierarchicalDataTemplate.Triggers>
-                                <Trigger SourceName="Bd"
-                                         Property="IsMouseOver"
-                                         Value="True">
-                                    <Setter TargetName="Bd"
-                                            Property="Background"
-                                            Value="{DynamicResource TreeItemHoverBrush}" />
+                                <Trigger SourceName="Bd" Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource TreeItemHoverBrush}" />
                                 </Trigger>
-                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=TreeViewItem}}"
-                                             Value="True">
-                                    <Setter TargetName="Bd"
-                                            Property="Background"
-                                            Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
-                                    <Setter TargetName="Bd"
-                                            Property="BorderBrush"
-                                            Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
-                                    <Setter TargetName="ItemIcon"
-                                            Property="Foreground"
-                                            Value="{DynamicResource PrimaryButtonForegroundBrush}" />
-                                    <Setter TargetName="ItemName"
-                                            Property="Foreground"
-                                            Value="{DynamicResource PrimaryButtonForegroundBrush}" />
-                                    <Setter TargetName="DeleteIcon"
-                                            Property="Foreground"
-                                            Value="{DynamicResource PrimaryButtonForegroundBrush}" />
+                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=TreeViewItem}}" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource PrimaryButtonBackgroundBrush}" />
+                                    <Setter TargetName="ItemIcon" Property="Foreground" Value="{DynamicResource PrimaryButtonForegroundBrush}" />
+                                    <Setter TargetName="ItemName" Property="Foreground" Value="{DynamicResource PrimaryButtonForegroundBrush}" />
+                                    <Setter TargetName="DeleteIcon" Property="Foreground" Value="{DynamicResource PrimaryButtonForegroundBrush}" />
                                 </DataTrigger>
                             </HierarchicalDataTemplate.Triggers>
                         </HierarchicalDataTemplate>
                     </TreeView.Resources>
 
                     <TreeView.InputBindings>
-                        <!-- Удалить -->
+                        <!--  Удалить  -->
                         <!--<KeyBinding Key="Delete"
                                     Command="{Binding DataContext.FolderEditorVM.RemoveFolderItemCommand,
                                   ElementName=RootWindow}"
                                     CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
 
                         -->
-                        <!-- Переименовать -->
+                        <!--  Переименовать  -->
                         <!--
                         <KeyBinding Key="F2"
                                     Command="{Binding DataContext.FolderEditorVM.RenameFolderItemCommand, ElementName=RootWindow}"
                                     CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
 
                         -->
-                        <!-- Копировать -->
+                        <!--  Копировать  -->
                         <!--
                         <KeyBinding Gesture="Ctrl+C"
                                     Command="{Binding DataContext.FolderEditorVM.CopyFolderItemCommand, ElementName=RootWindow}"
                                     CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
 
                         -->
-                        <!-- Вырезать -->
+                        <!--  Вырезать  -->
                         <!--
                         <KeyBinding Gesture="Ctrl+X"
                                     Command="{Binding DataContext.FolderEditorVM.CutFolderItemCommand, ElementName=RootWindow}"
                                     CommandParameter="{Binding SelectedItem, ElementName=FolderTree}" />
 
                         -->
-                        <!-- Вставить -->
+                        <!--  Вставить  -->
                         <!--
                         <KeyBinding Key="V"
                                     Gesture="Ctrl+V"
@@ -415,22 +393,16 @@
                     </TreeView.InputBindings>
                     <TreeView.ItemContainerStyle>
                         <Style TargetType="TreeViewItem">
-                            <!-- ваши старые сеттеры/эвенты -->
-                            <Setter Property="Background"
-                                    Value="Transparent" />
-                            <Setter Property="BorderThickness"
-                                    Value="0" />
-                            <Setter Property="Padding"
-                                    Value="0" />
-                            <Setter Property="Margin"
-                                    Value="4, 0, 0, 0" />
-                            <Setter Property="FocusVisualStyle"
-                                    Value="{x:Null}" />
-                            <Setter Property="AllowDrop"
-                                    Value="True" />
+                            <!--  ваши старые сеттеры/эвенты  -->
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="4,0,0,0" />
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                            <Setter Property="AllowDrop" Value="True" />
 
 
-                            <!-- 2. Подмена шаблона с нашей стрелкой + фиксом Border -->
+                            <!--  2. Подмена шаблона с нашей стрелкой + фиксом Border  -->
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="TreeViewItem">
@@ -444,60 +416,56 @@
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
 
-                                            <!-- наша стрелка-экспандер -->
-                                            <ToggleButton x:Name="Expander"
-                                                          Style="{StaticResource ExpanderToggleStyle}"
-                                                          Grid.Row="0"
-                                                          Grid.Column="0"
-                                                          IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
-                                                          Visibility="{Binding HasItems, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVis}}" />
+                                            <!--  наша стрелка-экспандер  -->
+                                            <ToggleButton
+                                                x:Name="Expander"
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                IsChecked="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}"
+                                                Style="{StaticResource ExpanderToggleStyle}"
+                                                Visibility="{Binding HasItems, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVis}}" />
 
-                                            <!-- заголовок узла: теперь не растягивается -->
-                                            <Border x:Name="Bd"
-                                                    Grid.Row="0"
-                                                    Grid.Column="1"
-                                                    Padding="2"
-                                                    Background="{TemplateBinding Background}"
-                                                    HorizontalAlignment="Left">
-                                                <ContentPresenter x:Name="PART_Header"
-                                                                  ContentSource="Header"
-                                                                  RecognizesAccessKey="True" />
+                                            <!--  заголовок узла: теперь не растягивается  -->
+                                            <Border
+                                                x:Name="Bd"
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Padding="2"
+                                                HorizontalAlignment="Left"
+                                                Background="{TemplateBinding Background}">
+                                                <ContentPresenter
+                                                    x:Name="PART_Header"
+                                                    ContentSource="Header"
+                                                    RecognizesAccessKey="True" />
                                             </Border>
 
-                                            <!-- контейнер для дочерних элементов -->
-                                            <ItemsPresenter x:Name="ItemsHost"
-                                                            Grid.Row="1"
-                                                            Grid.Column="1"
-                                                            Margin="12,0,0,0"
-                                                            Visibility="Collapsed" />
+                                            <!--  контейнер для дочерних элементов  -->
+                                            <ItemsPresenter
+                                                x:Name="ItemsHost"
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Margin="12,0,0,0"
+                                                Visibility="Collapsed" />
                                         </Grid>
 
                                         <ControlTemplate.Triggers>
-                                            <!-- показываем детей при IsExpanded -->
-                                            <Trigger Property="IsExpanded"
-                                                     Value="True">
-                                                <Setter TargetName="ItemsHost"
-                                                        Property="Visibility"
-                                                        Value="Visible" />
+                                            <!--  показываем детей при IsExpanded  -->
+                                            <Trigger Property="IsExpanded" Value="True">
+                                                <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible" />
                                             </Trigger>
-                                            <!-- ваш триггер выделения -->
-                                            <Trigger Property="IsSelected"
-                                                     Value="True">
-                                                <Setter TargetName="Bd"
-                                                        Property="Background"
-                                                        Value="Transparent" />
+                                            <!--  ваш триггер выделения  -->
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Bd" Property="Background" Value="Transparent" />
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Setter.Value>
                             </Setter>
 
-                            <!-- ваш старый триггер на IsSelected -->
+                            <!--  ваш старый триггер на IsSelected  -->
                             <Style.Triggers>
-                                <Trigger Property="IsSelected"
-                                         Value="True">
-                                    <Setter Property="Background"
-                                            Value="Transparent" />
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="Transparent" />
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -508,72 +476,69 @@
 
 
 
-            <!-- Правый столбец: Details ListView -->
-            <Grid Grid.Row="2"
-                  Grid.Column="1">
+            <!--  Правый столбец: Details ListView  -->
+            <Grid Grid.Row="2" Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
-                    <!-- 2) Тонкий сплиттер для перетаскивания -->
+                    <!--  2) Тонкий сплиттер для перетаскивания  -->
                     <RowDefinition Height="5" />
-                    <!-- 3) Область превью по умолчанию -->
-                    <RowDefinition MaxHeight="600"
-                                   MinHeight="200" />
+                    <!--  3) Область превью по умолчанию  -->
+                    <RowDefinition MinHeight="200" MaxHeight="600" />
                 </Grid.RowDefinitions>
 
 
-                <ListView Grid.Row="0"
-                          Grid.RowSpan="3"
-                          Grid.Column="1"
-                          AllowDrop="True"
-                          x:Name="FolderListView"
-                          ItemsSource="{Binding SelectedFolderItem.Children}"
-                          VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.VirtualizationMode="Recycling"
-                          VirtualizingPanel.IsVirtualizingWhenGrouping="True"
-                          SnapsToDevicePixels="True"
-                          Foreground="{DynamicResource TextPrimaryBrush}"
-                          Background="{DynamicResource TreeViewBackgroundBrush}"
-                          BorderBrush="{DynamicResource TreeItemBorderBrush}"
-                          ItemContainerStyle="{StaticResource ListViewItemWithMenu}"
-                          Cursor="">
+                <ListView
+                    x:Name="FolderListView"
+                    Grid.Row="0"
+                    Grid.RowSpan="3"
+                    Grid.Column="1"
+                    AllowDrop="True"
+                    Background="{DynamicResource TreeViewBackgroundBrush}"
+                    BorderBrush="{DynamicResource TreeItemBorderBrush}"
+                    Cursor=""
+                    Foreground="{DynamicResource TextPrimaryBrush}"
+                    ItemContainerStyle="{StaticResource ListViewItemWithMenu}"
+                    ItemsSource="{Binding SelectedFolderItem.Children}"
+                    SnapsToDevicePixels="True"
+                    VirtualizingPanel.IsVirtualizing="True"
+                    VirtualizingPanel.IsVirtualizingWhenGrouping="True"
+                    VirtualizingPanel.VirtualizationMode="Recycling">
                     <i:Interaction.Triggers>
-                        <!-- Перетаскивание файлов -->
+                        <!--  Перетаскивание файлов  -->
                         <i:EventTrigger EventName="DragOver">
-                            <i:InvokeCommandAction Command="{Binding FileDropOverCommand}"
-                                                   PassEventArgsToCommand="True" />
+                            <i:InvokeCommandAction Command="{Binding FileDropOverCommand}" PassEventArgsToCommand="True" />
                         </i:EventTrigger>
                         <i:EventTrigger EventName="Drop">
-                            <i:InvokeCommandAction Command="{Binding FileDropCommand}"
-                                                   PassEventArgsToCommand="True" />
+                            <i:InvokeCommandAction Command="{Binding FileDropCommand}" PassEventArgsToCommand="True" />
                         </i:EventTrigger>
 
-                        <!-- Двойной клик -->
+                        <!--  Двойной клик  -->
                         <i:EventTrigger EventName="MouseDoubleClick">
-                            <i:InvokeCommandAction Command="{Binding ItemDoubleClickCommand}"
-                                                   PassEventArgsToCommand="False"
-                                                   CommandParameter="{Binding SelectedItem, ElementName=FolderListView}" />
+                            <i:InvokeCommandAction
+                                Command="{Binding ItemDoubleClickCommand}"
+                                CommandParameter="{Binding SelectedItem, ElementName=FolderListView}"
+                                PassEventArgsToCommand="False" />
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
 
-                
-                    <!-- Существующий GridView -->
+
+                    <!--  Существующий GridView  -->
                     <ListView.View>
                         <GridView>
-                            <!-- Имя + иконка -->
-                            <GridViewColumn
-                                            Width="270">
+                            <!--  Имя + иконка  -->
+                            <GridViewColumn Width="270">
                                 <GridViewColumn.Header>
-                                    <TextBlock Text="Name"
-                                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Foreground="{DynamicResource TextPrimaryBrush}" Text="{DynamicResource FolderEditor.Column.Name}" />
                                 </GridViewColumn.Header>
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
-                                            <iconPacks:PackIconMaterial Kind="{Binding IconKind}"
-                                                                        Width="16"
-                                                                        Height="16"
-                                                                        Margin="0,0,8,0" />
-                                            <TextBlock Text="{Binding Name}"/>
+                                            <iconPacks:PackIconMaterial
+                                                Width="16"
+                                                Height="16"
+                                                Margin="0,0,8,0"
+                                                Kind="{Binding IconKind}" />
+                                            <TextBlock Text="{Binding Name}" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
@@ -581,8 +546,7 @@
 
                             <GridViewColumn Width="150">
                                 <GridViewColumn.Header>
-                                    <TextBlock Text="Date Modified"
-                                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Foreground="{DynamicResource TextPrimaryBrush}" Text="{DynamicResource FolderEditor.Column.DateModified}" />
                                 </GridViewColumn.Header>
                                 <GridViewColumn.DisplayMemberBinding>
                                     <Binding Path="DateModified" />
@@ -591,8 +555,7 @@
 
                             <GridViewColumn Width="100">
                                 <GridViewColumn.Header>
-                                    <TextBlock Text="Size"
-                                               Foreground="{DynamicResource TextPrimaryBrush}" />
+                                    <TextBlock Foreground="{DynamicResource TextPrimaryBrush}" Text="{DynamicResource FolderEditor.Column.Size}" />
                                 </GridViewColumn.Header>
                                 <GridViewColumn.DisplayMemberBinding>
                                     <Binding Path="Size" />
@@ -602,80 +565,83 @@
                     </ListView.View>
                 </ListView>
 
-                <GridSplitter Grid.Row="1"
-                              HorizontalAlignment="Stretch"
-                              VerticalAlignment="Center"
-                              Height="5"
-                              Background="Transparent"
-                              Cursor="SizeNS"
-                              Style="{StaticResource SmoothGridSplitterStyle}"
-                              Visibility="{Binding SelectedTexturePreview, Converter={StaticResource NullToVis}}"
-                              ShowsPreview="False" />
+                <GridSplitter
+                    Grid.Row="1"
+                    Height="5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    Cursor="SizeNS"
+                    ShowsPreview="False"
+                    Style="{StaticResource SmoothGridSplitterStyle}"
+                    Visibility="{Binding SelectedTexturePreview, Converter={StaticResource NullToVis}}" />
 
-                <Border VerticalAlignment="Stretch"
-                        HorizontalAlignment="Stretch"
-                        Margin="5, 0, 5, 5"
-                        Style="{StaticResource CardStyle}"
-                        CornerRadius="4"
-                        MinHeight="200"
-                        Padding="4"
-                        Grid.Row="2"
-                        Visibility="{Binding SelectedTexturePreview, Converter={StaticResource NullToVis}}"
-                        Panel.ZIndex="1">
+                <Border
+                    Grid.Row="2"
+                    MinHeight="200"
+                    Margin="5,0,5,5"
+                    Padding="4"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Panel.ZIndex="1"
+                    CornerRadius="4"
+                    Style="{StaticResource CardStyle}"
+                    Visibility="{Binding SelectedTexturePreview, Converter={StaticResource NullToVis}}">
                     <Grid>
-                        <!-- Само изображение -->
-                        <Image Source="{Binding SelectedTexturePreview}"
-                               Stretch="Uniform"
-                               StretchDirection="DownOnly"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               SnapsToDevicePixels="True">
+                        <!--  Само изображение  -->
+                        <Image
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            SnapsToDevicePixels="True"
+                            Source="{Binding SelectedTexturePreview}"
+                            Stretch="Uniform"
+                            StretchDirection="DownOnly">
                             <Image.ContextMenu>
-                                <!-- контекстное меню наследует DataContext окна (MainWindowViewModel) -->
+                                <!--  контекстное меню наследует DataContext окна (MainWindowViewModel)  -->
                                 <ContextMenu>
-                                    <!-- Открыть в проводнике -->
-                                    <MenuItem Header="Открыть в проводнике" Foreground="{DynamicResource TextPrimaryBrush}"
-                                              Command="{Binding PlacementTarget.DataContext.OpenInExplorerCommand,
-                          RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                              CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath,
-                                   RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                    <!-- Скопировать путь -->
-                                    <MenuItem Header="Скопировать путь"
-                                              Foreground="{DynamicResource TextPrimaryBrush}"
-                                              Command="{Binding PlacementTarget.DataContext.CopyPathCommand,
-                          RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                              CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath,
-                                   RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                                    <!-- Сохранить как… -->
-                                    <MenuItem Header="Сохранить как…"
-                                              Foreground="{DynamicResource TextPrimaryBrush}"
-                                              Command="{Binding PlacementTarget.DataContext.SaveTextureCommand,
-                          RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                              CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath,
-                                   RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                    <!--  Открыть в проводнике  -->
+                                    <MenuItem
+                                        Command="{Binding PlacementTarget.DataContext.OpenInExplorerCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                        CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                        Foreground="{DynamicResource TextPrimaryBrush}"
+                                        Header="{DynamicResource Common.OpenInExplorer}" />
+                                    <!--  Скопировать путь  -->
+                                    <MenuItem
+                                        Command="{Binding PlacementTarget.DataContext.CopyPathCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                        CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                        Foreground="{DynamicResource TextPrimaryBrush}"
+                                        Header="{DynamicResource Common.CopyPath}" />
+                                    <!--  Сохранить как…  -->
+                                    <MenuItem
+                                        Command="{Binding PlacementTarget.DataContext.SaveTextureCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                        CommandParameter="{Binding PlacementTarget.DataContext.SelectedFolderItem.FullPath, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                        Foreground="{DynamicResource TextPrimaryBrush}"
+                                        Header="{DynamicResource Common.SaveAs}" />
 
-                                    <MenuItem Header="Переключить альфа-канал"
-                                              Foreground="{DynamicResource TextPrimaryBrush}"
-                                              Command="{Binding PlacementTarget.DataContext.ToggleAlphaChannelCommand,
-                                RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                    <MenuItem
+                                        Command="{Binding PlacementTarget.DataContext.ToggleAlphaChannelCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                        Foreground="{DynamicResource TextPrimaryBrush}"
+                                        Header="{DynamicResource FolderEditor.ToggleAlpha}" />
                                 </ContextMenu>
                             </Image.ContextMenu>
                         </Image>
 
-                        <Button Command="{Binding ClearPreviewCommand}"
-                                Style="{StaticResource DeleteIconButtonStyle}"
-                                Width="20"
-                                Height="20"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Top"
-                                Margin="0,0,0,0"
-                                ToolTip="Закрыть превью">
-                            <iconPacks:PackIconMaterial Kind="Close"
-                                                        Width="15"
-                                                        Height="15"
-                                                        Foreground="{DynamicResource TextPrimaryBrush}"
-                                                        HorizontalAlignment="Center"
-                                                        VerticalAlignment="Center" />
+                        <Button
+                            Width="20"
+                            Height="20"
+                            Margin="0,0,0,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Command="{Binding ClearPreviewCommand}"
+                            Style="{StaticResource DeleteIconButtonStyle}"
+                            ToolTip="{DynamicResource FolderEditor.Preview.Close}">
+                            <iconPacks:PackIconMaterial
+                                Width="15"
+                                Height="15"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource TextPrimaryBrush}"
+                                Kind="Close" />
                         </Button>
                     </Grid>
                 </Border>

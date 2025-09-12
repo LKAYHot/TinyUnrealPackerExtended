@@ -37,6 +37,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         private readonly ITexturePreviewService _textureService;
         private readonly IFileSystemService _fileSystem;
         private readonly ICue4ParseService _cue4Parse;
+        private readonly ILocalizationService _loc;
 
 
         private DragDropManager _dragDropManager;
@@ -119,13 +120,14 @@ namespace TinyUnrealPackerExtended.ViewModels
 
         public FolderEditorViewModel(
             GrowlService growlService,
-            IFileDialogService fileDialogService, IDialogService dialogService)
+            IFileDialogService fileDialogService, IDialogService dialogService, ILocalizationService localizationService)
             : base(fileDialogService, growlService)
         {
             _dialog = dialogService;
             _fileSystem = new FileSystemService();
             _textureService = new TexturePreviewService();
             _cue4Parse = new Cue4ParseService();
+            _loc = localizationService;
 
             _dragDropManager = new DragDropManager(
         _fileSystem,
@@ -275,23 +277,21 @@ namespace TinyUnrealPackerExtended.ViewModels
         [RelayCommand]
         private async Task RenameFolderItemAsync(FolderItem item)
         {
-            if (item == null)
-                return;
+            if (item == null) return;
 
             var oldPath = item.FullPath;
 
-            string title = "Переименовать";
-            string message = $"Введите новое имя для «{item.Name}»";
+            string title = _loc["FolderEditor.Rename.Title"];
+            string message = string.Format(_loc["FolderEditor.Rename.Message"], item.Name);
             string? newName = _dialog.ShowInputDialog(
                 title: title,
                 message: message,
                 initialText: item.Name,
-                primaryText: "Переименовать",
-                secondaryText: "Отмена"
+                primaryText: _loc["Common.Rename"],
+                secondaryText: _loc["Common.Cancel"]
             );
 
-            if (string.IsNullOrWhiteSpace(newName) || newName == item.Name)
-                return;
+            if (string.IsNullOrWhiteSpace(newName) || newName == item.Name) return;
 
             var newPath = Path.Combine(Path.GetDirectoryName(oldPath)!, newName);
 
@@ -299,21 +299,17 @@ namespace TinyUnrealPackerExtended.ViewModels
             {
                 await _fileSystem.MoveAsync(oldPath, newPath, CancellationToken.None);
 
-                // Обновляем модель
                 item.Name = newName;
                 item.FullPath = newPath;
-
-                if (item.IsDirectory)
-                    UpdateChildrenPaths(item, oldPath, newPath);
+                if (item.IsDirectory) UpdateChildrenPaths(item, oldPath, newPath);
             }
             catch (Exception ex)
             {
-                // Показ ошибки
                 _dialog.ShowDialog(
-                    title: "Ошибка переименования",
+                    title: _loc["FolderEditor.Error.Rename.Title"],
                     message: ex.Message,
                     dialogType: DialogType.Error,
-                    primaryText: "ОК",
+                    primaryText: _loc["Common.OK"],
                     secondaryText: null
                 );
             }
@@ -464,14 +460,12 @@ namespace TinyUnrealPackerExtended.ViewModels
         [RelayCommand]
         private async Task SaveTextureAsync()
         {
-            if (string.IsNullOrEmpty(PreviewedUassetPath))
-                return;
+            if (string.IsNullOrEmpty(PreviewedUassetPath)) return;
 
             byte[] data;
             try
             {
-                var bitmap = await _textureService
-                                    .ExtractFullResolutionAsync(PreviewedUassetPath, CancellationToken.None);
+                var bitmap = await _textureService.ExtractFullResolutionAsync(PreviewedUassetPath, CancellationToken.None);
                 var encoder = new PngBitmapEncoder();
                 encoder.Frames.Add(BitmapFrame.Create(bitmap));
                 using var ms = new MemoryStream();
@@ -480,17 +474,16 @@ namespace TinyUnrealPackerExtended.ViewModels
             }
             catch (Exception ex)
             {
-                ShowError($"Ошибка сохранения текстуры: {ex.Message}");
+                ShowError(string.Format(_loc["FolderEditor.Error.SaveTexture"], ex.Message));
                 return;
             }
 
             var saveDlg = new SaveFileDialog
             {
-                Filter = "PNG Image|*.png",
+                Filter = _loc["FolderEditor.SaveTexture.Filter"],
                 FileName = Path.GetFileNameWithoutExtension(PreviewedUassetPath) + ".png"
             };
-            if (saveDlg.ShowDialog() != true)
-                return;
+            if (saveDlg.ShowDialog() != true) return;
 
             await File.WriteAllBytesAsync(saveDlg.FileName, data);
         }
@@ -535,41 +528,34 @@ namespace TinyUnrealPackerExtended.ViewModels
         [RelayCommand]
         private async Task RemoveFolderItemAsync(FolderItem item)
         {
-            if (item == null)
-                return;
+            if (item == null) return;
 
-            // Показываем подтверждение
             bool ok = _dialog.ShowDialog(
-               title: "Удалить элемент?",
-               message: $"Вы точно хотите удалить «{item.Name}»?",
+               title: _loc["FolderEditor.Confirm.Delete.Title"],
+               message: string.Format(_loc["FolderEditor.Confirm.Delete.Message"], item.Name),
                dialogType: DialogType.Confirm,
-               primaryText: "Да",
-               secondaryText: "Нет"
+               primaryText: _loc["Common.Yes"],
+               secondaryText: _loc["Common.No"]
             );
-            if (!ok)
-                return;
+            if (!ok) return;
 
             try
             {
-                await _fileSystem.DeleteAsync(
-                    path: item.FullPath,
-                    recursive: item.IsDirectory,
-                    ct: CancellationToken.None
-                );
-
+                await _fileSystem.DeleteAsync(item.FullPath, item.IsDirectory, CancellationToken.None);
                 RemoveFromParent(FolderItems, item);
             }
             catch (Exception ex)
             {
                 _dialog.ShowDialog(
-                   title: "Ошибка удаления",
+                   title: _loc["FolderEditor.Error.Delete.Title"],
                    message: ex.Message,
                    dialogType: DialogType.Error,
-                   primaryText: "ОК",
+                   primaryText: _loc["Common.OK"],
                    secondaryText: null
                 );
             }
         }
+
 
         [RelayCommand]
         private void CopyPath(string fullPath)
@@ -608,26 +594,19 @@ namespace TinyUnrealPackerExtended.ViewModels
         [RelayCommand]
         private async Task AddFolderToFolderAsync()
         {
-            if (SelectedFolderItem == null || !SelectedFolderItem.IsDirectory)
-                return;
+            if (SelectedFolderItem == null || !SelectedFolderItem.IsDirectory) return;
 
-            var newDirPath = Path.Combine(SelectedFolderItem.FullPath, "NewFolder");
+            var newDirPath = Path.Combine(SelectedFolderItem.FullPath, "NewFolder"); 
 
             try
             {
                 await _fileSystem.CreateDirectoryAsync(newDirPath, CancellationToken.None);
-
-                var newItem = new FolderItem(
-                    name: Path.GetFileName(newDirPath),
-                    fullPath: newDirPath,
-                    isDirectory: true,
-                    icon: PackIconMaterialKind.FolderOutline
-                );
+                var newItem = new FolderItem(Path.GetFileName(newDirPath), newDirPath, true, PackIconMaterialKind.FolderOutline);
                 SelectedFolderItem.Children.Add(newItem);
             }
             catch (Exception ex)
             {
-                _growlService.ShowError($"Не удалось создать папку: {ex.Message}");
+                _growlService.ShowError(string.Format(_loc["FolderEditor.Error.CreateFolder"], ex.Message));
             }
         }
 
@@ -829,19 +808,14 @@ int insertIndex)
         [RelayCommand(CanExecute = nameof(CanSearch))]
         private void Search()
         {
-            var q = SearchQuery.Trim();
-            if (string.IsNullOrEmpty(q))
-                return;
+            var q = SearchQuery?.Trim();
+            if (string.IsNullOrEmpty(q)) return;
 
             if (_searchResultsIndex < 0)
             {
                 var cmp = StringComparison.OrdinalIgnoreCase;
-
-                var prefixMatches = _searchIndex
-                                        .Where(fi => fi.Name.StartsWith(q, cmp));
-                var substringMatches = _searchIndex
-                                        .Where(fi => !fi.Name.StartsWith(q, cmp)
-                                                  && fi.Name.IndexOf(q, cmp) >= 0);
+                var prefixMatches = _searchIndex.Where(fi => fi.Name.StartsWith(q, cmp));
+                var substringMatches = _searchIndex.Where(fi => !fi.Name.StartsWith(q, cmp) && fi.Name.IndexOf(q, cmp) >= 0);
 
                 _searchResults.Clear();
                 _searchResults.AddRange(prefixMatches.Concat(substringMatches));
@@ -849,24 +823,18 @@ int insertIndex)
 
             if (_searchResults.Count == 0)
             {
-                ShowWarning("Не найдено результатов");
+                ShowWarning(_loc["FolderEditor.Search.NoResults"]);
                 return;
             }
 
             _searchResultsIndex = (_searchResultsIndex + 1) % _searchResults.Count;
             var match = _searchResults[_searchResultsIndex];
-
-            var targetPath = match.IsDirectory
-                ? match.FullPath
-                : Path.GetDirectoryName(match.FullPath)!;
+            var targetPath = match.IsDirectory ? match.FullPath : Path.GetDirectoryName(match.FullPath)!;
 
             _suppressTreeNav = true;
             DoNavigateInternal(targetPath, addToHistory: true);
             ExpandAndSelectPath(match.FullPath);
-
-            Application.Current.Dispatcher.BeginInvoke(
-                new Action(() => _suppressTreeNav = false),
-                DispatcherPriority.Background);
+            Application.Current.Dispatcher.BeginInvoke(new Action(() => _suppressTreeNav = false), DispatcherPriority.Background);
         }
 
         public bool CanSearch => !string.IsNullOrWhiteSpace(SearchQuery);
@@ -917,7 +885,7 @@ int insertIndex)
             }
             catch (Exception ex)
             {
-                ShowError($"Не удалось загрузить asset: {ex.Message}");
+                ShowError(string.Format(_loc["FolderEditor.Error.LoadAsset"], ex.Message));
             }
         }
         [RelayCommand]
@@ -944,7 +912,7 @@ int insertIndex)
             }
             catch (Exception ex)
             {
-                ShowError($"Не удалось загрузить locres: {ex.Message}");
+                ShowError(string.Format(_loc["FolderEditor.Error.LoadLocres"], ex.Message));
             }
         }
 

@@ -77,7 +77,7 @@
                                     Foreground="{DynamicResource PlaceholderMainBrush}"
                                     IsHitTestVisible="False"
                                     Opacity="0"
-                                    Text="Поиск…" />
+                                    Text="{DynamicResource Common.Search.Ext}" />
                             </Grid>
                         </Border>
                     </Grid>

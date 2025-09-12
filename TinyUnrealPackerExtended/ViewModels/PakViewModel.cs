@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MahApps.Metro.IconPacks;
@@ -12,6 +15,7 @@ namespace TinyUnrealPackerExtended.ViewModels
     public partial class PakViewModel : ViewModelBase
     {
         private readonly IProcessRunner _processRunner;
+        private readonly ILocalizationService _loc;
 
         public ObservableCollection<FileItem> PakFiles { get; } = new();
 
@@ -21,17 +25,19 @@ namespace TinyUnrealPackerExtended.ViewModels
         public PakViewModel(
             IFileDialogService fileDialogService,
             GrowlService growlService,
-            IProcessRunner processRunner)
+            IProcessRunner processRunner,
+            ILocalizationService localizationService)
             : base(fileDialogService, growlService)
         {
             _processRunner = processRunner;
+            _loc = localizationService;
         }
 
         [RelayCommand]
         private async Task BrowsePakFolderAsync()
         {
             var folder = await _fileDialogService.PickFolderAsync(
-                description: "Выберите папку для упаковки");
+                description: _loc["Pak.Browse.Description"]);
             if (string.IsNullOrEmpty(folder))
                 return;
 
@@ -64,7 +70,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             if (!PakFiles.Any())
             {
-                PakStatusMessage = "Укажите папку для упаковки.";
+                PakStatusMessage = _loc["Pak.Error.NoFolder"];
                 ShowWarning(PakStatusMessage);
                 return Task.CompletedTask;
             }
@@ -84,8 +90,7 @@ namespace TinyUnrealPackerExtended.ViewModels
 
                 var pakName = Path.GetFileName(folder) + ".pak";
                 var pakPath = Path.Combine(Path.GetDirectoryName(folder)!, pakName);
-                var args = $"\"{pakPath}\" -create=\"{listFile}\""
-                              + (compress ? " -compress" : "");
+                var args = $"\"{pakPath}\" -create=\"{listFile}\"" + (compress ? " -compress" : "");
 
                 var exitCode = await _processRunner.RunAsync(
                     exePath,
@@ -95,14 +100,16 @@ namespace TinyUnrealPackerExtended.ViewModels
 
                 if (exitCode == 0)
                 {
-                    PakStatusMessage = compress
-                        ? $"Упаковано с компрессором: {pakPath}"
-                        : $"Упаковано: {pakPath}";
+                    PakStatusMessage = string.Format(
+                        compress ? _loc["Pak.Success.Compressed"] : _loc["Pak.Success.Default"],
+                        pakPath);
                     ShowSuccess(PakStatusMessage);
                 }
                 else
                 {
-                    PakStatusMessage = $"Ошибка упаковки{(compress ? " (compress)" : "")} — код {exitCode}";
+                    PakStatusMessage = string.Format(
+                        compress ? _loc["Pak.Error.Code.Compressed"] : _loc["Pak.Error.Code"],
+                        exitCode);
                     ShowError(PakStatusMessage);
                 }
             },
@@ -111,8 +118,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         }
 
         [RelayCommand]
-        private void RemoveFile(FileItem file)
-            => PakFiles.Remove(file);
+        private void RemoveFile(FileItem file) => PakFiles.Remove(file);
 
         [RelayCommand]
         private void DropPakFolder(string[] paths)

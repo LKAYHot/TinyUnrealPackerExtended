@@ -11,16 +11,14 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition MinHeight="250" />
-
                 <RowDefinition
                     Height="*"
                     MinHeight="130"
                     MaxHeight="130" />
-
-
                 <RowDefinition Height="60" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+
             <!--  Drop Zone  -->
             <hc:DashedBorder Grid.Row="0" Style="{StaticResource AnimatedDashedDropZone}">
                 <i:Interaction.Behaviors>
@@ -35,32 +33,29 @@
                         Foreground="{DynamicResource PrimaryButtonBackgroundBrush}"
                         Kind="FileDownloadOutline" />
 
-
                     <TextBlock
                         FontSize="20"
                         Foreground="{DynamicResource PlaceholderBrush}"
-                        Text="Drag &amp; Drop или нажмите, чтобы загрузить"
+                        Text="{DynamicResource Spreadsheet.DropHint}"
                         TextAlignment="Center" />
+
                     <Button
                         Margin="0,14,0,0"
                         HorizontalAlignment="Center"
                         Command="{Binding BrowseExcelInputCommand}"
-                        Content="Выбрать файл"
+                        Content="{DynamicResource Spreadsheet.SelectFile}"
                         Style="{StaticResource SecondaryButtonStyle}" />
+
                     <TextBlock
                         Margin="0,6,0,0"
                         FontSize="12"
                         Foreground="{DynamicResource NavigationButtonDisabledForegroundBrush}"
-                        Text=".csv или .xlsx"
+                        Text="{DynamicResource Spreadsheet.FileTypes}"
                         TextAlignment="Center" />
                 </StackPanel>
             </hc:DashedBorder>
 
-
-            <!--  Список загруженных файлов  -->
-
-            <!--  Кнопки внизу  -->
-
+            <!--  Files area / progress  -->
             <Border
                 Grid.Row="1"
                 Margin="10,20,10,10"
@@ -68,14 +63,12 @@
                 CornerRadius="6"
                 Style="{StaticResource FileBorderStyle}">
                 <Grid>
-
-
                     <TextBlock
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         FontSize="20"
                         Foreground="{DynamicResource TextPrimaryBrush}"
-                        Text="Пусто" />
+                        Text="{DynamicResource Uploader.Empty}" />
 
                     <ProgressBar
                         Margin="20,31,20,32"
@@ -109,10 +102,10 @@
                             </Style>
                         </ItemsControl.Style>
                     </ItemsControl>
-
                 </Grid>
             </Border>
 
+            <!--  Bottom buttons  -->
             <StackPanel
                 Grid.Row="2"
                 HorizontalAlignment="Right"
@@ -120,11 +113,11 @@
                 Orientation="Horizontal">
                 <Button
                     Command="{Binding CancelExcelCommand}"
-                    Content="Отмена"
+                    Content="{DynamicResource Common.Cancel}"
                     Style="{StaticResource SecondaryButtonStyle}" />
                 <Button
                     Command="{Binding ProcessExcelCommand}"
-                    Content="Импорт"
+                    Content="{DynamicResource Common.Import}"
                     Style="{StaticResource PrimaryButtonStyle}" />
             </StackPanel>
         </Grid>

@@ -16,6 +16,7 @@ namespace TinyUnrealPackerExtended.ViewModels
     public partial class LocresViewModel : ViewModelBase
     {
         private readonly LocresService _locresService;
+        private readonly ILocalizationService _loc;
 
         public ObservableCollection<FileItem> LocresFiles { get; } = new();
         public ObservableCollection<FileItem> OriginalLocresFiles { get; } = new();
@@ -29,19 +30,21 @@ namespace TinyUnrealPackerExtended.ViewModels
         public LocresViewModel(
             LocresService locresService,
             GrowlService growlService,
-            IFileDialogService fileDialogService)
+            IFileDialogService fileDialogService,
+            ILocalizationService localizationService)
             : base(fileDialogService, growlService)
         {
             _locresService = locresService;
 
             LocresFiles.CollectionChanged += OnLocresCollectionsChanged;
             OriginalLocresFiles.CollectionChanged += OnLocresCollectionsChanged;
+
+            _loc = localizationService;
         }
 
         private void OnLocresCollectionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            IsLocresFileDropped = LocresFiles.Count > 0
-                               || OriginalLocresFiles.Count > 0;
+            IsLocresFileDropped = LocresFiles.Count > 0 || OriginalLocresFiles.Count > 0;
         }
 
         [RelayCommand]
@@ -49,17 +52,16 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             if (LocresFiles.Count >= 1)
             {
-                LocresStatusMessage = "Можно добавить только один файл.";
+                LocresStatusMessage = _loc["Locres.BrowseInput.OnlyOne"];
                 return;
             }
 
             if (await TryPickSingleFileAsync(
-                    filter: "Locres or CSV|*.locres;*.csv",
-                    title: "Выберите .locres или .csv файл",
+                    filter: _loc["Locres.BrowseInput.Filter"],    
+                    title: _loc["Locres.BrowseInput.Title"],      
                     target: LocresFiles))
             {
-                var ext = Path.GetExtension(LocresFiles.First().FilePath)
-                              .ToLowerInvariant();
+                var ext = Path.GetExtension(LocresFiles.First().FilePath).ToLowerInvariant();
                 IsCsvFileDropped = (ext == ".csv");
             }
         }
@@ -69,13 +71,13 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             if (OriginalLocresFiles.Count >= 1)
             {
-                LocresStatusMessage = "Можно добавить только один оригинальный .locres.";
+                LocresStatusMessage = _loc["Locres.BrowseOriginal.OnlyOne"];
                 return;
             }
 
             if (await TryPickSingleFileAsync(
-                    filter: "Original Locres|*.locres",
-                    title: "Выберите оригинальный .locres файл",
+                    filter: _loc["Locres.BrowseOriginal.Filter"],    
+                    title: _loc["Locres.BrowseOriginal.Title"],    
                     target: OriginalLocresFiles))
             {
                 IsCsvFileDropped = false;
@@ -87,7 +89,7 @@ namespace TinyUnrealPackerExtended.ViewModels
         {
             if (LocresFiles.Count == 0)
             {
-                LocresStatusMessage = "Ошибка: укажите файл для обработки.";
+                LocresStatusMessage = _loc["Locres.Error.NoInput"];
                 ShowWarning(LocresStatusMessage);
                 return Task.CompletedTask;
             }
@@ -102,13 +104,13 @@ namespace TinyUnrealPackerExtended.ViewModels
                 {
                     output = Path.ChangeExtension(input, ".csv");
                     await Task.Run(() => _locresService.Export(input, output), ct);
-                    LocresStatusMessage = $"Экспорт завершён: {output}";
+                    LocresStatusMessage = string.Format(_loc["Locres.Export.Done"], output);
                 }
                 else
                 {
                     output = OriginalLocresFiles.First().FilePath;
                     await Task.Run(() => _locresService.Import(input, output), ct);
-                    LocresStatusMessage = $"Импорт в оригинальный .locres завершён: {output}";
+                    LocresStatusMessage = string.Format(_loc["Locres.Import.Done"], output);
                 }
 
                 LocresOutputPath = output;
@@ -141,20 +143,19 @@ namespace TinyUnrealPackerExtended.ViewModels
         private void DropLocresFiles(string[] paths)
         {
             if (paths == null || paths.Length == 0) return;
-            if (LocresFiles.Count > 0) return; // можно только один
+            if (LocresFiles.Count > 0) return; 
 
             foreach (var path in paths)
             {
                 var ext = Path.GetExtension(path).ToLowerInvariant();
                 if (ext == ".csv" || ext == ".locres")
                 {
-                    // если CSV — чистим Original и ставим флаг
                     if (ext == ".csv")
                     {
                         IsCsvFileDropped = true;
                         OriginalLocresFiles.Clear();
                     }
-                    else // .locres
+                    else
                     {
                         IsCsvFileDropped = false;
                     }
@@ -164,7 +165,7 @@ namespace TinyUnrealPackerExtended.ViewModels
                         FileName = Path.GetFileName(path),
                         FilePath = path
                     });
-                    break; // только первый подходящий
+                    break; 
                 }
             }
         }

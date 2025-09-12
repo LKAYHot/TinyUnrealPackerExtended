@@ -24,16 +24,151 @@
     <sys:String x:Key="Tab.FolderEditor">Folder Editor</sys:String>
 
     <!--  Uploader / AutoInjector / Spreadsheet  -->
-    <sys:String x:Key="Uploader.Assets.DropHint">Drag &amp; Drop .uasset + .png files to upload (files will be grouped by name)</sys:String>
+    <sys:String x:Key="Uploader.Assets.DropHint">Drag &amp; Drop .uasset + .png files to upload</sys:String>
+    <sys:String x:Key="Uploader.Assets.DropSubHint">(files will be grouped by name)</sys:String>
     <sys:String x:Key="Uploader.SelectFiles">Select files</sys:String>
     <sys:String x:Key="Uploader.Empty">Empty</sys:String>
     <sys:String x:Key="AutoInjector.Start">Start Auto Inject</sys:String>
-
     <sys:String x:Key="Spreadsheet.DropHint">Drag &amp; Drop or click to upload</sys:String>
     <sys:String x:Key="Spreadsheet.SelectFile">Select file</sys:String>
     <sys:String x:Key="Spreadsheet.FileTypes">.csv or .xlsx</sys:String>
+    <sys:String x:Key="AutoInject.SelectOutput">Select output path</sys:String>
+    <sys:String x:Key="AutoInject.Loaded">Loaded</sys:String>
+    <sys:String x:Key="AutoInject.InProgress">In progress...</sys:String>
+    <sys:String x:Key="AutoInject.Done">Done</sys:String>
+    <sys:String x:Key="AutoInject.Error">Error</sys:String>
+    <sys:String x:Key="AutoInject.NoPairs">No prepared pairs for inject.</sys:String>
+    <sys:String x:Key="AutoInject.Completed">Auto inject finished.</sys:String>
+    <sys:String x:Key="AutoInject.SelectFolder">Select the output folder</sys:String>
+    <sys:String x:Key="AutoInject.SelectAsset">Select the .uasset and matching .png files</sys:String>
 
     <!--  Common actions  -->
     <sys:String x:Key="Common.Import">Import</sys:String>
     <sys:String x:Key="Common.Cancel">Cancel</sys:String>
+
+    <!--  Locres  -->
+    <sys:String x:Key="Locres.BrowseInput.Filter">Locres or CSV|*.locres;*.csv</sys:String>
+    <sys:String x:Key="Locres.BrowseInput.Title">Select a .locres or .csv file</sys:String>
+    <sys:String x:Key="Locres.BrowseInput.OnlyOne">Only one file can be added.</sys:String>
+    <sys:String x:Key="Locres.BrowseOriginal.Filter">Original Locres|*.locres</sys:String>
+    <sys:String x:Key="Locres.BrowseOriginal.Title">Select the original .locres file</sys:String>
+    <sys:String x:Key="Locres.BrowseOriginal.OnlyOne">Only one original .locres can be added.</sys:String>
+    <sys:String x:Key="Locres.Error.NoInput">Error: please choose a file to process.</sys:String>
+    <sys:String x:Key="Locres.Export.Done">Export finished: {0}</sys:String>
+    <sys:String x:Key="Locres.Import.Done">Import into the original .locres finished: {0}</sys:String>
+    <sys:String x:Key="Locres.DropHint">Drag &amp; Drop or click to upload</sys:String>
+    <sys:String x:Key="Locres.SelectFile">Select file</sys:String>
+    <sys:String x:Key="Locres.FileTypes">.locres or .csv</sys:String>
+    <sys:String x:Key="Locres.Original.DropHint">Drag &amp; Drop or click to upload the original .locres</sys:String>
+    <sys:String x:Key="Locres.Original.SelectFile">Select the original .locres</sys:String>
+    <sys:String x:Key="Locres.Original.FileTypes">.locres</sys:String>
+    <sys:String x:Key="Locres.Process">Import / Export</sys:String>
+
+    <!--  Excel  -->
+    <sys:String x:Key="Excel.BrowseInput.OnlyOne">Only one file can be added.</sys:String>
+    <sys:String x:Key="Excel.BrowseInput.Filter">XLSX or CSV|*.xlsx;*.csv</sys:String>
+    <sys:String x:Key="Excel.BrowseInput.Title">Select a .xlsx or .csv file</sys:String>
+    <sys:String x:Key="Excel.Error.NoInput">Error: please choose a file to process.</sys:String>
+    <sys:String x:Key="Excel.ImportFromExcel.Done">Import from Excel finished: {0}</sys:String>
+    <sys:String x:Key="Excel.ExportToExcel.Done">Export to Excel finished: {0}</sys:String>
+    <sys:String x:Key="Excel.Error.UnsupportedFormat">Unsupported format. Supported: .xlsx and .csv.</sys:String>
+
+    <!--  Pak Toolkit  -->
+    <sys:String x:Key="Pak.DropHint">Drag &amp; Drop a folder or click to select</sys:String>
+    <sys:String x:Key="Pak.SelectFolder">Select folder</sys:String>
+    <sys:String x:Key="Pak.Folder.NotSelected">No folder selected</sys:String>
+
+    <sys:String x:Key="Pak.Pack">Pack</sys:String>
+    <sys:String x:Key="Pak.PackCompressed">Pack (compressed)</sys:String>
+
+    <sys:String x:Key="Pak.Browse.Description">Choose a folder to pack</sys:String>
+    <sys:String x:Key="Pak.Error.NoFolder">Please select a folder to pack.</sys:String>
+    <sys:String x:Key="Pak.Success.Default">Packed: {0}</sys:String>
+    <sys:String x:Key="Pak.Success.Compressed">Packed (compressed): {0}</sys:String>
+    <sys:String x:Key="Pak.Error.Code">Packing error — code {0}</sys:String>
+    <sys:String x:Key="Pak.Error.Code.Compressed">Packing error (compressed) — code {0}</sys:String>
+
+    <!--  Png->DDS View  -->
+    <sys:String x:Key="PngToDds.DropHint">Drag &amp; Drop .png or .jpg files to upload</sys:String>
+    <sys:String x:Key="PngToDds.Format.Label">Format:</sys:String>
+    <sys:String x:Key="PngToDds.Convert">Convert</sys:String>
+
+    <!--  Default button captions  -->
+    <sys:String x:Key="PngToDds.Output.SelectFolderButton">Select output folder</sys:String>
+    <sys:String x:Key="PngToDds.Uasset.SelectButton">Select .uasset file</sys:String>
+
+    <!--  Pickers  -->
+    <sys:String x:Key="PngToDds.BrowseUasset.Filter">Unreal asset|*.uasset</sys:String>
+    <sys:String x:Key="PngToDds.BrowseUasset.Title">Select a .uasset file</sys:String>
+    <sys:String x:Key="PngToDds.BrowseImages.Filter">Image files|*.png;*.jpg;*.jpeg</sys:String>
+    <sys:String x:Key="PngToDds.BrowseImages.Title">Select image files</sys:String>
+    <sys:String x:Key="PngToDds.Output.Browse.Description">Select output folder</sys:String>
+
+    <!--  Status & messages  -->
+    <sys:String x:Key="PngToDds.Status.Loaded">Loaded</sys:String>
+    <sys:String x:Key="PngToDds.Status.Converting">Converting...</sys:String>
+    <sys:String x:Key="PngToDds.Status.Done">Done</sys:String>
+    <sys:String x:Key="PngToDds.Status.Error">Error</sys:String>
+
+    <sys:String x:Key="PngToDds.Error.NoFiles">No files to convert</sys:String>
+    <sys:String x:Key="PngToDds.Error.TexconvCode">texconv exited with code {0}</sys:String>
+    <sys:String x:Key="PngToDds.Error.WithMessage">Error: {0}</sys:String>
+
+    <sys:String x:Key="PngToDds.Success.Completed">
+        Conversion finished. Files saved to:
+        {0}
+    </sys:String>
+
+    <!--  Toolbar  -->
+    <sys:String x:Key="FolderEditor.Toolbar.Back">Back</sys:String>
+    <sys:String x:Key="FolderEditor.Toolbar.Forward">Forward</sys:String>
+    <sys:String x:Key="FolderEditor.Toolbar.Refresh">Refresh</sys:String>
+    <sys:String x:Key="Common.Search">Search</sys:String>
+    <sys:String x:Key="Common.Search.Ext">Search...</sys:String>
+
+    <!--  Breadcrumbs  -->
+    <sys:String x:Key="FolderEditor.Breadcrumb.Ellipsis">…</sys:String>
+    <sys:String x:Key="FolderEditor.Breadcrumb.Separator">›</sys:String>
+
+    <!--  List columns  -->
+    <sys:String x:Key="FolderEditor.Column.Name">Name</sys:String>
+    <sys:String x:Key="FolderEditor.Column.DateModified">Date Modified</sys:String>
+    <sys:String x:Key="FolderEditor.Column.Size">Size</sys:String>
+
+    <!--  Context menus  -->
+    <sys:String x:Key="Common.OpenLocation">Open location</sys:String>
+    <sys:String x:Key="Common.Copy">Copy</sys:String>
+    <sys:String x:Key="Common.Cut">Cut</sys:String>
+    <sys:String x:Key="Common.Paste">Paste</sys:String>
+    <sys:String x:Key="Common.Rename">Rename</sys:String>
+    <!--  Common.Delete already exists  -->
+    <sys:String x:Key="Common.Properties">Properties</sys:String>
+
+    <sys:String x:Key="Common.OpenInExplorer">Open in Explorer</sys:String>
+    <sys:String x:Key="Common.CopyPath">Copy path</sys:String>
+    <sys:String x:Key="Common.SaveAs">Save as…</sys:String>
+    <sys:String x:Key="FolderEditor.ToggleAlpha">Toggle alpha channel</sys:String>
+    <sys:String x:Key="FolderEditor.Preview.Close">Close preview</sys:String>
+
+    <!--  Dialogs / messages  -->
+    <sys:String x:Key="FolderEditor.Rename.Title">Rename</sys:String>
+    <sys:String x:Key="FolderEditor.Rename.Message">Enter a new name for “{0}”</sys:String>
+
+    <sys:String x:Key="FolderEditor.Error.Rename.Title">Rename error</sys:String>
+    <sys:String x:Key="FolderEditor.Error.Delete.Title">Delete error</sys:String>
+    <sys:String x:Key="FolderEditor.Error.SaveTexture">Failed to save texture: {0}</sys:String>
+    <sys:String x:Key="FolderEditor.SaveTexture.Filter">PNG Image|*.png</sys:String>
+    <sys:String x:Key="FolderEditor.Error.CreateFolder">Could not create folder: {0}</sys:String>
+    <sys:String x:Key="FolderEditor.Search.NoResults">No results found</sys:String>
+    <sys:String x:Key="FolderEditor.Error.LoadAsset">Failed to load asset: {0}</sys:String>
+    <sys:String x:Key="FolderEditor.Error.LoadLocres">Failed to load locres: {0}</sys:String>
+
+    <sys:String x:Key="FolderEditor.Confirm.Delete.Title">Delete item?</sys:String>
+    <sys:String x:Key="FolderEditor.Confirm.Delete.Message">Are you sure you want to delete “{0}”?</sys:String>
+
+    <!--  Common buttons  -->
+    <sys:String x:Key="Common.Yes">Yes</sys:String>
+    <sys:String x:Key="Common.No">No</sys:String>
+    <sys:String x:Key="Common.OK">OK</sys:String>
+
 </ResourceDictionary>

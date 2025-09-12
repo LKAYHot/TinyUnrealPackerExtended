@@ -24,10 +24,20 @@
     <sys:String x:Key="Tab.FolderEditor">Редактор папок</sys:String>
 
     <!--  Uploader / AutoInjector / Spreadsheet  -->
-    <sys:String x:Key="Uploader.Assets.DropHint">Перетащите файлы .uasset и .png, чтобы загрузить (файлы будут сгруппированы по имени)</sys:String>
+    <sys:String x:Key="Uploader.Assets.DropHint">Перетащите файлы .uasset и .png, чтобы загрузить</sys:String>
+    <sys:String x:Key="Uploader.Assets.DropSubHint">(файлы будут сгруппированы по имени)</sys:String>
     <sys:String x:Key="Uploader.SelectFiles">Выбрать файлы</sys:String>
     <sys:String x:Key="Uploader.Empty">Пусто</sys:String>
     <sys:String x:Key="AutoInjector.Start">Запустить автоинжект</sys:String>
+    <sys:String x:Key="AutoInject.SelectOutput">Выберите конечный путь</sys:String>
+    <sys:String x:Key="AutoInject.Loaded">Загружено</sys:String>
+    <sys:String x:Key="AutoInject.InProgress">В процессе...</sys:String>
+    <sys:String x:Key="AutoInject.Done">Готово</sys:String>
+    <sys:String x:Key="AutoInject.Error">Ошибка</sys:String>
+    <sys:String x:Key="AutoInject.NoPairs">Нет подготовленных пар для инжекта.</sys:String>
+    <sys:String x:Key="AutoInject.Completed">Автоинжект закончен.</sys:String>
+    <sys:String x:Key="AutoInject.SelectFolder">Выберите папку вывода</sys:String>
+    <sys:String x:Key="AutoInject.SelectAsset">Выберите .uasset и соответствующие .png</sys:String>
 
     <sys:String x:Key="Spreadsheet.DropHint">Перетащите файлы или нажмите, чтобы загрузить</sys:String>
     <sys:String x:Key="Spreadsheet.SelectFile">Выбрать файл</sys:String>
@@ -36,4 +46,130 @@
     <!--  Common actions  -->
     <sys:String x:Key="Common.Import">Импорт</sys:String>
     <sys:String x:Key="Common.Cancel">Отмена</sys:String>
+
+    <!--  Locres  -->
+    <sys:String x:Key="Locres.BrowseInput.Filter">Locres или CSV|*.locres;*.csv</sys:String>
+    <sys:String x:Key="Locres.BrowseInput.Title">Выберите .locres или .csv файл</sys:String>
+    <sys:String x:Key="Locres.BrowseInput.OnlyOne">Можно добавить только один файл.</sys:String>
+    <sys:String x:Key="Locres.BrowseOriginal.Filter">Оригинальный Locres|*.locres</sys:String>
+    <sys:String x:Key="Locres.BrowseOriginal.Title">Выберите оригинальный .locres файл</sys:String>
+    <sys:String x:Key="Locres.BrowseOriginal.OnlyOne">Можно добавить только один оригинальный .locres.</sys:String>
+    <sys:String x:Key="Locres.Error.NoInput">Ошибка: укажите файл для обработки.</sys:String>
+    <sys:String x:Key="Locres.Export.Done">Экспорт завершён: {0}</sys:String>
+    <sys:String x:Key="Locres.Import.Done">Импорт в оригинальный .locres завершён: {0}</sys:String>
+    <sys:String x:Key="Locres.DropHint">Перетащите файлы или нажмите, чтобы загрузить</sys:String>
+    <sys:String x:Key="Locres.SelectFile">Выбрать файл</sys:String>
+    <sys:String x:Key="Locres.FileTypes">.locres или .csv</sys:String>
+    <sys:String x:Key="Locres.Original.DropHint">Перетащите или нажмите, чтобы загрузить оригинальный .locres</sys:String>
+    <sys:String x:Key="Locres.Original.SelectFile">Выбрать оригинальный .locres</sys:String>
+    <sys:String x:Key="Locres.Original.FileTypes">.locres</sys:String>
+    <sys:String x:Key="Locres.Process">Импорт / Экспорт</sys:String>
+
+    <!--  Excel  -->
+    <sys:String x:Key="Excel.BrowseInput.OnlyOne">Можно добавить только один файл.</sys:String>
+    <sys:String x:Key="Excel.BrowseInput.Filter">XLSX или CSV|*.xlsx;*.csv</sys:String>
+    <sys:String x:Key="Excel.BrowseInput.Title">Выберите .xlsx или .csv файл</sys:String>
+    <sys:String x:Key="Excel.Error.NoInput">Ошибка: укажите файл для обработки.</sys:String>
+    <sys:String x:Key="Excel.ImportFromExcel.Done">Импорт из Excel завершён: {0}</sys:String>
+    <sys:String x:Key="Excel.ExportToExcel.Done">Экспорт в Excel завершён: {0}</sys:String>
+    <sys:String x:Key="Excel.Error.UnsupportedFormat">Неподдерживаемый формат. Поддерживаются .xlsx и .csv.</sys:String>
+
+    <!--  Pak Toolkit  -->
+    <sys:String x:Key="Pak.DropHint">Перетащите папку или нажмите, чтобы выбрать</sys:String>
+    <sys:String x:Key="Pak.SelectFolder">Выбрать папку</sys:String>
+    <sys:String x:Key="Pak.Folder.NotSelected">Папка не выбрана</sys:String>
+
+    <sys:String x:Key="Pak.Pack">Упаковать</sys:String>
+    <sys:String x:Key="Pak.PackCompressed">Упаковать (сжатие)</sys:String>
+
+    <sys:String x:Key="Pak.Browse.Description">Выберите папку для упаковки</sys:String>
+    <sys:String x:Key="Pak.Error.NoFolder">Укажите папку для упаковки.</sys:String>
+    <sys:String x:Key="Pak.Success.Default">Упаковано: {0}</sys:String>
+    <sys:String x:Key="Pak.Success.Compressed">Упаковано с сжатием: {0}</sys:String>
+    <sys:String x:Key="Pak.Error.Code">Ошибка упаковки — код {0}</sys:String>
+    <sys:String x:Key="Pak.Error.Code.Compressed">Ошибка упаковки (сжатие) — код {0}</sys:String>
+
+    <!--  Png->DDS View  -->
+    <sys:String x:Key="PngToDds.DropHint">Перетащите файлы .png или .jpg, чтобы загрузить</sys:String>
+    <sys:String x:Key="PngToDds.Format.Label">Формат:</sys:String>
+    <sys:String x:Key="PngToDds.Convert">Конвертировать</sys:String>
+
+    <!--  Кнопки по умолчанию (когда путь/файл не выбран)  -->
+    <sys:String x:Key="PngToDds.Output.SelectFolderButton">Выбрать папку вывода</sys:String>
+    <sys:String x:Key="PngToDds.Uasset.SelectButton">Выбрать .uasset файл</sys:String>
+
+    <!--  Диалоги выбора  -->
+    <sys:String x:Key="PngToDds.BrowseUasset.Filter">Файл Unreal|*.uasset</sys:String>
+    <sys:String x:Key="PngToDds.BrowseUasset.Title">Выберите .uasset файл</sys:String>
+    <sys:String x:Key="PngToDds.BrowseImages.Filter">Изображения|*.png;*.jpg;*.jpeg</sys:String>
+    <sys:String x:Key="PngToDds.BrowseImages.Title">Выберите изображения</sys:String>
+    <sys:String x:Key="PngToDds.Output.Browse.Description">Выберите папку вывода</sys:String>
+
+    <!--  Статусы и сообщения  -->
+    <sys:String x:Key="PngToDds.Status.Loaded">Загружено</sys:String>
+    <sys:String x:Key="PngToDds.Status.Converting">Конвертация...</sys:String>
+    <sys:String x:Key="PngToDds.Status.Done">Готово</sys:String>
+    <sys:String x:Key="PngToDds.Status.Error">Ошибка</sys:String>
+
+    <sys:String x:Key="PngToDds.Error.NoFiles">Нет файлов для конвертации</sys:String>
+    <sys:String x:Key="PngToDds.Error.TexconvCode">texconv вернулся с кодом {0}</sys:String>
+    <sys:String x:Key="PngToDds.Error.WithMessage">Ошибка: {0}</sys:String>
+
+    <sys:String x:Key="PngToDds.Success.Completed">
+        Конвертер завершил работу. Файлы сохранены по пути:
+        {0}
+    </sys:String>
+
+    <!--  Toolbar  -->
+    <sys:String x:Key="FolderEditor.Toolbar.Back">Назад</sys:String>
+    <sys:String x:Key="FolderEditor.Toolbar.Forward">Вперёд</sys:String>
+    <sys:String x:Key="FolderEditor.Toolbar.Refresh">Перезагрузить</sys:String>
+    <sys:String x:Key="Common.Search">Искать</sys:String>
+    <sys:String x:Key="Common.Search.Ext">Поиск...</sys:String>
+
+    <!--  Breadcrumbs  -->
+    <sys:String x:Key="FolderEditor.Breadcrumb.Ellipsis">…</sys:String>
+    <sys:String x:Key="FolderEditor.Breadcrumb.Separator">›</sys:String>
+
+    <!--  List columns  -->
+    <sys:String x:Key="FolderEditor.Column.Name">Имя</sys:String>
+    <sys:String x:Key="FolderEditor.Column.DateModified">Дата изменения</sys:String>
+    <sys:String x:Key="FolderEditor.Column.Size">Размер</sys:String>
+
+    <!--  Context menus  -->
+    <sys:String x:Key="Common.OpenLocation">Открыть расположение</sys:String>
+    <sys:String x:Key="Common.Copy">Копировать</sys:String>
+    <sys:String x:Key="Common.Cut">Вырезать</sys:String>
+    <sys:String x:Key="Common.Paste">Вставить</sys:String>
+    <sys:String x:Key="Common.Rename">Переименовать</sys:String>
+    <!--  Common.Delete уже есть  -->
+    <sys:String x:Key="Common.Properties">Свойства</sys:String>
+
+    <sys:String x:Key="Common.OpenInExplorer">Открыть в проводнике</sys:String>
+    <sys:String x:Key="Common.CopyPath">Скопировать путь</sys:String>
+    <sys:String x:Key="Common.SaveAs">Сохранить как…</sys:String>
+    <sys:String x:Key="FolderEditor.ToggleAlpha">Переключить альфа-канал</sys:String>
+    <sys:String x:Key="FolderEditor.Preview.Close">Закрыть превью</sys:String>
+
+    <!--  Dialogs / messages  -->
+    <sys:String x:Key="FolderEditor.Rename.Title">Переименовать</sys:String>
+    <sys:String x:Key="FolderEditor.Rename.Message">Введите новое имя для «{0}»</sys:String>
+
+    <sys:String x:Key="FolderEditor.Error.Rename.Title">Ошибка переименования</sys:String>
+    <sys:String x:Key="FolderEditor.Error.Delete.Title">Ошибка удаления</sys:String>
+    <sys:String x:Key="FolderEditor.Error.SaveTexture">Ошибка сохранения текстуры: {0}</sys:String>
+    <sys:String x:Key="FolderEditor.SaveTexture.Filter">Изображение PNG|*.png</sys:String>
+    <sys:String x:Key="FolderEditor.Error.CreateFolder">Не удалось создать папку: {0}</sys:String>
+    <sys:String x:Key="FolderEditor.Search.NoResults">Не найдено результатов</sys:String>
+    <sys:String x:Key="FolderEditor.Error.LoadAsset">Не удалось загрузить asset: {0}</sys:String>
+    <sys:String x:Key="FolderEditor.Error.LoadLocres">Не удалось загрузить locres: {0}</sys:String>
+
+    <sys:String x:Key="FolderEditor.Confirm.Delete.Title">Удалить элемент?</sys:String>
+    <sys:String x:Key="FolderEditor.Confirm.Delete.Message">Вы точно хотите удалить «{0}»?</sys:String>
+
+    <!--  Common buttons  -->
+    <sys:String x:Key="Common.Yes">Да</sys:String>
+    <sys:String x:Key="Common.No">Нет</sys:String>
+    <sys:String x:Key="Common.OK">ОК</sys:String>
+
 </ResourceDictionary>

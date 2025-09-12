@@ -10,19 +10,15 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition MinHeight="250" />
-
                 <RowDefinition
                     Height="*"
                     MinHeight="220"
                     MaxHeight="180" />
-
-
-
-                <!--  4) Кнопки внизу: по содержимому  -->
                 <RowDefinition Height="60" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <!--  Drop Zone  -->
+
+            <!--  Drop Zone (input .locres/.csv)  -->
             <hc:DashedBorder Grid.Row="0" Style="{StaticResource AnimatedDashedDropZone}">
                 <i:Interaction.Behaviors>
                     <behaviors:FileDropBehavior FileDropCommand="{Binding DropLocresFilesCommand}" />
@@ -39,24 +35,26 @@
                     <TextBlock
                         FontSize="20"
                         Foreground="{DynamicResource PlaceholderBrush}"
-                        Text="Drag &amp; Drop или нажмите, чтобы загрузить"
+                        Text="{DynamicResource Locres.DropHint}"
                         TextAlignment="Center" />
 
                     <Button
                         Margin="0,14,0,0"
                         HorizontalAlignment="Center"
                         Command="{Binding BrowseLocresInputCommand}"
-                        Content="Выбрать файл"
+                        Content="{DynamicResource Locres.SelectFile}"
                         Style="{StaticResource SecondaryButtonStyle}" />
+
                     <TextBlock
                         Margin="0,6,0,0"
                         FontSize="12"
                         Foreground="{DynamicResource NavigationButtonDisabledForegroundBrush}"
-                        Text=".locres или .csv"
+                        Text="{DynamicResource Locres.FileTypes}"
                         TextAlignment="Center" />
                 </StackPanel>
             </hc:DashedBorder>
 
+            <!--  Drop Zone (original .locres)  -->
             <hc:DashedBorder Grid.Row="1" Margin="10,20,10,10">
                 <i:Interaction.Behaviors>
                     <behaviors:FileDropBehavior FileDropCommand="{Binding DropOriginalLocresFilesCommand}" />
@@ -71,28 +69,30 @@
                         </Style.Triggers>
                     </Style>
                 </hc:DashedBorder.Style>
+
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock
                         FontSize="16"
                         Foreground="{DynamicResource PlaceholderBrush}"
-                        Text="Drag &amp; Drop или нажмите, чтобы загрузить оригинальный .locres"
+                        Text="{DynamicResource Locres.Original.DropHint}"
                         TextAlignment="Center" />
+
                     <Button
                         Margin="0,14,0,0"
                         Command="{Binding BrowseOriginalLocresCommand}"
-                        Content="Выбрать оригинальный .locres"
+                        Content="{DynamicResource Locres.Original.SelectFile}"
                         Style="{StaticResource SecondaryButtonStyle}" />
+
                     <TextBlock
                         Margin="0,6,0,0"
                         FontSize="12"
                         Foreground="{DynamicResource NavigationButtonDisabledForegroundBrush}"
-                        Text=".locres"
+                        Text="{DynamicResource Locres.Original.FileTypes}"
                         TextAlignment="Center" />
                 </StackPanel>
             </hc:DashedBorder>
 
-
-
+            <!--  Files area / progress  -->
             <Border
                 Grid.Row="1"
                 Margin="10,20,10,10"
@@ -108,15 +108,14 @@
                         </Style.Triggers>
                     </Style>
                 </Border.Style>
+
                 <Grid>
-
-
                     <TextBlock
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         FontSize="20"
                         Foreground="{DynamicResource TextSecondaryBrush}"
-                        Text="Пусто">
+                        Text="{DynamicResource Uploader.Empty}">
                         <TextBlock.Style>
                             <Style TargetType="TextBlock">
                                 <Setter Property="Visibility" Value="Visible" />
@@ -126,7 +125,6 @@
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-
                         </TextBlock.Style>
                     </TextBlock>
 
@@ -148,7 +146,6 @@
                     </ProgressBar>
 
                     <StackPanel Margin="10">
-
                         <ItemsControl ItemTemplate="{StaticResource FileItemTemplate}" ItemsSource="{Binding LocresFiles}">
                             <ItemsControl.Style>
                                 <Style TargetType="ItemsControl">
@@ -175,9 +172,10 @@
                             </ItemsControl.Style>
                         </ItemsControl>
                     </StackPanel>
-
                 </Grid>
             </Border>
+
+            <!--  Bottom buttons  -->
             <StackPanel
                 Grid.Row="2"
                 HorizontalAlignment="Right"
@@ -185,12 +183,12 @@
                 Orientation="Horizontal">
                 <Button
                     Command="{Binding CancelLocresCommand}"
-                    Content="Отмена"
+                    Content="{DynamicResource Common.Cancel}"
                     Cursor="Hand"
                     Style="{StaticResource SecondaryButtonStyle}" />
                 <Button
                     Command="{Binding ProcessLocresCommand}"
-                    Content="Импорт / Экспорт"
+                    Content="{DynamicResource Locres.Process}"
                     Cursor="Hand"
                     Style="{StaticResource PrimaryButtonStyle}" />
             </StackPanel>
